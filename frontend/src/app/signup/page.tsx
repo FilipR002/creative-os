@@ -16,7 +16,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = '/app/dashboard';
+      if (session) window.location.href = '/dashboard';
     });
     const q = new URLSearchParams(window.location.search).get('email');
     if (q) setEmail(decodeURIComponent(q));

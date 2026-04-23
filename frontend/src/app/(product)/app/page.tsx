@@ -1,2 +1,2 @@
 import { redirect } from 'next/navigation';
-export default function AppRoot() { redirect('/app/dashboard'); }
+export default function AppRoot() { redirect('/dashboard'); }

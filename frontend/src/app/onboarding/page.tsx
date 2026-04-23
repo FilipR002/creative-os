@@ -76,7 +76,7 @@ export default function OnboardingPage() {
     if (!user) { window.location.href = '/login'; return; }
     // Allow re-run via ?rerun=1 (from Settings "Re-run Onboarding" / "Complete Setup")
     const rerun = new URLSearchParams(window.location.search).get('rerun') === '1';
-    if (user.onboarded && !rerun) { window.location.href = '/app/dashboard'; return; }
+    if (user.onboarded && !rerun) { window.location.href = '/dashboard'; return; }
 
     if (rerun) {
       // Re-run: start fresh from step 1. Pre-fill values from existing context
@@ -147,7 +147,7 @@ export default function OnboardingPage() {
     });
 
     await new Promise(r => setTimeout(r, 500)); // brief UX pause
-    window.location.href = '/app/dashboard';
+    window.location.href = '/dashboard';
   }
 
   const totalSteps = 5;

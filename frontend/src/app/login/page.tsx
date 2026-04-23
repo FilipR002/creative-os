@@ -15,7 +15,7 @@ export default function LoginPage() {
   useEffect(() => {
     // Already logged in → skip to app
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) window.location.href = '/app/dashboard';
+      if (session) window.location.href = '/dashboard';
     });
     // Pre-fill email from query string
     const q = new URLSearchParams(window.location.search).get('email');
@@ -45,7 +45,7 @@ export default function LoginPage() {
     }
 
     // Session set via cookie automatically — redirect
-    const next = new URLSearchParams(window.location.search).get('next') ?? '/app/dashboard';
+    const next = new URLSearchParams(window.location.search).get('next') ?? '/dashboard';
     window.location.href = next;
   }
 

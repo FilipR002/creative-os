@@ -197,7 +197,7 @@ export function initSessionState(userId: string, ctx: UserContext): UserSessionS
     userId,
     userContext: ctx,
     executionState: 'idle',
-    uiState: { currentPage: '/app/dashboard' },
+    uiState: { currentPage: '/dashboard' },
   };
   setUserSessionState(state);
   return state;
