@@ -50,7 +50,16 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match everything except static files, images, favicons
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // Only run on app routes that need protection — NOT on landing, login, signup
+    '/dashboard/:path*',
+    '/create/:path*',
+    '/campaigns/:path*',
+    '/analytics/:path*',
+    '/admin/:path*',
+    '/autonomous/:path*',
+    '/financial-os/:path*',
+    '/observatory/:path*',
+    '/settings/:path*',
+    '/app/:path*',
   ],
 };
