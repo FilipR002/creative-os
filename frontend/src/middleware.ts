@@ -55,16 +55,18 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Only run on app routes that need protection — NOT on landing, login, signup
-    '/dashboard/:path*',
-    '/create/:path*',
-    '/campaigns/:path*',
-    '/analytics/:path*',
-    '/admin/:path*',
-    '/autonomous/:path*',
-    '/financial-os/:path*',
-    '/observatory/:path*',
-    '/settings/:path*',
-    '/app/:path*',
+    // Explicit root + all sub-paths for every protected section.
+    // Both forms are required: Next.js /:path* may not match the bare root
+    // depending on the version, so we list each root explicitly as well.
+    '/dashboard', '/dashboard/:path*',
+    '/create',    '/create/:path*',
+    '/campaigns', '/campaigns/:path*',
+    '/analytics', '/analytics/:path*',
+    '/admin',     '/admin/:path*',
+    '/autonomous',   '/autonomous/:path*',
+    '/financial-os', '/financial-os/:path*',
+    '/observatory',  '/observatory/:path*',
+    '/settings',     '/settings/:path*',
+    '/app',          '/app/:path*',
   ],
 };

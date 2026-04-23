@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
+import { getSupabase } from '@/lib/supabase';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
 
 function timeAgo(iso: string): string {
@@ -10,9 +11,18 @@ function timeAgo(iso: string): string {
 }
 
 export default function DashboardPage() {
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [history,   setHistory]   = useState<HistoryEntry[]>([]);
+  const [firstName, setFirstName] = useState('');
 
-  useEffect(() => { setHistory(loadHistory()); }, []);
+  useEffect(() => {
+    setHistory(loadHistory());
+    getSupabase().auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const full = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? '';
+        setFirstName(full.split(' ')[0] ?? '');
+      }
+    });
+  }, []);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -26,7 +36,7 @@ export default function DashboardPage() {
 
           {/* Header */}
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{greeting}, Filip 👋</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{greeting}{firstName ? `, ${firstName}` : ''} 👋</h1>
             <p style={{ fontSize: 14, color: 'var(--sub)' }}>Here's what's happening with your campaigns.</p>
           </div>
 
