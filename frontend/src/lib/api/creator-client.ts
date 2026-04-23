@@ -8,7 +8,10 @@ import type {
 } from '../types/creator';
 import { requireUserContext, deriveEngineParams, type UserContext } from '../user-context';
 
-const BASE = '';
+// In production (Vercel), NEXT_PUBLIC_API_URL = Railway URL → call directly.
+// In development, rewrites proxy relative /api/* calls to localhost:4000.
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const BASE = API_URL && !API_URL.includes('localhost') ? API_URL : '';
 
 function getUserId(): string {
   if (typeof window === 'undefined') return '00000000-0000-0000-0000-000000000001';
