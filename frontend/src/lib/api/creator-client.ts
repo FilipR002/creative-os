@@ -13,33 +13,52 @@ import { requireUserContext, deriveEngineParams, type UserContext } from '../use
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 const BASE = API_URL && !API_URL.includes('localhost') ? API_URL : '';
 
-function getUserId(): string {
-  if (typeof window === 'undefined') return '00000000-0000-0000-0000-000000000001';
-  let id = localStorage.getItem('cos_user_id');
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem('cos_user_id', id); }
-  return id;
+// ── Supabase JWT helpers ──────────────────────────────────────────────────────
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  // Dynamically import to avoid SSR issues
+  const { getSupabase } = await import('../supabase');
+  const { data: { session } } = await getSupabase().auth.getSession();
+
+  if (session?.access_token) {
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'x-user-id':     session.user.id, // kept for backwards compat during transition
+    };
+  }
+
+  // Fallback for unauthenticated requests (public endpoints)
+  const fallbackId = (typeof window !== 'undefined'
+    ? localStorage.getItem('cos_user_id')
+    : null) ?? '00000000-0000-0000-0000-000000000001';
+
+  return { 'x-user-id': fallbackId };
 }
 
-// Idempotent user registration — lazy, never blocks auth flow.
+// Idempotent user registration — syncs Supabase user to Prisma on first call.
 let _ensuredId = '';
 export async function ensureUser(): Promise<void> {
-  const userId = getUserId();
-  if (_ensuredId === userId) return;
+  const { getSupabase } = await import('../supabase');
+  const { data: { session } } = await getSupabase().auth.getSession();
+  const userId = session?.user?.id ?? localStorage.getItem('cos_user_id') ?? '';
+  if (!userId || _ensuredId === userId) return;
   try {
+    const headers = await getAuthHeaders();
     await fetch(`${BASE}/api/users`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
-      body:    JSON.stringify({ id: userId }),
+      headers: { 'Content-Type': 'application/json', ...headers },
+      body:    JSON.stringify({ id: userId, email: session?.user?.email }),
     });
   } catch { return; }
   _ensuredId = userId;
 }
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
-      'x-user-id': getUserId(),
+      ...authHeaders,
       ...(init?.headers ?? {}),
     },
     ...init,

@@ -1,46 +1,52 @@
 'use client';
-// ─── Login Page ───────────────────────────────────────────────────────────────
+// ─── Login Page — Supabase Auth ───────────────────────────────────────────────
 
-import { useEffect, useState } from 'react';
-import { login, getAuthUser } from '@/lib/auth';
+import { useState, useEffect } from 'react';
+import { getSupabase }         from '@/lib/supabase';
 
 export default function LoginPage() {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [loading,  setLoading]  = useState(false);
-  const [noAcct,   setNoAcct]   = useState(false);
-  const [wrongPw,  setWrongPw]  = useState(false);
   const [err,      setErr]      = useState('');
 
+  const supabase = getSupabase();
+
   useEffect(() => {
-    // Already logged in → skip straight to app
-    if (getAuthUser()) {
-      window.location.href = '/app/dashboard';
-    }
-  }, []);
+    // Already logged in → skip to app
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) window.location.href = '/app/dashboard';
+    });
+    // Pre-fill email from query string
+    const q = new URLSearchParams(window.location.search).get('email');
+    if (q) setEmail(decodeURIComponent(q));
+  }, [supabase]);
 
-  function clearErrors() { setNoAcct(false); setWrongPw(false); setErr(''); }
-
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    clearErrors();
-
+    setErr('');
     if (!email.trim()) { setErr('Please enter your email.');    return; }
     if (!password)     { setErr('Please enter your password.'); return; }
 
     setLoading(true);
-    try {
-      login(email.trim(), password);
-      // Auth is purely localStorage — redirect immediately, no network needed.
-      // ensureUser() (backend registration) runs lazily on first API call.
-      window.location.href = '/app/dashboard';
-    } catch (e) {
-      const msg = (e as Error).message;
-      if (msg === 'NO_ACCOUNT')    setNoAcct(true);
-      else if (msg === 'WRONG_PASSWORD') setWrongPw(true);
-      else setErr(msg);
+    const { error } = await supabase.auth.signInWithPassword({
+      email:    email.trim(),
+      password,
+    });
+
+    if (error) {
+      setErr(
+        error.message.includes('Invalid login')
+          ? 'Incorrect email or password.'
+          : error.message,
+      );
       setLoading(false);
+      return;
     }
+
+    // Session set via cookie automatically — redirect
+    const next = new URLSearchParams(window.location.search).get('next') ?? '/app/dashboard';
+    window.location.href = next;
   }
 
   return (
@@ -59,9 +65,9 @@ export default function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={e => { setEmail(e.target.value); clearErrors(); }}
+              onChange={e => { setEmail(e.target.value); setErr(''); }}
               placeholder="you@example.com"
-              style={{ ...inputStyle, borderColor: noAcct ? '#b45309' : '#1e2330' }}
+              style={inputStyle}
               autoComplete="email"
               autoFocus
             />
@@ -71,51 +77,16 @@ export default function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={e => { setPassword(e.target.value); clearErrors(); }}
+              onChange={e => { setPassword(e.target.value); setErr(''); }}
               placeholder="••••••••"
-              style={{ ...inputStyle, borderColor: wrongPw ? '#dc2626' : '#1e2330' }}
+              style={inputStyle}
               autoComplete="current-password"
             />
           </Field>
 
-          {/* No account */}
-          {noAcct && (
-            <div style={{ background: '#1c1407', border: '1px solid #92400e', borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24', marginBottom: 8 }}>
-                No account found for this email
-              </div>
-              <div style={{ fontSize: 13, color: '#78350f', marginBottom: 12, lineHeight: 1.5 }}>
-                This email isn't registered yet. Create a free account to continue.
-              </div>
-              <a
-                href={`/signup?email=${encodeURIComponent(email)}`}
-                style={{ display: 'inline-block', padding: '9px 18px', background: '#f59e0b', color: '#000', borderRadius: 7, fontWeight: 700, fontSize: 13, textDecoration: 'none' }}
-              >
-                Create Account →
-              </a>
-            </div>
-          )}
+          {err && <div style={errBox}>{err}</div>}
 
-          {/* Wrong password */}
-          {wrongPw && (
-            <div style={{ background: '#1a0808', border: '1px solid #7f1d1d', borderRadius: 10, padding: '14px 16px' }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#f87171', marginBottom: 4 }}>Incorrect password</div>
-              <div style={{ fontSize: 13, color: '#991b1b' }}>Double-check your password and try again.</div>
-            </div>
-          )}
-
-          {/* General error */}
-          {err && (
-            <div style={{ background: '#1a0a0a', border: '1px solid #3a1010', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171' }}>
-              {err}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={submitBtn(loading)}
-          >
+          <button type="submit" disabled={loading} style={submitBtn(loading)}>
             {loading ? 'Signing in…' : 'Sign In →'}
           </button>
         </form>
@@ -142,7 +113,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const shell: React.CSSProperties = { minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'system-ui,sans-serif' };
-const card:  React.CSSProperties = { width: '100%', maxWidth: 420, background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 18, padding: '36px 32px' };
-const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', background: '#111', border: '1px solid', borderRadius: 8, color: '#f0f0f0', fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s' };
+const shell:      React.CSSProperties = { minHeight: '100vh', background: '#080910', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'system-ui,sans-serif' };
+const card:       React.CSSProperties = { width: '100%', maxWidth: 420, background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 18, padding: '36px 32px' };
+const inputStyle: React.CSSProperties = { width: '100%', padding: '11px 14px', background: '#111', border: '1px solid #1e2330', borderRadius: 8, color: '#f0f0f0', fontSize: 14, boxSizing: 'border-box', fontFamily: 'inherit', outline: 'none', transition: 'border-color 0.15s' };
+const errBox:     React.CSSProperties = { background: '#1a0a0a', border: '1px solid #3a1010', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171' };
 const submitBtn = (loading: boolean): React.CSSProperties => ({ marginTop: 4, padding: '13px', background: loading ? '#2d2d4a' : '#6366f1', color: loading ? '#666' : '#fff', border: 'none', borderRadius: 9, fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', width: '100%', fontFamily: 'inherit' });
