@@ -3,7 +3,6 @@ import {
   ExecutionContext,
   Injectable,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { Reflector }        from '@nestjs/core';
 import * as jwt             from 'jsonwebtoken';
@@ -13,20 +12,30 @@ import { IS_PUBLIC_KEY }    from '../decorators/public.decorator';
 /**
  * UserGuard — Verifies Supabase JWT on every request.
  *
- * Primary:  Authorization: Bearer <supabase_access_token>
- * Fallback: x-user-id header (backwards compat during migration)
+ * Only accepts: Authorization: Bearer <supabase_access_token>
  *
- * SUPABASE_JWT_SECRET = Supabase Dashboard → Settings → API → JWT Secret
+ * Security requirements enforced:
+ *  - Token must have a `sub` claim (real user, not anon/service key)
+ *  - Token role must be `authenticated` (rejects `anon` and `service_role`)
+ *  - Signature verified against SUPABASE_JWT_SECRET
+ *  - Expiry enforced by jsonwebtoken
  *
  * Skips automatically for routes decorated with @Public().
  * Sets req.context (RequestContext) for downstream use.
  */
+
+// Roles that Supabase uses for non-user tokens — never allow these through
+const BLOCKED_ROLES = new Set(['anon', 'service_role']);
+
 @Injectable()
 export class UserGuard implements CanActivate {
   private readonly jwtSecret: string;
 
   constructor(private readonly reflector: Reflector) {
     this.jwtSecret = process.env.SUPABASE_JWT_SECRET ?? '';
+    if (!this.jwtSecret) {
+      console.error('[UserGuard] SUPABASE_JWT_SECRET is not set — all authenticated requests will be rejected.');
+    }
   }
 
   canActivate(ctx: ExecutionContext): boolean {
@@ -39,45 +48,49 @@ export class UserGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest();
 
-    // ── Primary: JWT verification ─────────────────────────────────────────
+    // ── Require JWT secret to be configured ──────────────────────────────
+    if (!this.jwtSecret) {
+      throw new UnauthorizedException('Server misconfiguration: JWT secret not set.');
+    }
+
+    // ── Extract Bearer token ──────────────────────────────────────────────
     const authHeader = req.headers['authorization'] as string | undefined;
+    if (!authHeader?.startsWith('Bearer ')) {
+      throw new UnauthorizedException('Authentication required. Provide Authorization: Bearer <token> header.');
+    }
 
-    if (authHeader?.startsWith('Bearer ') && this.jwtSecret) {
-      const token = authHeader.slice(7);
-      try {
-        const payload = jwt.verify(token, this.jwtSecret) as {
-          sub:           string;
-          email?:        string;
-          role?:         string;
-          app_metadata?: { role?: string };
-        };
+    const token = authHeader.slice(7);
 
-        req.context = {
-          userId: payload.sub,
-          email:  payload.email ?? null,
-          role:   (payload.app_metadata?.role ?? payload.role ?? 'user') as 'user' | 'admin',
-        } satisfies RequestContext;
+    try {
+      const payload = jwt.verify(token, this.jwtSecret) as {
+        sub?:          string;
+        email?:        string;
+        role?:         string;
+        app_metadata?: { role?: string };
+      };
 
-        return true;
-      } catch {
-        throw new UnauthorizedException('Invalid or expired token. Please sign in again.');
+      // ── CRIT-1 fix: reject anon and service_role tokens ─────────────────
+      // Supabase anon key is a valid JWT signed with the same secret.
+      // The `role` claim distinguishes it from a real user session.
+      if (!payload.sub || BLOCKED_ROLES.has(payload.role ?? '')) {
+        throw new UnauthorizedException('Token does not represent an authenticated user.');
       }
-    }
 
-    // ── Fallback: x-user-id (remove after full migration) ────────────────
-    const userId = req.headers['x-user-id'];
-    if (userId && typeof userId === 'string' && userId.trim()) {
+      // ── Derive app-level role from app_metadata (set by Supabase triggers) ─
+      const appRole = (payload.app_metadata?.role ?? 'user') as 'user' | 'admin';
+
       req.context = {
-        userId: userId.trim(),
-        email:  null,
-        role:   'user',
+        userId: payload.sub,
+        email:  payload.email ?? null,
+        role:   appRole,
       } satisfies RequestContext;
-      return true;
-    }
 
-    // ── Nothing provided ──────────────────────────────────────────────────
-    throw new BadRequestException(
-      'Authentication required. Provide Authorization: Bearer <token> header.',
-    );
+      return true;
+
+    } catch (err) {
+      if (err instanceof UnauthorizedException) throw err;
+      // jsonwebtoken throws JsonWebTokenError, TokenExpiredError, etc.
+      throw new UnauthorizedException('Invalid or expired token. Please sign in again.');
+    }
   }
 }

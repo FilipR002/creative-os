@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { UserId } from '../common/decorators/user-id.decorator';
+import { Body, Controller, ForbiddenException, Get, Param, Post } from '@nestjs/common';
+import { ApiOperation, ApiTags }                                   from '@nestjs/swagger';
+import { UsersService }                                            from './users.service';
+import { UserId }                                                  from '../common/decorators/user-id.decorator';
 
 @ApiTags('Users')
 @Controller('api/users')
@@ -10,35 +10,42 @@ export class UsersController {
 
   /**
    * GET /api/users/me
-   * Returns the authenticated user with role included.
-   * Role is computed from email — no DB role column needed.
+   * Returns the authenticated user's own record.
    */
   @Get('me')
-  @ApiOperation({ summary: 'Get current authenticated user with role' })
+  @ApiOperation({ summary: 'Get current authenticated user' })
   me(@UserId() userId: string) {
     return this.service.me(userId);
   }
 
   /**
-   * Register / ensure a user exists.
-   * Body: { id: string (UUID), email?: string, name?: string }
-   * Idempotent — safe to call on every app launch.
+   * POST /api/users
+   * Idempotent — syncs the authenticated Supabase user into Prisma.
+   * The user can only register themselves (id must match JWT sub).
    */
   @Post()
-  @ApiOperation({ summary: 'Register or fetch a user (idempotent)' })
-  findOrCreate(@Body() dto: { id: string; email?: string; name?: string }) {
-    return this.service.findOrCreate(dto.id, dto.email, dto.name);
+  @ApiOperation({ summary: 'Register or sync authenticated user (idempotent)' })
+  findOrCreate(
+    @UserId() userId: string,
+    @Body() dto: { id?: string; email?: string; name?: string },
+  ) {
+    // Ignore any id from the body — always use the verified JWT identity
+    return this.service.findOrCreate(userId, dto.email, dto.name);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'List all users' })
-  findAll() {
-    return this.service.findAll();
-  }
-
+  /**
+   * GET /api/users/:id
+   * Users may only fetch their own record.
+   */
   @Get(':id')
-  @ApiOperation({ summary: 'Get user by ID with campaign + memory counts' })
-  findOne(@Param('id') id: string) {
-    return this.service.findById(id);
+  @ApiOperation({ summary: 'Get own user record' })
+  findOne(@Param('id') id: string, @UserId() userId: string) {
+    if (id !== userId) {
+      throw new ForbiddenException('You may only access your own user record.');
+    }
+    return this.service.findById(userId);
   }
+
+  // NOTE: GET /api/users (list all) is intentionally removed — no endpoint
+  // should expose the full user list. Admins can query Supabase directly.
 }

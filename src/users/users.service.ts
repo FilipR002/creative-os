@@ -2,9 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { computeRole } from '../common/constants/roles';
 
-/** Enrich any user object with a computed role field. */
-function withRole<T extends { email?: string | null }>(user: T): T & { role: 'admin' | 'user' } {
-  return { ...user, role: computeRole(user.email) };
+/** Strip sensitive fields and enrich with computed role. */
+function safeUser<T extends { email?: string | null; passwordHash?: string | null }>(
+  user: T,
+): Omit<T, 'passwordHash'> & { role: 'admin' | 'user' } {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { passwordHash: _omit, ...safe } = user as Record<string, unknown> & { passwordHash?: unknown };
+  return { ...(safe as Omit<T, 'passwordHash'>), role: computeRole(user.email) };
 }
 
 @Injectable()
@@ -21,7 +25,7 @@ export class UsersService {
       update: {},
       create: { id: userId, email: email || null, name: name || null },
     });
-    return withRole(user);
+    return safeUser(user);
   }
 
   async findById(userId: string) {
@@ -34,7 +38,7 @@ export class UsersService {
       },
     });
     if (!user) throw new NotFoundException(`User ${userId} not found`);
-    return withRole(user);
+    return safeUser(user);
   }
 
   /**
@@ -50,6 +54,6 @@ export class UsersService {
       orderBy: { createdAt: 'desc' },
       include: { _count: { select: { campaigns: true } } },
     });
-    return users.map(withRole);
+    return users.map(safeUser);
   }
 }
