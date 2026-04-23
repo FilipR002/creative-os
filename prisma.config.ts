@@ -1,7 +1,13 @@
 import { defineConfig } from 'prisma/config';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
-// DATABASE_URL is read via env("DATABASE_URL") in schema.prisma.
-// Railway injects it at runtime — no dotenv needed in production.
 export default defineConfig({
   schema: 'prisma/schema.prisma',
+  migrate: {
+    async adapter(env) {
+      const pool = new Pool({ connectionString: env.DATABASE_URL });
+      return new PrismaPg(pool);
+    },
+  },
 });
