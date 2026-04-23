@@ -1,9 +1,47 @@
 /** @type {import('next').NextConfig} */
+
+const securityHeaders = [
+  // Prevent clickjacking — no embedding in iframes
+  { key: 'X-Frame-Options',        value: 'DENY' },
+  // Stop MIME-type sniffing
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  // Limit referrer information leaked to third parties
+  { key: 'Referrer-Policy',        value: 'strict-origin-when-cross-origin' },
+  // Disable unused browser features
+  { key: 'Permissions-Policy',     value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+  // Content Security Policy
+  // Tighten if/when inline styles are moved to CSS modules
+  {
+    key:   'Content-Security-Policy',
+    value: [
+      "default-src 'self'",
+      // Next.js needs 'unsafe-inline' for its runtime scripts; tighten with nonces in future
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      // Allow Supabase and Railway API calls
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.railway.app",
+      "img-src 'self' data: blob:",
+      "frame-ancestors 'none'",
+    ].join('; '),
+  },
+];
+
 const config = {
   experimental: {
     turbo: {
       resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
     },
+  },
+
+  // ── Security headers on every response ────────────────────────────────────
+  async headers() {
+    return [
+      {
+        source:  '/(.*)',
+        headers: securityHeaders,
+      },
+    ];
   },
 
   // ── Dev proxy: rewrites only apply when running locally ───────────────────

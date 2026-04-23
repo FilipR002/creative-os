@@ -21,18 +21,11 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const { data: { session } } = await getSupabase().auth.getSession();
 
   if (session?.access_token) {
-    return {
-      'Authorization': `Bearer ${session.access_token}`,
-      'x-user-id':     session.user.id, // kept for backwards compat during transition
-    };
+    return { 'Authorization': `Bearer ${session.access_token}` };
   }
 
-  // Fallback for unauthenticated requests (public endpoints)
-  const fallbackId = (typeof window !== 'undefined'
-    ? localStorage.getItem('cos_user_id')
-    : null) ?? '00000000-0000-0000-0000-000000000001';
-
-  return { 'x-user-id': fallbackId };
+  // No session — return empty headers; backend will reject with 401
+  return {};
 }
 
 // Idempotent user registration — syncs Supabase user to Prisma on first call.
@@ -40,7 +33,7 @@ let _ensuredId = '';
 export async function ensureUser(): Promise<void> {
   const { getSupabase } = await import('../supabase');
   const { data: { session } } = await getSupabase().auth.getSession();
-  const userId = session?.user?.id ?? localStorage.getItem('cos_user_id') ?? '';
+  const userId = session?.user?.id ?? '';
   if (!userId || _ensuredId === userId) return;
   try {
     const headers = await getAuthHeaders();

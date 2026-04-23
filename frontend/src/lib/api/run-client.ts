@@ -9,15 +9,10 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   const { getSupabase } = await import('../supabase');
   const { data: { session } } = await getSupabase().auth.getSession();
   if (session?.access_token) {
-    return {
-      'Authorization': `Bearer ${session.access_token}`,
-      'x-user-id':     session.user.id,
-    };
+    return { 'Authorization': `Bearer ${session.access_token}` };
   }
-  const fallbackId = (typeof window !== 'undefined'
-    ? localStorage.getItem('cos_user_id')
-    : null) ?? '00000000-0000-0000-0000-000000000001';
-  return { 'x-user-id': fallbackId };
+  // No session — return empty; backend will reject with 401
+  return {};
 }
 
 export type RunFormat = 'video' | 'carousel' | 'banner';
@@ -79,9 +74,10 @@ export interface RunResult {
 
 let _ensuredId = '';
 async function ensureUser(): Promise<void> {
-  const headers = await getAuthHeaders();
-  const userId = headers['x-user-id'];
-  if (_ensuredId === userId) return;
+  const { getSupabase } = await import('../supabase');
+  const { data: { session } } = await getSupabase().auth.getSession();
+  const userId = session?.user?.id ?? '';
+  if (!userId || _ensuredId === userId) return;
   try {
     await fetch(`${BASE}/api/users`, {
       method:  'POST',

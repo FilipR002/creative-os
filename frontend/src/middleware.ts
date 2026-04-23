@@ -1,38 +1,43 @@
 // ─── Next.js Middleware — Auth + Route Protection ────────────────────────────
-// Runs on EVERY request. Validates Supabase session via cookie.
+// Runs on EVERY request matched by config.matcher.
+// Validates Supabase session via cookie (server-side, not client JS).
 // Protects /dashboard, /create, /admin and all sub-routes.
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { createSupabaseMiddlewareClient }  from '@/lib/supabase-server';
 
 // Routes that don't require auth
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/api/auth'];
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/api/auth', '/auth/callback'];
 
 // Routes that require is_admin = true
 const ADMIN_PATHS = ['/admin', '/api/admin'];
 
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({ request });
   const { pathname } = request.nextUrl;
 
-  // Skip public paths
+  // Pass through to Next.js with the pathname forwarded as a header
+  // so server layouts can read it without moving files into route groups.
+  const response = NextResponse.next({ request });
+  response.headers.set('x-pathname', pathname);
+
+  // Skip public paths — no session needed
   if (PUBLIC_PATHS.some(p => pathname.startsWith(p))) {
     return response;
   }
 
   const supabase = createSupabaseMiddlewareClient(request, response);
 
-  // Validate session (refreshes token if needed)
+  // Validate session server-side (refreshes token cookie if needed)
   const { data: { user }, error } = await supabase.auth.getUser();
 
-  // Not authenticated → redirect to login
+  // Not authenticated → hard redirect; SSR page is NEVER rendered for unauthenticated users
   if (error || !user) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin route protection
+  // Admin route protection — check profiles table (RLS recursion now fixed)
   if (ADMIN_PATHS.some(p => pathname.startsWith(p))) {
     const { data: profile } = await supabase
       .from('profiles')
