@@ -23,9 +23,10 @@ export function ParticleGlobe() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvas: HTMLCanvasElement | null = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
+    const el  = canvas as HTMLCanvasElement;   // non-null alias for closures
+    const ctx = el.getContext('2d')!;
 
     // ── Palette ──────────────────────────────────────────────
     const COLORS = ['#00C97A','#34DFA0','#009F62','#6BFFC0','#00E88A','#A8FFD8','#00B870','#4DFFB0'];
@@ -67,8 +68,8 @@ export function ParticleGlobe() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = window.innerWidth;
       H = window.innerHeight;
-      canvas!.width  = W * dpr;
-      canvas!.height = H * dpr;
+      el.width  = W * dpr;
+      el.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       baseR = Math.min(W, H) * 0.36; // controls sphere size on screen
     }
