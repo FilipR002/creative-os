@@ -1,0 +1,720 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Phase 7: Multi-user isolation layer ─────────────────────────────────────
+
+model User {
+  id              String            @id @default(uuid())
+  email           String?           @unique
+  username        String?           @unique
+  name            String?
+  passwordHash    String?           @map("password_hash")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  campaigns       Campaign[]
+  memories        CreativeMemory[]
+  generations     Generation[]
+  feedbackSignals FeedbackSignal[]
+
+  @@map("users")
+}
+
+model Client {
+  id          String     @id @default(uuid())
+  name        String
+  industry    String?
+  brandVoice  String?    @map("brand_voice")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  campaigns   Campaign[]
+
+  @@map("clients")
+}
+
+model Campaign {
+  id        String     @id @default(uuid())
+  userId    String?    @map("user_id")
+  user      User?      @relation(fields: [userId], references: [id])
+  clientId  String?    @map("client_id")
+  client    Client?    @relation(fields: [clientId], references: [id])
+  mode      CampaignMode
+  status    CampaignStatus @default(DRAFT)
+  formats   String[]   // ['video','carousel','banner']
+  // Campaign-level strategy settings (Phase 4 API contract)
+  name      String?
+  goal      String?    // sales | awareness | leads | conversions
+  angle     String?    // urgency | emotional | premium | price-focused | storytelling
+  tone      String?    // direct | casual | luxury | aggressive | friendly
+  persona   String?    // target audience description
+  isActive       Boolean    @default(false) @map("is_active")
+  // Grouping: quick ads grouped into a campaign point here
+  groupCampaignId String?   @map("group_campaign_id")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @default(now()) @map("updated_at")
+  concept   Concept?
+  creatives Creative[]
+  generations Generation[]
+  adGroups  AdGroup[]
+
+  @@index([userId])
+  @@index([groupCampaignId])
+  @@map("campaigns")
+}
+
+model AdGroup {
+  id         String     @id @default(uuid())
+  campaignId String     @map("campaign_id")
+  campaign   Campaign   @relation(fields: [campaignId], references: [id])
+  name       String
+  position   Int        @default(0)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  creatives  Creative[]
+
+  @@index([campaignId])
+  @@map("ad_groups")
+}
+
+model Concept {
+  id           String     @id @default(uuid())
+  campaignId   String     @unique @map("campaign_id")
+  campaign     Campaign   @relation(fields: [campaignId], references: [id])
+  goal         String     // conversion | awareness | engagement
+  audience     String
+  emotion      String
+  coreMessage  String     @map("core_message")
+  offer        String?
+  style        String?
+  platform     String?
+  durationTier String?    @map("duration_tier") // 45s | 60s | 75s | 90s
+  angleHint        String?    @map("angle_hint")         // user-selected angle preference
+  toneHint         String?    @map("tone_hint")          // user-selected tone preference
+  keyObjection     String?    @map("key_objection")      // #1 reason audience wouldn't buy
+  valueProposition String?    @map("value_proposition")  // single most compelling reason to buy
+  rawJson          Json       @map("raw_json")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  creatives    Creative[]
+
+  @@map("concepts")
+}
+
+model Angle {
+  id            String        @id @default(uuid())
+  slug          String        @unique
+  label         String
+  description   String?
+  source        String        @default("system") // system | legacy | user | evolved
+  isActive      Boolean       @default(true)  @map("is_active")
+  // Evolution lineage — null for seed angles
+  parentSlug    String?       @map("parent_slug")
+  mutationDepth Int           @default(0) @map("mutation_depth")
+  creatives     Creative[]
+  angleStats    AngleStats?
+  angleWeights  AngleWeight[]
+
+  @@map("angles")
+}
+
+model Creative {
+  id         String         @id @default(uuid())
+  campaignId String         @map("campaign_id")
+  campaign   Campaign       @relation(fields: [campaignId], references: [id])
+  conceptId  String?        @map("concept_id")
+  concept    Concept?       @relation(fields: [conceptId], references: [id])
+  angleId    String?        @map("angle_id")
+  angle      Angle?         @relation(fields: [angleId], references: [id])
+  adGroupId  String?        @map("ad_group_id")
+  adGroup    AdGroup?       @relation(fields: [adGroupId], references: [id])
+  position   Int            @default(0)
+  format     CreativeFormat
+  variant    String         @default("A") // A / B / C
+  content    Json           // full output per format
+  isWinner   Boolean        @default(false) @map("is_winner")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  score                CreativeScore?
+  predictionErrors     PredictionError[]
+  insight              CreativeInsight?
+  originalImprovements CreativeImprovement[] @relation("original")
+  improvedVersions     CreativeImprovement[] @relation("improved")
+
+  @@index([adGroupId])
+  @@map("creatives")
+}
+
+model CreativeScore {
+  id          String   @id @default(uuid())
+  creativeId  String   @unique @map("creative_id")
+  creative    Creative @relation(fields: [creativeId], references: [id])
+  ctrScore    Float    @map("ctr_score")
+  engagement  Float
+  conversion  Float
+  clarity     Float
+  totalScore  Float    @map("total_score")
+  isWinner    Boolean  @default(false) @map("is_winner")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("creative_scores")
+}
+
+model CreativeMemory {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id])
+  clientId    String   @map("client_id")
+  industry    String
+  campaignId  String   @map("campaign_id")
+  creativeId  String   @map("creative_id")
+  format      String                        // video | carousel | banner
+  angle       String
+  concept     Json
+  scores      Json                          // full score breakdown
+  totalScore  Float    @map("total_score")
+  isWinner    Boolean  @map("is_winner")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([industry])
+  @@index([angle])
+  @@index([format])
+  @@index([totalScore])
+  @@map("creative_memory")
+}
+
+// ─── Phase 4: Intelligence layer ─────────────────────────────────────────────
+
+model AngleStats {
+  id                String   @id @default(uuid())
+  angleId           String   @unique @map("angle_id")
+  angle             Angle    @relation(fields: [angleId], references: [id])
+  uses              Int      @default(0)
+  wins              Int      @default(0)
+  losses            Int      @default(0)
+  avgCtr            Float    @default(0) @map("avg_ctr")
+  avgRetention      Float    @default(0) @map("avg_retention")
+  avgConversion     Float    @default(0) @map("avg_conversion")
+  weight            Float    @default(1) @map("weight")
+  calibrationFactor Float    @default(1) @map("calibration_factor")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("angle_stats")
+}
+
+model FormatStats {
+  id                String   @id @default(uuid())
+  format            String   @unique
+  total             Int      @default(0)
+  avgCtr            Float    @default(0) @map("avg_ctr")
+  avgRetention      Float    @default(0) @map("avg_retention")
+  avgConversion     Float    @default(0) @map("avg_conversion")
+  weight            Float    @default(1) @map("weight")
+  calibrationFactor Float    @default(1) @map("calibration_factor")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@map("format_stats")
+}
+
+// ─── Phase 8: Closed-Loop Learning System ────────────────────────────────────
+
+// Contextual weights per angle — per goal, per client, per industry (global = all null)
+model AngleWeight {
+  id               String    @id @default(uuid())
+  angleId          String    @map("angle_id")
+  angle            Angle     @relation(fields: [angleId], references: [id])
+  contextKey       String    @map("context_key")    // 'global' | 'goal:X' | 'client:X' | 'industry:X'
+  contextType      String    @map("context_type")   // 'global' | 'goal' | 'client' | 'industry'
+  contextValue     String?   @map("context_value")  // concrete value (e.g. 'conversion', client UUID)
+  weight           Float     @default(1.0)
+  sampleCount      Int       @default(0)   @map("sample_count")
+  winCount         Int       @default(0)   @map("win_count")
+  // ── Stability layer fields ────────────────────────────────────────────────
+  smoothedScore    Float     @default(0.5) @map("smoothed_score")    // EWMA of normalized performance (70/30)
+  uncertaintyScore Float     @default(0.5) @map("uncertainty_score") // 0=certain, 1=highly uncertain
+  decayFactor      Float     @default(1.0) @map("decay_factor")      // exp(-days/half-life) temporal relevance
+  topLockCycles    Int       @default(0)   @map("top_lock_cycles")   // hysteresis: remaining locked cycles
+  lastUsedAt       DateTime? @map("last_used_at")                    // for decay calculation
+  updatedAt        DateTime  @updatedAt    @map("updated_at")
+
+  @@unique([angleId, contextKey], name: "angleId_contextKey")
+  @@index([angleId])
+  @@index([contextKey])
+  @@map("angle_weights")
+}
+
+// Rolling performance baselines per dimension — used for score normalization
+model PerformanceBaseline {
+  id          String   @id @default(uuid())
+  dimension   String   @unique  // 'global', 'industry:X', 'format:X', 'goal:X'
+  avgScore    Float    @default(0.5) @map("avg_score")
+  variance    Float    @default(0.1)
+  sampleCount Int      @default(0)   @map("sample_count")
+  updatedAt   DateTime @updatedAt    @map("updated_at")
+
+  @@map("performance_baselines")
+}
+
+// Full audit log of every learning cycle — one row per creative per scoring run
+model LearningCycle {
+  id              String   @id @default(uuid())
+  campaignId      String   @map("campaign_id")
+  creativeId      String   @map("creative_id")
+  angleSlug       String   @map("angle_slug")
+  format          String
+  goal            String?
+  clientId        String?  @map("client_id")
+  industry        String?
+  predictedScore  Float    @map("predicted_score")
+  actualScore     Float    @map("actual_score")
+  delta           Float
+  weightBefore    Float    @map("weight_before")
+  weightAfter     Float    @map("weight_after")
+  learningRate    Float    @map("learning_rate")
+  confidenceLevel Float    @map("confidence_level")
+  isWinner        Boolean  @map("is_winner")
+  cycleAt         DateTime @default(now()) @map("cycle_at")
+
+  @@index([campaignId])
+  @@index([angleSlug])
+  @@index([clientId])
+  @@index([industry])
+  @@index([cycleAt])
+  @@map("learning_cycles")
+}
+
+// ─── MIROFISH Learning Loop — Prediction vs Actual Signal Store ──────────────
+// Written once per creative per scoring run.
+// Predicted fields filled at simulation time.
+// Actual fields + derived signals filled after scoring feedback injection.
+
+model MirofishSignal {
+  id            String   @id @default(uuid())
+  creativeId    String   @map("creative_id")
+  campaignId    String   @map("campaign_id")
+  angleSlug     String   @map("angle_slug")
+  secondarySlug String?  @map("secondary_slug")
+  goal          String?
+
+  // Prediction (MIROFISH output before scoring)
+  predictedScore      Float  @map("predicted_score")
+  predictedConversion Float  @map("predicted_conversion")
+  predictedAttention  Float  @map("predicted_attention")
+  predictedTrust      Float  @map("predicted_trust")
+  synergyScore        Float? @map("synergy_score")
+
+  // Actual (filled in after scoring completes)
+  actualScore Float?   @map("actual_score")
+  isWinner    Boolean? @map("is_winner")
+
+  // Derived learning signals (computed during feedback injection)
+  predictionError        Float? @map("prediction_error")         // actual − predicted
+  learningSignalStrength Float? @map("learning_signal_strength") // 0–1 signal confidence
+  explorationAdjustment  Float? @map("exploration_adjustment")   // −0.10 to +0.25 rate delta
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([angleSlug])
+  @@index([campaignId])
+  @@index([createdAt])
+  @@map("mirofish_signals")
+}
+
+model CreativeImprovement {
+  id                 String    @id @default(uuid())
+  originalCreativeId String    @map("original_creative_id")
+  originalCreative   Creative  @relation("original", fields: [originalCreativeId], references: [id])
+  improvedCreativeId String?   @map("improved_creative_id")
+  improvedCreative   Creative? @relation("improved", fields: [improvedCreativeId], references: [id])
+  improvementType    String    @map("improvement_type")  // hook | cta | clarity | structure
+  improvementReason  String    @map("improvement_reason")
+  changesApplied     Json      @map("changes_applied")   // list of specific changes
+  scoreBefore        Float     @map("score_before")
+  scoreAfter         Float?    @map("score_after")
+  improvementDelta   Float?    @map("improvement_delta")
+  accepted           Boolean   @default(false)            // true = improved beat original
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  @@map("creative_improvements")
+}
+
+model CreativeInsight {
+  id                     String   @id @default(uuid())
+  creativeId             String   @unique @map("creative_id")
+  creative               Creative @relation(fields: [creativeId], references: [id])
+  summary                String
+  keyFactors             Json     @map("key_factors")
+  improvementSuggestions Json     @map("improvement_suggestions")
+  winnerScore            Float    @map("winner_score")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  @@map("creative_insights")
+}
+
+model PredictionError {
+  id              String   @id @default(uuid())
+  creativeId      String   @map("creative_id")
+  creative        Creative @relation(fields: [creativeId], references: [id])
+  ctrError        Float    @map("ctr_error")
+  retentionError  Float    @map("retention_error")
+  conversionError Float    @map("conversion_error")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("prediction_errors")
+}
+
+// ─── Phase 8: Outcome Learning Layer ─────────────────────────────────────────
+
+model CampaignOutcome {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  campaignId     String   @map("campaign_id")
+  angleSlug      String   @map("angle_slug")
+
+  // Raw ingested metrics
+  impressions    Int
+  clicks         Int
+  conversions    Int
+  spend          Float?
+  revenue        Float?
+
+  // Computed (filled on ingest)
+  ctr            Float
+  conversionRate Float    @map("conversion_rate")
+  roas           Float?
+  performanceScore Float  @map("performance_score")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([angleSlug])
+  @@index([campaignId])
+  @@map("campaign_outcomes")
+}
+
+model AnglePerformanceStat {
+  angleSlug      String   @id @map("angle_slug")
+
+  // Cumulative aggregates
+  totalImpressions  Int   @default(0) @map("total_impressions")
+  totalClicks       Int   @default(0) @map("total_clicks")
+  totalConversions  Int   @default(0) @map("total_conversions")
+  totalSpend        Float @default(0) @map("total_spend")
+  totalRevenue      Float @default(0) @map("total_revenue")
+  reportCount       Int   @default(0) @map("report_count")
+
+  // EWMA-smoothed rates (updated each ingest)
+  avgCtr            Float @default(0.5) @map("avg_ctr")
+  avgConversionRate Float @default(0.5) @map("avg_conversion_rate")
+  avgRoas           Float @default(1.0) @map("avg_roas")
+  avgPerformanceScore Float @default(0.5) @map("avg_performance_score")
+
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("angle_performance_stats")
+}
+
+// ─── Phase 3 — User Style Profile ────────────────────────────────────────────
+// Learned style preferences derived from how each user edits and refines copy.
+// Updated via EWMA on every edit signal. Used to bias AI generation prompts.
+
+model UserStyleProfile {
+  userId          String   @id          @map("user_id")
+
+  // Style dimensions — 0.0 (no preference) to 1.0 (strong preference)
+  hookShort       Float    @default(0.5) @map("hook_short")       // prefers short hooks
+  toneEmotional   Float    @default(0.5) @map("tone_emotional")
+  tonePremium     Float    @default(0.5) @map("tone_premium")
+  toneAggressive  Float    @default(0.5) @map("tone_aggressive")  // bold/direct
+  toneCasual      Float    @default(0.5) @map("tone_casual")      // conversational
+  ctaUrgency      Float    @default(0.5) @map("cta_urgency")
+  ctaDirect       Float    @default(0.5) @map("cta_direct")
+  copyShort       Float    @default(0.5) @map("copy_short")       // prefers concise copy
+
+  totalSignals    Int      @default(0)  @map("total_signals")
+  workedCount     Int      @default(0)  @map("worked_count")
+  didntWorkCount  Int      @default(0)  @map("didnt_work_count")
+
+  updatedAt       DateTime @updatedAt   @map("updated_at")
+
+  @@map("user_style_profiles")
+}
+
+model UserOutcomeLearning {
+  userId         String   @id @map("user_id")
+  // JSON map: { angleSlug → weight (0.5–1.5) }
+  angleWeights   Json     @default("{}") @map("angle_weights")
+  reportCount    Int      @default(0)    @map("report_count")
+  updatedAt      DateTime @updatedAt     @map("updated_at")
+
+  @@map("user_outcome_learning")
+}
+
+// ─── Phase 8.2: Angle Evolution Engine ───────────────────────────────────────
+
+model AngleMutation {
+  id             String   @id @default(uuid())
+  parentSlug     String   @map("parent_slug")
+  mutantSlug     String   @unique @map("mutant_slug")
+  mutationReason String   @map("mutation_reason")
+  // JSON: { hookStyle?, audienceFocus?, emotionalTrigger?, formatBias? }
+  mutationVector Json     @default("{}") @map("mutation_vector")
+  status         String   @default("active") // active | pruned | champion
+  usageCount     Int      @default(0)  @map("usage_count")
+  avgPerfScore   Float    @default(0.5) @map("avg_perf_score")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt   @map("updated_at")
+
+  @@map("angle_mutations")
+}
+
+model AngleEvolutionLog {
+  id        String   @id @default(uuid())
+  // mutated | pruned | promoted | cycle_complete
+  event     String
+  angleSlug String   @map("angle_slug")
+  reason    String
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("angle_evolution_log")
+}
+
+// ─── Phase 4 API Contract — Generation / Version / Feedback ──────────────────
+
+model Generation {
+  id               String              @id @default(uuid())
+  campaignId       String              @map("campaign_id")
+  campaign         Campaign            @relation(fields: [campaignId], references: [id])
+  userId           String              @map("user_id")
+  user             User                @relation(fields: [userId], references: [id])
+
+  inputBrief       String              @map("input_brief")
+  intentSnapshot   Json                @map("intent_snapshot")  // {goal,angle,tone,persona,format}
+
+  hook             String
+  body             String
+  cta              String
+
+  variations       Json                @default("[]")           // [{id,label,content:{hook,body,cta}}]
+  reasoning        String?
+
+  overrideSettings Json?               @map("override_settings")
+  creativeId       String?             @map("creative_id")      // link to underlying Creative
+
+  versions         GenerationVersion[]
+  feedbackSignals  FeedbackSignal[]
+
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt      @map("updated_at")
+
+  @@index([campaignId])
+  @@index([userId])
+  @@map("generations")
+}
+
+model GenerationVersion {
+  id           String     @id @default(uuid())
+  generationId String     @map("generation_id")
+  generation   Generation @relation(fields: [generationId], references: [id])
+
+  hook         String
+  body         String
+  cta          String
+
+  createdFrom  String     @map("created_from")  // "edit" | "improve" | "regenerate" | "manual"
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  @@index([generationId])
+  @@map("generation_versions")
+}
+
+model FeedbackSignal {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id])
+  generationId String?     @map("generation_id")
+  generation   Generation? @relation(fields: [generationId], references: [id])
+
+  signalType   String      @map("signal_type")  // "edit" | "accept" | "reject" | "regenerate" | "copy"
+  block        String?                           // "hook" | "body" | "cta" | "full"
+  changeType   String?     @map("change_type")  // "shortened" | "expanded" | "tone_shift" | "replaced"
+
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([generationId])
+  @@map("feedback_signals")
+}
+
+enum CampaignMode {
+  SINGLE
+  PARTIAL
+  FULL
+}
+
+enum CampaignStatus {
+  DRAFT
+  GENERATED
+  SCORED
+  DONE
+}
+
+enum CreativeFormat {
+  VIDEO
+  CAROUSEL
+  BANNER
+}
+
+// ─── Phase 8.1 — Angle Creative Reference Layer ───────────────────────────────
+
+model AngleCreativeReference {
+  id               String   @id @default(uuid())
+  angleSlug        String   @map("angle_slug")
+
+  imageUrl         String   @map("image_url")
+  type             String   // "image" | "video"
+
+  platform         String?
+  industry         String?
+
+  tags             String[] @default([])
+
+  performanceScore Float?   @map("performance_score")
+
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@index([angleSlug])
+  @@map("angle_creative_references")
+}
+
+// ─── Phase 8.2 — Vision Ingestion Layer ──────────────────────────────────────
+
+model AngleCreativeInsight {
+  id             String   @id @default(uuid())
+  angleSlug      String   @map("angle_slug")
+  imageUrl       String   @map("image_url")   // local path or CDN URL
+
+  hook           String
+  layout         String
+  emotion        String
+  ctaStyle       String   @map("cta_style")
+  visualElements String[] @map("visual_elements")
+  insight        String
+
+  sourceFolder   String?  @map("source_folder")  // original folder name
+  model          String   @default("claude-opus-4-5")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([angleSlug])
+  @@map("angle_creative_insights")
+}
+
+// ─── Phase 8.4 — Autonomous Loop Controller ──────────────────────────────────
+
+model AutonomousLoopCycle {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+
+  cycleCount       Int      @map("cycle_count")
+  weakAngles       String[] @map("weak_angles")
+  strongAngles     String[] @map("strong_angles")
+  stagnatingAngles String[] @map("stagnating_angles")
+  explorationRatio Float    @map("exploration_ratio")
+  entropyScore     Float    @map("entropy_score")
+  triggeredActions Json     @default("[]") @map("triggered_actions")
+
+  evaluatedAt      DateTime @default(now()) @map("evaluated_at")
+
+  @@index([userId])
+  @@map("autonomous_loop_cycles")
+}
+
+// ─── Phase 9.2 — Creative DNA Memory Layer ───────────────────────────────────
+
+model CreativeDNA {
+  id               String   @id @default(uuid())
+  hookPattern      String   @map("hook_pattern")
+  emotionalTone    String   @map("emotional_tone")
+  structureType    String   @map("structure_type")
+  visualContext    String   @map("visual_context")
+  angleSlug        String   @map("angle_slug")
+  performanceScore Float    @map("performance_score")
+  survivalRate     Float    @default(0.5) @map("survival_rate")
+  usageCount       Int      @default(1)   @map("usage_count")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt     @map("updated_at")
+
+  @@index([angleSlug])
+  @@index([performanceScore])
+  @@map("creative_dna")
+}
+
+// ─── Phase 9.3 — Causal Attribution Engine ───────────────────────────────────
+
+model CausalTrace {
+  id                    String   @id @default(uuid())
+  campaignId            String   @map("campaign_id")
+  angleSlug             String   @map("angle_slug")
+  angleContribution     Float    @map("angle_contribution")
+  creativeContribution  Float    @map("creative_contribution")
+  visionContribution    Float    @map("vision_contribution")
+  evolutionContribution Float    @map("evolution_contribution")
+  noiseEstimate         Float    @map("noise_estimate")
+  confidence            Float
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([campaignId])
+  @@index([angleSlug])
+  @@map("causal_traces")
+}
+
+// ─── Reality Feedback Layer — enums ──────────────────────────────────────────
+
+enum RealEventType {
+  impression
+  click
+  conversion
+  retention_24h
+}
+
+enum RealEventSource {
+  meta
+  google
+  manual
+  simulated
+}
+
+// ─── Reality Feedback Layer — events table ────────────────────────────────────
+
+model RealWorldEvent {
+  id         String          @id @default(uuid())
+  campaignId String          @map("campaign_id")
+  angleSlug  String          @map("angle_slug")
+  eventType  RealEventType   @map("event_type")
+  source     RealEventSource
+  value      Float           @default(1)
+  occurredAt DateTime        @default(now()) @map("occurred_at")
+
+  @@index([campaignId])
+  @@index([angleSlug])
+  @@index([occurredAt])
+  @@map("real_world_events")
+}
+
+// ─── ALC Persistent Policy State ─────────────────────────────────────────────
+
+model AlcPolicyState {
+  id               String   @id @default(uuid())
+  userId           String   @unique @map("user_id")
+  explorationRate  Float    @default(0.20) @map("exploration_rate")
+  exploitationRate Float    @default(0.80) @map("exploitation_rate")
+  lastWeakAngles   String[] @default([]) @map("last_weak_angles")
+  lastStrongAngles String[] @default([]) @map("last_strong_angles")
+  strategyVector   Json     @default("{}") @map("strategy_vector")
+  reasonTrace      Json     @default("[]") @map("reason_trace")
+  updatedAt        DateTime @updatedAt     @map("updated_at")
+
+  @@map("alc_policy_state")
+}

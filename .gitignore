@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+frontend/.next/
+frontend/out/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# Logs
+*.log
+api.log
+server.log
+logs/
+
+# Database
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Prisma generated client (regenerated on deploy)
+# Keep schema.prisma but ignore generated client if separate
