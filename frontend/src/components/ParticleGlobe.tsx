@@ -67,8 +67,8 @@ export function ParticleGlobe() {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = window.innerWidth;
       H = window.innerHeight;
-      canvas.width  = W * dpr;
-      canvas.height = H * dpr;
+      canvas!.width  = W * dpr;
+      canvas!.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       baseR = Math.min(W, H) * 0.36; // controls sphere size on screen
     }
