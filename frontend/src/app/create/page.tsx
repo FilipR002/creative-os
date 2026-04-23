@@ -660,7 +660,7 @@ function CreatePageInner() {
                         />
                       )}
                       {carouselCreative && (
-                        <CarouselMockup slides={carouselCreative.slides.map((s: CarouselSlide) => ({ headline: s.headline, body: s.body, cta: s.cta }))} />
+                        <CarouselMockup slides={(carouselCreative.slides ?? []).map((s: CarouselSlide) => ({ headline: s.headline, body: s.body, cta: s.cta }))} />
                       )}
                       {bannerCreative && platform === 'meta' && (
                         <MetaMockup
