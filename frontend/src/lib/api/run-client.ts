@@ -5,11 +5,19 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 const BASE = API_URL && !API_URL.includes('localhost') ? API_URL : '';
 
-function getUserId(): string {
-  if (typeof window === 'undefined') return '00000000-0000-0000-0000-000000000001';
-  let id = localStorage.getItem('cos_user_id');
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem('cos_user_id', id); }
-  return id;
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { getSupabase } = await import('../supabase');
+  const { data: { session } } = await getSupabase().auth.getSession();
+  if (session?.access_token) {
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'x-user-id':     session.user.id,
+    };
+  }
+  const fallbackId = (typeof window !== 'undefined'
+    ? localStorage.getItem('cos_user_id')
+    : null) ?? '00000000-0000-0000-0000-000000000001';
+  return { 'x-user-id': fallbackId };
 }
 
 export type RunFormat = 'video' | 'carousel' | 'banner';
@@ -71,12 +79,13 @@ export interface RunResult {
 
 let _ensuredId = '';
 async function ensureUser(): Promise<void> {
-  const userId = getUserId();
+  const headers = await getAuthHeaders();
+  const userId = headers['x-user-id'];
   if (_ensuredId === userId) return;
   try {
     await fetch(`${BASE}/api/users`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', 'x-user-id': userId },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body:    JSON.stringify({ id: userId }),
     });
   } catch { return; }
@@ -85,9 +94,10 @@ async function ensureUser(): Promise<void> {
 
 export async function runCampaign(body: RunRequest): Promise<RunResult> {
   await ensureUser();
+  const headers = await getAuthHeaders();
   const res = await fetch(`${BASE}/api/run`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-id': getUserId() },
+    headers: { 'Content-Type': 'application/json', ...headers },
     body:    JSON.stringify(body),
   });
   if (!res.ok) {

@@ -922,9 +922,10 @@ export interface PerformanceInsights {
 export async function importPerformanceCsv(file: File): Promise<ImportResult> {
   const formData = new FormData();
   formData.append('file', file);
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${BASE}/api/performance/import`, {
     method:  'POST',
-    headers: { 'x-user-id': getUserId() },   // no Content-Type — browser sets multipart boundary
+    headers: authHeaders,   // no Content-Type — browser sets multipart boundary
     body:    formData,
   });
   if (!res.ok) {
