@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { getSupabase } from '@/lib/supabase';
 
 const NAV = [
   { label: 'Dashboard',      icon: '⊙', href: '/dashboard' },
@@ -34,6 +35,11 @@ const GENERATED_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+
+  async function handleSignOut() {
+    await getSupabase().auth.signOut();
+    window.location.href = '/login';
+  }
 
   function isActive(href: string) {
     if (href === '/dashboard') return pathname === href;
@@ -114,7 +120,7 @@ export function Sidebar() {
             <div className="sidebar-user-email">filipradonjic1@gmail.com</div>
           </div>
         </div>
-        <button className="sidebar-signout">Sign out</button>
+        <button className="sidebar-signout" onClick={handleSignOut}>Sign out</button>
       </div>
     </aside>
   );
