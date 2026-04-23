@@ -121,8 +121,8 @@ export default function LandingPage() {
           <li><a href="#tools">Tools</a></li>
         </ul>
         <div className="landing-nav-ctas">
-          <Link href="/dashboard" className="btn-ghost">Sign In</Link>
-          <Link href="/campaigns/new" className="btn-cta">Get Started Free</Link>
+          <Link href="/login" className="btn-ghost">Sign In</Link>
+          <Link href="/signup" className="btn-cta">Get Started Free</Link>
         </div>
       </nav>
 
@@ -137,8 +137,8 @@ export default function LandingPage() {
             The AI-powered ad creation platform for performance marketers.<br />One idea → endless creatives, tested and optimised.
           </p>
           <div className="hero-ctas">
-            <Link href="/campaigns/new" className="hero-cta-primary">Get Started Free</Link>
-            <Link href="/dashboard" className="hero-cta-ghost">Sign In →</Link>
+            <Link href="/signup" className="hero-cta-primary">Get Started Free</Link>
+            <Link href="/login" className="hero-cta-ghost">Sign In →</Link>
           </div>
           <p className="hero-hint">No credit card required · Setup in 2 minutes</p>
         </div>
@@ -192,7 +192,7 @@ export default function LandingPage() {
       <section className="landing-cta-section reveal">
         <h2 className="landing-cta-title">Your ads. Smarter.</h2>
         <p className="landing-cta-sub">Join thousands of marketers using AI to create high-performing campaigns.</p>
-        <Link href="/campaigns/new" className="hero-cta-primary">Get Started Free →</Link>
+        <Link href="/signup" className="hero-cta-primary">Get Started Free →</Link>
       </section>
 
       <footer className="landing-footer">

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
 
 const NAV = [
@@ -35,6 +36,34 @@ const GENERATED_NAV = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string } | null>(null);
+
+  useEffect(() => {
+    const supabase = getSupabase();
+    // Load current user
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const name  = (user.user_metadata?.full_name as string | undefined)
+                   ?? user.email?.split('@')[0]
+                   ?? 'User';
+        const email = user.email ?? '';
+        setUserInfo({ name, email, initial: name[0]?.toUpperCase() ?? 'U' });
+      }
+    });
+    // Listen for auth changes (sign in / sign out)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const name  = (session.user.user_metadata?.full_name as string | undefined)
+                   ?? session.user.email?.split('@')[0]
+                   ?? 'User';
+        const email = session.user.email ?? '';
+        setUserInfo({ name, email, initial: name[0]?.toUpperCase() ?? 'U' });
+      } else {
+        setUserInfo(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function handleSignOut() {
     await getSupabase().auth.signOut();
@@ -114,10 +143,10 @@ export function Sidebar() {
 
       <div className="sidebar-footer">
         <div className="sidebar-user">
-          <div className="sidebar-avatar">F</div>
+          <div className="sidebar-avatar">{userInfo?.initial ?? '?'}</div>
           <div>
-            <div className="sidebar-user-name">Filip Radonjic</div>
-            <div className="sidebar-user-email">filipradonjic1@gmail.com</div>
+            <div className="sidebar-user-name">{userInfo?.name ?? '—'}</div>
+            <div className="sidebar-user-email">{userInfo?.email ?? ''}</div>
           </div>
         </div>
         <button className="sidebar-signout" onClick={handleSignOut}>Sign out</button>
