@@ -4,42 +4,43 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Reflector }        from '@nestjs/core';
-import * as jwt             from 'jsonwebtoken';
-import { RequestContext }   from '../interfaces/request-context.interface';
-import { IS_PUBLIC_KEY }    from '../decorators/public.decorator';
+import { Reflector }      from '@nestjs/core';
+import * as jwt           from 'jsonwebtoken';
+import * as crypto        from 'crypto';
+import { IS_PUBLIC_KEY }  from '../decorators/public.decorator';
+import { RequestContext } from '../interfaces/request-context.interface';
 
 /**
- * UserGuard — Verifies Supabase JWT on every request.
+ * UserGuard — Verifies Supabase JWTs on every request.
  *
- * Only accepts: Authorization: Bearer <supabase_access_token>
+ * Supports both algorithms Supabase uses:
+ *   • HS256 — older projects, verified with SUPABASE_JWT_SECRET
+ *   • ES256 — newer projects, verified via JWKS public key fetched
+ *             from <supabase-url>/auth/v1/.well-known/jwks.json
  *
- * Security requirements enforced:
- *  - Token must have a `sub` claim (real user, not anon/service key)
- *  - Token role must be `authenticated` (rejects `anon` and `service_role`)
- *  - Signature verified against SUPABASE_JWT_SECRET
- *  - Expiry enforced by jsonwebtoken
- *
- * Skips automatically for routes decorated with @Public().
- * Sets req.context (RequestContext) for downstream use.
+ * JWKS keys are cached for 10 minutes to avoid hammering Supabase.
+ * If JWKS fetch fails the request is rejected (fail-closed).
  */
 
-// Roles that Supabase uses for non-user tokens — never allow these through
 const BLOCKED_ROLES = new Set(['anon', 'service_role']);
+const JWKS_CACHE_MS = 10 * 60 * 1000; // 10 minutes
 
 @Injectable()
 export class UserGuard implements CanActivate {
   private readonly jwtSecret: string;
 
+  // JWKS cache — keyed by JWKS URL so we handle multi-tenant edge cases
+  private jwksCache = new Map<string, { keys: crypto.KeyObject[]; fetchedAt: number }>();
+
   constructor(private readonly reflector: Reflector) {
     this.jwtSecret = process.env.SUPABASE_JWT_SECRET ?? '';
     if (!this.jwtSecret) {
-      console.error('[UserGuard] SUPABASE_JWT_SECRET is not set — all authenticated requests will be rejected.');
+      console.warn('[UserGuard] SUPABASE_JWT_SECRET not set — HS256 tokens will be rejected.');
     }
   }
 
-  canActivate(ctx: ExecutionContext): boolean {
-    // ── Allow @Public() routes through ───────────────────────────────────
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    // ── Allow @Public() routes ──────────────────────────────────────────────
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       ctx.getHandler(),
       ctx.getClass(),
@@ -48,55 +49,108 @@ export class UserGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest();
 
-    // ── Require JWT secret to be configured ──────────────────────────────
-    if (!this.jwtSecret) {
-      throw new UnauthorizedException('Server misconfiguration: JWT secret not set.');
-    }
-
-    // ── Extract Bearer token ──────────────────────────────────────────────
+    // ── Extract Bearer token ────────────────────────────────────────────────
     const authHeader = req.headers['authorization'] as string | undefined;
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Authentication required. Provide Authorization: Bearer <token> header.');
+      throw new UnauthorizedException('Authentication required.');
     }
-
     const token = authHeader.slice(7);
 
+    // ── Peek at the header (no verification yet) to decide algorithm ────────
+    const decoded = jwt.decode(token, { complete: true });
+    if (!decoded || typeof decoded === 'string') {
+      throw new UnauthorizedException('Malformed token.');
+    }
+
+    const alg = (decoded.header as { alg?: string }).alg ?? 'HS256';
+
+    let payload: {
+      sub?:          string;
+      email?:        string;
+      role?:         string;
+      iss?:          string;
+      app_metadata?: { role?: string };
+    };
+
     try {
-      // Supabase cloud stores the JWT secret as a base64 string in the dashboard.
-      // GoTrue (their auth server) base64-decodes it before using it as the HMAC key.
-      // We try the decoded bytes first, then fall back to the raw string.
-      let payload: { sub?: string; email?: string; role?: string; app_metadata?: { role?: string } };
-      try {
-        payload = jwt.verify(token, Buffer.from(this.jwtSecret, 'base64')) as typeof payload;
-      } catch {
-        payload = jwt.verify(token, this.jwtSecret) as typeof payload;
+      if (alg === 'HS256') {
+        // ── Symmetric verification ────────────────────────────────────────
+        if (!this.jwtSecret) {
+          throw new UnauthorizedException('Server misconfiguration: JWT secret not set.');
+        }
+        // Supabase cloud base64-encodes the secret; try decoded bytes first
+        try {
+          payload = jwt.verify(token, Buffer.from(this.jwtSecret, 'base64')) as typeof payload;
+        } catch {
+          payload = jwt.verify(token, this.jwtSecret) as typeof payload;
+        }
+
+      } else if (alg === 'ES256' || alg === 'RS256') {
+        // ── Asymmetric verification via JWKS ──────────────────────────────
+        const iss = (decoded.payload as { iss?: string }).iss;
+        if (!iss) throw new UnauthorizedException('Token missing issuer (iss).');
+
+        const jwksUrl = `${iss}/.well-known/jwks.json`;
+        const publicKeys = await this.getJWKSKeys(jwksUrl);
+
+        let lastErr: unknown;
+        let verified = false;
+        for (const key of publicKeys) {
+          try {
+            payload = jwt.verify(token, key) as typeof payload;
+            verified = true;
+            break;
+          } catch (e) { lastErr = e; }
+        }
+        if (!verified) {
+          const msg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+          throw new UnauthorizedException(`Token verification failed: ${msg}`);
+        }
+
+      } else {
+        throw new UnauthorizedException(`Unsupported JWT algorithm: ${alg}`);
       }
-
-      // ── CRIT-1 fix: reject anon and service_role tokens ─────────────────
-      // Supabase anon key is a valid JWT signed with the same secret.
-      // The `role` claim distinguishes it from a real user session.
-      if (!payload.sub || BLOCKED_ROLES.has(payload.role ?? '')) {
-        throw new UnauthorizedException('Token does not represent an authenticated user.');
-      }
-
-      // ── Derive app-level role from app_metadata (set by Supabase triggers) ─
-      const appRole = (payload.app_metadata?.role ?? 'user') as 'user' | 'admin';
-
-      req.context = {
-        userId: payload.sub,
-        email:  payload.email ?? null,
-        role:   appRole,
-      } satisfies RequestContext;
-
-      return true;
-
     } catch (err) {
       if (err instanceof UnauthorizedException) throw err;
-      // Log the actual JWT error to Railway logs for diagnosis
-      const jwtErr = err instanceof Error ? err.message : String(err);
-      const secretLen = this.jwtSecret?.length ?? 0;
-      console.error(`[UserGuard] jwt.verify failed | error="${jwtErr}" | secret_len=${secretLen} | token_prefix="${token.slice(0,20)}..."`);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[UserGuard] Verification error | alg=${alg} | ${msg}`);
       throw new UnauthorizedException('Invalid or expired token. Please sign in again.');
     }
+
+    // ── CRIT-1: reject non-user tokens ───────────────────────────────────────
+    if (!payload!.sub || BLOCKED_ROLES.has(payload!.role ?? '')) {
+      throw new UnauthorizedException('Token does not represent an authenticated user.');
+    }
+
+    const appRole = (payload!.app_metadata?.role ?? 'user') as 'user' | 'admin';
+    req.context = {
+      userId: payload!.sub,
+      email:  payload!.email ?? null,
+      role:   appRole,
+    } satisfies RequestContext;
+
+    return true;
+  }
+
+  // ── JWKS helpers ────────────────────────────────────────────────────────────
+
+  private async getJWKSKeys(url: string): Promise<crypto.KeyObject[]> {
+    const cached = this.jwksCache.get(url);
+    if (cached && Date.now() - cached.fetchedAt < JWKS_CACHE_MS) {
+      return cached.keys;
+    }
+
+    console.log(`[UserGuard] Fetching JWKS from ${url}`);
+    const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) throw new UnauthorizedException(`JWKS fetch failed: HTTP ${res.status}`);
+
+    const { keys } = await res.json() as { keys: object[] };
+    const cryptoKeys = keys.map(jwk =>
+      crypto.createPublicKey({ format: 'jwk', key: jwk as Parameters<typeof crypto.createPublicKey>[0] extends { key: infer K } ? K : never })
+    );
+
+    this.jwksCache.set(url, { keys: cryptoKeys, fetchedAt: Date.now() });
+    console.log(`[UserGuard] Cached ${cryptoKeys.length} JWKS key(s) from ${url}`);
+    return cryptoKeys;
   }
 }
