@@ -1,203 +1,184 @@
 'use client';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { Sidebar } from '@/components/Sidebar';
-import { FinancialOsNav } from '@/components/FinancialOsNav';
 import {
-  getAutonomyLevel, setAutonomyLevel, getCostSummary, getProfitZones, getCfoInsights,
-  getCeoPortfolio, getCeoStrategy, getProfitModel,
-  type AutonomyInfo, type CostSummary, type CfoInsight, type CeoPortfolio, type CeoStrategy,
+  getProfitZones,
+  type ProfitProfile,
 } from '@/lib/api/creator-client';
 
-const LEVEL_META = [
-  { level: 0, color: '#ef4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.3)',   label: '🔴 L0 — Analyst Only',    desc: 'Read-only intelligence. No execution.' },
-  { level: 1, color: '#f59e0b', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.3)',  label: '🟡 L1 — Advisor Mode',    desc: 'Recommendations only. Changes are advisory.' },
-  { level: 2, color: '#f97316', bg: 'rgba(249,115,22,0.1)',  border: 'rgba(249,115,22,0.3)',  label: '🟠 L2 — Hybrid Approval', desc: 'AI proposes → admin approves → executes.' },
-  { level: 3, color: '#10b981', bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.3)', label: '🟢 L3 — Autonomous',       desc: 'Full execution with safety checks + rollback.' },
-];
+function effLabel(score: number) {
+  if (score >= 60) return { label: 'Excellent', color: 'var(--emerald)' };
+  if (score >= 40) return { label: 'Good',      color: 'var(--indigo-l)' };
+  if (score >= 20) return { label: 'Fair',       color: 'var(--amber)'   };
+  return                  { label: 'Waste',      color: 'var(--rose)'    };
+}
 
-const MODULES = [
-  { href: '/financial-os/cost',     icon: '📊', label: 'Cost Tracking',      desc: 'Real-time spend by campaign & type',           color: '#6366f1' },
-  { href: '/financial-os/optimizer',icon: '📉', label: 'Cost Optimizer',      desc: 'Efficiency scores + waste detection',          color: '#8b5cf6' },
-  { href: '/financial-os/profit',   icon: '⚠',  label: 'Profit Zones',       desc: 'SCALE / FIX / KILL classification',            color: '#f59e0b' },
-  { href: '/financial-os/cfo',      icon: '🧠', label: 'AI CFO',             desc: '30-day profit forecast + strategic insights',  color: '#06b6d4' },
-  { href: '/financial-os/budget',   icon: '🔁', label: 'Budget Rebalancer',  desc: 'ROI-driven budget reallocation',               color: '#ec4899' },
-  { href: '/financial-os/revenue',  icon: '📈', label: 'Revenue Forecast',   desc: 'Per-campaign + portfolio predictions',         color: '#10b981' },
-  { href: '/financial-os/learning', icon: '🧬', label: 'Self-Learning Brain',desc: 'Adaptive thresholds from real performance',    color: '#a78bfa' },
-  { href: '/financial-os/ceo',      icon: '🏢', label: 'AI CEO Dashboard',   desc: 'Portfolio strategy + capital allocation',      color: '#f97316' },
-];
+function zoneBadge(zone: string) {
+  if (zone === 'SCALE') return { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)', color: 'var(--emerald)', label: '▲ SCALE' };
+  if (zone === 'FIX')   return { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', color: 'var(--amber)',   label: '~ FIX'   };
+  return                       { bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)',  color: 'var(--rose)',    label: '▼ KILL'  };
+}
 
-export default function FinancialOsHub() {
-  const [autonomy,  setAutonomyState] = useState<AutonomyInfo | null>(null);
-  const [cost,      setCost]          = useState<CostSummary | null>(null);
-  const [zones,     setZones]         = useState<{ summary: { totalWaste: number; scalePotential: number; totalCampaigns: number } } | null>(null);
-  const [insights,  setInsights]      = useState<CfoInsight[]>([]);
-  const [portfolio, setPortfolio]     = useState<CeoPortfolio | null>(null);
-  const [strategy,  setStrategy]      = useState<CeoStrategy | null>(null);
-  const [model,     setModel]         = useState<{ accuracy: number; version: number; totalCycles: number } | null>(null);
-  const [loading,   setLoading]       = useState(true);
-  const [showLevelPanel, setShowLevelPanel] = useState(false);
+export default function CostOptimizerPage() {
+  const [campaigns, setCampaigns] = useState<ProfitProfile[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [sortBy, setSortBy]       = useState<'efficiency' | 'roas' | 'spend'>('efficiency');
 
   useEffect(() => {
-    Promise.all([
-      getAutonomyLevel().catch(() => null),
-      getCostSummary().catch(() => null),
-      getProfitZones().catch(() => null),
-      getCfoInsights().catch(() => []),
-      getCeoPortfolio().catch(() => null),
-      getCeoStrategy().catch(() => null),
-      getProfitModel().catch(() => null),
-    ]).then(([aut, c, z, ins, port, strat, m]) => {
-      if (aut)   setAutonomyState(aut);
-      if (c)     setCost(c);
-      if (z)     setZones(z as typeof zones);
-      if (ins)   setInsights(ins as CfoInsight[]);
-      if (port)  setPortfolio(port);
-      if (strat) setStrategy(strat);
-      if (m)     setModel(m as typeof model);
-      setLoading(false);
-    });
+    getProfitZones()
+      .then(r => {
+        const all = [
+          ...(r.zones.SCALE ?? []),
+          ...(r.zones.FIX ?? []),
+          ...(r.zones.KILL ?? []),
+        ];
+        setCampaigns(all);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  async function handleSetLevel(l: number) {
-    const r = await setAutonomyLevel(l as 0 | 1 | 2 | 3).catch(() => null);
-    if (r) setAutonomyState(r);
-    setShowLevelPanel(false);
-  }
+  const sorted = [...campaigns].sort((a, b) => {
+    if (sortBy === 'efficiency') return b.efficiencyScore - a.efficiencyScore;
+    if (sortBy === 'roas')       return b.roas - a.roas;
+    return b.spend - a.spend;
+  });
 
-  const currentLevelMeta = LEVEL_META[autonomy?.level ?? 0];
+  const wasteList = campaigns.filter(c => c.efficiencyScore < 20);
 
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="app-main">
-        <FinancialOsNav level={autonomy?.level ?? 0} onLevelClick={() => setShowLevelPanel(v => !v)} />
         <div className="page-content">
 
           {/* Header */}
           <div style={{ marginBottom: 24 }}>
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)', margin: '0 0 4px' }}>💰 Autonomous Financial Intelligence OS</h1>
-            <p style={{ fontSize: 13, color: 'var(--sub)' }}>Tracks money · predicts money · reallocates money · removes waste · learns continuously</p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 4px' }}>📉 Cost vs Performance Optimizer</h1>
+            <p style={{ fontSize: 12, color: 'var(--sub)', margin: 0 }}>
+              Efficiency Score = performanceScore / cost — higher is better
+            </p>
           </div>
 
-          {/* Autonomy level panel */}
-          {showLevelPanel && (
-            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 24 }}>
-              <div className="section-label" style={{ marginBottom: 12 }}>Select Autonomy Level</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-                {LEVEL_META.map(lm => (
-                  <button key={lm.level} onClick={() => handleSetLevel(lm.level)}
-                    style={{ padding: '12px 14px', borderRadius: 8, background: (autonomy?.level ?? 0) === lm.level ? lm.bg : 'transparent', border: `1.5px solid ${(autonomy?.level ?? 0) === lm.level ? lm.border : 'var(--border)'}`, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: lm.color, marginBottom: 4 }}>{lm.label}</div>
-                    <div style={{ fontSize: 10, color: 'var(--muted)', lineHeight: 1.4 }}>{lm.desc}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Current level banner */}
-          <div style={{ background: `${currentLevelMeta.color}0d`, border: `1px solid ${currentLevelMeta.border}`, borderRadius: 10, padding: '10px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: currentLevelMeta.color }}>{currentLevelMeta.label}</span>
-            <span style={{ fontSize: 12, color: 'var(--sub)' }}>{currentLevelMeta.desc}</span>
-            <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted)', cursor: 'pointer', textDecoration: 'underline' }} onClick={() => setShowLevelPanel(v => !v)}>Change level</span>
+          {/* Formula display */}
+          <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 10, padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 13, color: 'var(--indigo-l)', fontWeight: 700, fontFamily: 'var(--mono)' }}>efficiencyScore = performanceScore / cost</span>
+            <span style={{ fontSize: 11, color: 'var(--muted)' }}>· scores below 20 flagged as waste</span>
           </div>
 
           {loading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 48 }}>
-              <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%' }} />
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+              <div className="spin" style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
             </div>
           ) : (
             <>
-              {/* KPI row */}
-              <div className="intel-stats-grid" style={{ gridTemplateColumns: 'repeat(5,1fr)', marginBottom: 24 }}>
-                {[
-                  { label: 'Total Spend',       value: `$${(cost?.totalAllTime ?? 0).toFixed(2)}`,       color: 'var(--rose)'     },
-                  { label: 'Monthly Spend',      value: `$${(cost?.totalThisMonth ?? 0).toFixed(2)}`,    color: 'var(--amber)'    },
-                  { label: 'Scale Potential',    value: `$${(zones?.summary?.scalePotential ?? 0).toFixed(0)}`, color: 'var(--emerald)' },
-                  { label: 'Waste Detected',     value: `$${(zones?.summary?.totalWaste ?? 0).toFixed(0)}`,    color: 'var(--rose)'     },
-                  { label: 'Portfolio ROAS',     value: `${(portfolio?.portfolioROAS ?? 0).toFixed(2)}x`, color: 'var(--indigo-l)' },
-                ].map(k => (
-                  <div key={k.label} className="intel-stat-card">
-                    <div className="intel-stat-label">{k.label}</div>
-                    <div className="intel-stat-value" style={{ fontSize: 18, color: k.color }}>{k.value}</div>
+              {/* Waste Detection Alert */}
+              {wasteList.length > 0 && (
+                <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 10, padding: '12px 18px', marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rose)', marginBottom: 8 }}>
+                    ⚠ Waste Detected — {wasteList.length} campaign{wasteList.length !== 1 ? 's' : ''} with efficiencyScore &lt; 20
                   </div>
-                ))}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {wasteList.map(c => (
+                      <span key={c.campaignId} style={{ fontSize: 11, fontFamily: 'var(--mono)', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 5, padding: '2px 8px', color: 'var(--rose)' }}>
+                        {c.campaignId.slice(0, 8)} · eff: {c.efficiencyScore.toFixed(1)}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sort controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)' }}>Sort by:</span>
+                <div className="tab-bar">
+                  {(['efficiency', 'roas', 'spend'] as const).map(s => (
+                    <button key={s} className={`tab-btn${sortBy === s ? ' active' : ''}`} onClick={() => setSortBy(s)}>
+                      {s === 'efficiency' ? 'Efficiency' : s === 'roas' ? 'ROAS' : 'Spend'}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted)' }}>{sorted.length} campaigns</span>
               </div>
 
-              {/* Module grid */}
-              <div className="section-label">Modules</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
-                {MODULES.map(m => (
-                  <Link key={m.href} href={m.href}
-                    style={{ display: 'block', background: 'var(--surface)', border: `1px solid ${m.color}22`, borderRadius: 12, padding: '16px 18px', textDecoration: 'none', transition: 'border-color 0.15s' }}>
-                    <div style={{ width: 32, height: 32, background: `${m.color}14`, border: `1px solid ${m.color}30`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, marginBottom: 10 }}>{m.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 3 }}>{m.label}</div>
-                    <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4 }}>{m.desc}</div>
-                  </Link>
-                ))}
-              </div>
-
-              {/* Two-column: CFO Insights + CEO Strategy */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
-                {/* CFO Insights */}
-                <div className="intel-panel">
-                  <div className="intel-panel-header">
-                    <span className="section-label" style={{ margin: 0 }}>🧠 CFO Insights</span>
-                    <Link href="/financial-os/cfo" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--indigo-l)', textDecoration: 'none' }}>Full analysis →</Link>
-                  </div>
-                  <div style={{ padding: 12 }}>
-                    {insights.slice(0, 3).map(ins => {
-                      const ic = ins.impact === 'HIGH' ? 'var(--rose)' : ins.impact === 'MEDIUM' ? 'var(--amber)' : 'var(--emerald)';
-                      return (
-                        <div key={ins.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 3 }}>
-                            <span className="badge" style={{ color: ic, background: `transparent`, border: `1px solid ${ic}44`, flexShrink: 0 }}>{ins.impact}</span>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', lineHeight: 1.3 }}>{ins.title}</span>
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 40, lineHeight: 1.4 }}>{ins.body.slice(0, 90)}…</div>
+              {/* Campaign Cards */}
+              {sorted.length === 0 ? (
+                <div className="intel-panel" style={{ textAlign: 'center', padding: 48, color: 'var(--muted)', fontSize: 13 }}>
+                  No campaign data available yet
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+                  {sorted.map(c => {
+                    const eff    = effLabel(c.efficiencyScore);
+                    const zone   = zoneBadge(c.zone);
+                    const isWaste = c.efficiencyScore < 20;
+                    return (
+                      <div
+                        key={c.campaignId}
+                        style={{
+                          background: 'var(--surface)',
+                          border: `1px solid ${isWaste ? 'rgba(239,68,68,0.3)' : 'var(--border)'}`,
+                          borderRadius: 10,
+                          padding: 16,
+                          transition: 'border-color 0.15s',
+                        }}
+                      >
+                        {/* Header row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                          <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--sub)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {c.campaignId.slice(0, 8)}
+                          </span>
+                          <span className="badge" style={{ background: zone.bg, border: `1px solid ${zone.border}`, color: zone.color, fontSize: 10 }}>
+                            {zone.label}
+                          </span>
+                          {isWaste && (
+                            <span className="badge" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--rose)', fontSize: 10 }}>
+                              WASTE
+                            </span>
+                          )}
                         </div>
-                      );
-                    })}
-                    {insights.length === 0 && <div style={{ fontSize: 12, color: 'var(--muted)', padding: '8px 0' }}>No insights yet — import campaign outcomes to enable analysis.</div>}
-                  </div>
-                </div>
 
-                {/* CEO Strategy */}
-                <div className="intel-panel">
-                  <div className="intel-panel-header">
-                    <span className="section-label" style={{ margin: 0 }}>🏢 CEO Strategy</span>
-                    <Link href="/financial-os/ceo" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--indigo-l)', textDecoration: 'none' }}>Full view →</Link>
-                  </div>
-                  <div style={{ padding: 12 }}>
-                    {strategy ? (
-                      <>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>{strategy.quarterGoal}</div>
-                        {strategy.riskAlert && (
-                          <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6, padding: '6px 10px', marginBottom: 8, fontSize: 11, color: 'var(--rose)' }}>⚠ {strategy.riskAlert}</div>
-                        )}
-                        {strategy.decisions.slice(0, 2).map(d => (
-                          <div key={d.id} style={{ padding: '6px 0', borderBottom: '1px solid var(--border)' }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{d.title}</div>
-                            <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 2 }}>{d.urgency.replace('_', ' ')} · +{(d.expectedROI * 100).toFixed(0)}% ROI expected</div>
+                        {/* Efficiency score bar */}
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, color: 'var(--muted)' }}>Efficiency Score</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: eff.color }}>{c.efficiencyScore.toFixed(1)}</span>
                           </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div style={{ fontSize: 12, color: 'var(--muted)', padding: '8px 0' }}>Loading CEO analysis…</div>
-                    )}
-                  </div>
-                </div>
+                          <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${Math.min(c.efficiencyScore, 100)}%`,
+                                background: isWaste ? 'var(--rose)' : 'var(--indigo)',
+                                borderRadius: 3,
+                                transition: 'width 0.4s',
+                              }}
+                            />
+                          </div>
+                          <div style={{ fontSize: 10, color: eff.color, marginTop: 3, fontWeight: 600 }}>{eff.label}</div>
+                        </div>
 
-              </div>
+                        {/* Metrics */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                          {[
+                            { label: 'ROAS',         value: `${c.roas.toFixed(2)}x`,              color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
+                            { label: 'Performance',  value: c.performanceScore.toFixed(1),         color: 'var(--indigo-l)' },
+                            { label: 'Spend',        value: `$${c.spend.toFixed(2)}`,              color: 'var(--text)' },
+                          ].map(m => (
+                            <div key={m.label} style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{m.label}</div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: m.color, fontFamily: 'var(--mono)' }}>{m.value}</div>
+                            </div>
+                          ))}
+                        </div>
 
-              {/* Learning model footer */}
-              {model && (
-                <div style={{ marginTop: 16, padding: '10px 16px', background: 'rgba(139,92,246,0.06)', border: '1px solid rgba(139,92,246,0.2)', borderRadius: 8, display: 'flex', gap: 24, alignItems: 'center' }}>
-                  <span style={{ fontSize: 11, color: 'var(--purple)', fontWeight: 700 }}>🧬 Profit Brain</span>
-                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>v{model.version} · {(model.accuracy * 100).toFixed(1)}% accuracy · {model.totalCycles} learning cycles</span>
-                  <Link href="/financial-os/learning" style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--purple)', textDecoration: 'none' }}>View model →</Link>
+                        {/* Recommendation */}
+                        <div style={{ marginTop: 10, fontSize: 11, color: 'var(--sub)', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '6px 10px', lineHeight: 1.4 }}>
+                          {c.recommendation}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </>

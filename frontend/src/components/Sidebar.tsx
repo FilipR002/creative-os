@@ -30,12 +30,16 @@ const INTELLIGENCE_NAV = [
 ];
 
 const FINANCIAL_NAV = [
-  { label: 'Overview',       href: '/financial-os'                 },
-  { label: 'Budget',         href: '/financial-os/budget'          },
-  { label: 'Revenue',        href: '/financial-os/revenue'         },
-  { label: 'Unit Economics', href: '/financial-os/unit-economics'  },
-  { label: 'Profit',         href: '/financial-os/profit'          },
-  { label: 'Optimizer',      href: '/financial-os/optimizer'       },
+  { label: 'Overview',        href: '/financial-os'                  },
+  { label: 'Cost Tracking',   href: '/financial-os/cost'             },
+  { label: 'Optimizer',       href: '/financial-os/optimizer'        },
+  { label: 'Profit Zones',    href: '/financial-os/profit'           },
+  { label: 'AI CFO',          href: '/financial-os/cfo'              },
+  { label: 'Budget',          href: '/financial-os/budget'           },
+  { label: 'Revenue',         href: '/financial-os/revenue'          },
+  { label: 'Self-Learning',   href: '/financial-os/learning'         },
+  { label: 'AI CEO',          href: '/financial-os/ceo'              },
+  { label: 'Unit Economics',  href: '/financial-os/unit-economics'   },
 ];
 
 const TOOLS_NAV = [

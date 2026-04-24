@@ -1,247 +1,187 @@
 'use client';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { FinancialOsNav } from '@/components/FinancialOsNav';
 import {
-  getPortfolioRevenueForecast, getCampaignRevenueForecast,
-  type RevenueForecast,
+  getProfitZones,
+  type ProfitProfile,
 } from '@/lib/api/creator-client';
 
-interface PortfolioForecast {
-  predictedRevenue?: number;
-  roiEstimate?:      number;
-  confidence?:       number;
-  forecastDays?:     number;
-  [key: string]:     unknown;
+function effLabel(score: number) {
+  if (score >= 60) return { label: 'Excellent', color: 'var(--emerald)' };
+  if (score >= 40) return { label: 'Good',      color: 'var(--indigo-l)' };
+  if (score >= 20) return { label: 'Fair',       color: 'var(--amber)'   };
+  return                  { label: 'Waste',      color: 'var(--rose)'    };
 }
 
-function fmtDate(s: string) {
-  try { return new Date(s).toLocaleDateString([], { month: 'short', day: 'numeric' }); } catch { return s; }
+function zoneBadge(zone: string) {
+  if (zone === 'SCALE') return { bg: 'rgba(16,185,129,0.1)', border: 'rgba(16,185,129,0.25)', color: 'var(--emerald)', label: '▲ SCALE' };
+  if (zone === 'FIX')   return { bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', color: 'var(--amber)',   label: '~ FIX'   };
+  return                       { bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)',  color: 'var(--rose)',    label: '▼ KILL'  };
 }
 
-function confColor(c: number) {
-  if (c >= 0.75) return 'var(--emerald)';
-  if (c >= 0.5)  return 'var(--amber)';
-  return 'var(--rose)';
-}
-
-export default function RevenueForecastPage() {
-  const [portfolio, setPortfolio]   = useState<PortfolioForecast | null>(null);
-  const [portLoading, setPortLoading] = useState(true);
-  const [campaignId, setCampaignId] = useState('');
-  const [forecast, setForecast]     = useState<RevenueForecast | null>(null);
-  const [fcLoading, setFcLoading]   = useState(false);
-  const [fcError, setFcError]       = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+export default function CostOptimizerPage() {
+  const [campaigns, setCampaigns] = useState<ProfitProfile[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [sortBy, setSortBy]       = useState<'efficiency' | 'roas' | 'spend'>('efficiency');
 
   useEffect(() => {
-    getPortfolioRevenueForecast(30)
-      .then(r => setPortfolio(r as PortfolioForecast))
+    getProfitZones()
+      .then(r => {
+        const all = [
+          ...(r.zones.SCALE ?? []),
+          ...(r.zones.FIX ?? []),
+          ...(r.zones.KILL ?? []),
+        ];
+        setCampaigns(all);
+      })
       .catch(() => {})
-      .finally(() => setPortLoading(false));
+      .finally(() => setLoading(false));
   }, []);
 
-  async function handleForecast() {
-    const id = campaignId.trim();
-    if (!id) return;
-    setFcLoading(true);
-    setFcError('');
-    setForecast(null);
-    try {
-      const f = await getCampaignRevenueForecast(id, 30);
-      setForecast(f);
-    } catch (e: unknown) {
-      setFcError(e instanceof Error ? e.message : 'Forecast failed');
-    } finally {
-      setFcLoading(false);
-    }
-  }
+  const sorted = [...campaigns].sort((a, b) => {
+    if (sortBy === 'efficiency') return b.efficiencyScore - a.efficiencyScore;
+    if (sortBy === 'roas')       return b.roas - a.roas;
+    return b.spend - a.spend;
+  });
 
-  const proj = forecast?.dailyProjection ?? [];
-  const maxCumulative = Math.max(...proj.map(p => p.cumulative), 0.001);
+  const wasteList = campaigns.filter(c => c.efficiencyScore < 20);
 
   return (
     <div className="app-shell">
       <Sidebar />
       <main className="app-main">
-        <FinancialOsNav level={0} onLevelClick={() => {}} />
         <div className="page-content">
 
           {/* Header */}
           <div style={{ marginBottom: 24 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 4px' }}>📈 Revenue Forecasting Engine</h1>
-            <p style={{ fontSize: 12, color: 'var(--sub)', margin: 0 }}>Portfolio-wide and per-campaign predictive revenue analysis</p>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 4px' }}>📉 Cost vs Performance Optimizer</h1>
+            <p style={{ fontSize: 12, color: 'var(--sub)', margin: 0 }}>
+              Efficiency Score = performanceScore / cost — higher is better
+            </p>
           </div>
 
-          {/* Portfolio Forecast */}
-          <div className="intel-panel" style={{ marginBottom: 24 }}>
-            <div className="intel-panel-header">
-              <span className="section-label" style={{ margin: 0 }}>Portfolio Forecast (30 days)</span>
-              {portLoading && (
-                <span className="spin" style={{ width: 14, height: 14, border: '2px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%', display: 'inline-block', marginLeft: 10 }} />
-              )}
-            </div>
-            <div style={{ padding: 16 }}>
-              {portLoading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: 24 }}>
-                  <div className="spin" style={{ width: 28, height: 28, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
-                </div>
-              ) : !portfolio ? (
-                <div style={{ fontSize: 12, color: 'var(--muted)', textAlign: 'center', padding: 20 }}>Portfolio forecast unavailable</div>
-              ) : (
-                <div className="intel-stats-grid" style={{ gridTemplateColumns: 'repeat(3,1fr)' }}>
-                  {[
-                    { label: 'Predicted Revenue', value: portfolio.predictedRevenue != null ? `$${(portfolio.predictedRevenue as number).toFixed(2)}` : '—', color: 'var(--emerald)' },
-                    { label: 'ROI Estimate',       value: portfolio.roiEstimate != null      ? `${((portfolio.roiEstimate as number) * 100).toFixed(1)}%` : '—', color: 'var(--indigo-l)' },
-                    { label: 'Confidence',         value: portfolio.confidence != null       ? `${((portfolio.confidence as number) * 100).toFixed(0)}%`  : '—', color: confColor(portfolio.confidence as number ?? 0) },
-                  ].map(c => (
-                    <div key={c.label} className="intel-stat-card">
-                      <div className="intel-stat-label">{c.label}</div>
-                      <div className="intel-stat-value" style={{ fontSize: 20, color: c.color }}>{c.value}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* Formula display */}
+          <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 10, padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <span style={{ fontSize: 13, color: 'var(--indigo-l)', fontWeight: 700, fontFamily: 'var(--mono)' }}>efficiencyScore = performanceScore / cost</span>
+            <span style={{ fontSize: 11, color: 'var(--muted)' }}>· scores below 20 flagged as waste</span>
           </div>
 
-          {/* Campaign Forecast Input */}
-          <div className="intel-panel" style={{ marginBottom: 24 }}>
-            <div className="intel-panel-header">
-              <span className="section-label" style={{ margin: 0 }}>Campaign Revenue Forecast</span>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>
+              <div className="spin" style={{ width: 36, height: 36, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
             </div>
-            <div style={{ padding: 16 }}>
-              <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-                <input
-                  ref={inputRef}
-                  value={campaignId}
-                  onChange={e => setCampaignId(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleForecast()}
-                  placeholder="Enter Campaign ID…"
-                  style={{
-                    flex: 1,
-                    padding: '9px 14px',
-                    borderRadius: 7,
-                    border: '1px solid var(--border)',
-                    background: 'var(--surface)',
-                    color: 'var(--text)',
-                    fontSize: 13,
-                    fontFamily: 'var(--mono)',
-                    outline: 'none',
-                  }}
-                />
-                <button
-                  onClick={handleForecast}
-                  disabled={fcLoading || !campaignId.trim()}
-                  style={{ padding: '9px 20px', borderRadius: 7, background: 'var(--indigo)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: fcLoading || !campaignId.trim() ? 'default' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 7, opacity: fcLoading || !campaignId.trim() ? 0.6 : 1 }}
-                >
-                  {fcLoading ? (
-                    <span className="spin" style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block' }} />
-                  ) : '📈'}
-                  {fcLoading ? 'Forecasting…' : 'Forecast'}
-                </button>
-              </div>
-              {fcError && (
-                <div style={{ fontSize: 12, color: 'var(--rose)', padding: '8px 12px', background: 'rgba(239,68,68,0.07)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 6 }}>
-                  {fcError}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Forecast results */}
-          {forecast && (
+          ) : (
             <>
-              {/* 4 Stat Cards */}
-              <div className="intel-stats-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', marginBottom: 20 }}>
-                {[
-                  { label: 'Predicted Revenue', value: `$${forecast.predictedRevenue.toFixed(2)}`,                         color: 'var(--emerald)'  },
-                  { label: 'Best Case',          value: `$${forecast.bestCase.toFixed(2)}`,                                 color: 'var(--indigo-l)' },
-                  { label: 'Worst Case',         value: `$${forecast.worstCase.toFixed(2)}`,                                color: 'var(--rose)'     },
-                  { label: 'Break-Even Days',    value: forecast.breakEvenDays != null ? `${forecast.breakEvenDays}d` : '—', color: 'var(--amber)'    },
-                ].map(c => (
-                  <div key={c.label} className="intel-stat-card">
-                    <div className="intel-stat-label">{c.label}</div>
-                    <div className="intel-stat-value" style={{ fontSize: 20, color: c.color }}>{c.value}</div>
+              {/* Waste Detection Alert */}
+              {wasteList.length > 0 && (
+                <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.22)', borderRadius: 10, padding: '12px 18px', marginBottom: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--rose)', marginBottom: 8 }}>
+                    ⚠ Waste Detected — {wasteList.length} campaign{wasteList.length !== 1 ? 's' : ''} with efficiencyScore &lt; 20
                   </div>
-                ))}
-              </div>
-
-              {/* Additional summary */}
-              <div style={{ display: 'flex', gap: 16, marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                  ROI Estimate: <b style={{ color: 'var(--indigo-l)' }}>{(forecast.roiEstimate * 100).toFixed(1)}%</b>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                  Confidence: <b style={{ color: confColor(forecast.confidence) }}>{(forecast.confidence * 100).toFixed(0)}%</b>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                  Period: <b style={{ color: 'var(--text)' }}>{forecast.forecastDays}d</b>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--mono)' }}>
-                  Campaign: <b style={{ color: 'var(--sub)' }}>{forecast.campaignId.slice(0, 8)}</b>
-                </div>
-              </div>
-
-              {/* Daily projection chart */}
-              {proj.length > 0 && (
-                <div className="intel-panel" style={{ marginBottom: 16 }}>
-                  <div className="intel-panel-header">
-                    <span className="section-label" style={{ margin: 0 }}>30-Day Cumulative Revenue Projection</span>
-                  </div>
-                  <div style={{ padding: '16px 16px 8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 120 }}>
-                      {proj.map((p, i) => {
-                        const pct = maxCumulative > 0 ? (p.cumulative / maxCumulative) * 100 : 0;
-                        const isLast = i === proj.length - 1;
-                        return (
-                          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-                            <div
-                              title={`Day ${p.day}: $${p.cumulative.toFixed(2)} cumulative`}
-                              style={{
-                                width: '100%',
-                                height: `${Math.max(pct, 2)}%`,
-                                background: `linear-gradient(180deg, var(--emerald) 0%, rgba(16,185,129,0.4) 100%)`,
-                                borderRadius: isLast ? '3px 3px 0 0' : '2px 2px 0 0',
-                                minHeight: 2,
-                                transition: 'height 0.3s',
-                                opacity: 0.6 + (i / proj.length) * 0.4,
-                              }}
-                            />
-                            {(i === 0 || i === Math.floor(proj.length / 2) || i === proj.length - 1) && (
-                              <span style={{ fontSize: 9, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{fmtDate(p.date)}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Drivers */}
-              {forecast.drivers.length > 0 && (
-                <div className="intel-panel">
-                  <div className="intel-panel-header">
-                    <span className="section-label" style={{ margin: 0 }}>Revenue Drivers</span>
-                  </div>
-                  <div style={{ padding: '8px 0' }}>
-                    {forecast.drivers.map((d, i) => (
-                      <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 16px', borderBottom: '1px solid var(--border)' }}>
-                        <span style={{ color: 'var(--emerald)', fontSize: 13, flexShrink: 0 }}>→</span>
-                        <span style={{ fontSize: 12, color: 'var(--sub)', lineHeight: 1.5 }}>{d}</span>
-                      </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {wasteList.map(c => (
+                      <span key={c.campaignId} style={{ fontSize: 11, fontFamily: 'var(--mono)', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 5, padding: '2px 8px', color: 'var(--rose)' }}>
+                        {c.campaignId.slice(0, 8)} · eff: {c.efficiencyScore.toFixed(1)}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
-            </>
-          )}
 
-          {!forecast && !fcLoading && !fcError && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--muted)', fontSize: 13 }}>
-              Enter a campaign ID above to generate a 30-day revenue forecast
-            </div>
+              {/* Sort controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)' }}>Sort by:</span>
+                <div className="tab-bar">
+                  {(['efficiency', 'roas', 'spend'] as const).map(s => (
+                    <button key={s} className={`tab-btn${sortBy === s ? ' active' : ''}`} onClick={() => setSortBy(s)}>
+                      {s === 'efficiency' ? 'Efficiency' : s === 'roas' ? 'ROAS' : 'Spend'}
+                    </button>
+                  ))}
+                </div>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--muted)' }}>{sorted.length} campaigns</span>
+              </div>
+
+              {/* Campaign Cards */}
+              {sorted.length === 0 ? (
+                <div className="intel-panel" style={{ textAlign: 'center', padding: 48, color: 'var(--muted)', fontSize: 13 }}>
+                  No campaign data available yet
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+                  {sorted.map(c => {
+                    const eff    = effLabel(c.efficiencyScore);
+                    const zone   = zoneBadge(c.zone);
+                    const isWaste = c.efficiencyScore < 20;
+                    return (
+                      <div
+                        key={c.campaignId}
+                        style={{
+                          background: 'var(--surface)',
+                          border: `1px solid ${isWaste ? 'rgba(239,68,68,0.3)' : 'var(--border)'}`,
+                          borderRadius: 10,
+                          padding: 16,
+                          transition: 'border-color 0.15s',
+                        }}
+                      >
+                        {/* Header row */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                          <span style={{ fontSize: 11, fontFamily: 'var(--mono)', color: 'var(--sub)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {c.campaignId.slice(0, 8)}
+                          </span>
+                          <span className="badge" style={{ background: zone.bg, border: `1px solid ${zone.border}`, color: zone.color, fontSize: 10 }}>
+                            {zone.label}
+                          </span>
+                          {isWaste && (
+                            <span className="badge" style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--rose)', fontSize: 10 }}>
+                              WASTE
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Efficiency score bar */}
+                        <div style={{ marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                            <span style={{ fontSize: 11, color: 'var(--muted)' }}>Efficiency Score</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: eff.color }}>{c.efficiencyScore.toFixed(1)}</span>
+                          </div>
+                          <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div
+                              style={{
+                                height: '100%',
+                                width: `${Math.min(c.efficiencyScore, 100)}%`,
+                                background: isWaste ? 'var(--rose)' : 'var(--indigo)',
+                                borderRadius: 3,
+                                transition: 'width 0.4s',
+                              }}
+                            />
+                          </div>
+                          <div style={{ fontSize: 10, color: eff.color, marginTop: 3, fontWeight: 600 }}>{eff.label}</div>
+                        </div>
+
+                        {/* Metrics */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                          {[
+                            { label: 'ROAS',         value: `${c.roas.toFixed(2)}x`,              color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
+                            { label: 'Performance',  value: c.performanceScore.toFixed(1),         color: 'var(--indigo-l)' },
+                            { label: 'Spend',        value: `$${c.spend.toFixed(2)}`,              color: 'var(--text)' },
+                          ].map(m => (
+                            <div key={m.label} style={{ textAlign: 'center' }}>
+                              <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{m.label}</div>
+                              <div style={{ fontSize: 13, fontWeight: 700, color: m.color, fontFamily: 'var(--mono)' }}>{m.value}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Recommendation */}
+                        <div style={{ marginTop: 10, fontSize: 11, color: 'var(--sub)', background: 'rgba(255,255,255,0.03)', borderRadius: 6, padding: '6px 10px', lineHeight: 1.4 }}>
+                          {c.recommendation}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { FinancialOsNav } from '@/components/FinancialOsNav';
 import {
   getProfitZones,
   type ProfitProfile,
@@ -51,7 +50,6 @@ export default function CostOptimizerPage() {
     <div className="app-shell">
       <Sidebar />
       <main className="app-main">
-        <FinancialOsNav level={0} onLevelClick={() => {}} />
         <div className="page-content">
 
           {/* Header */}
