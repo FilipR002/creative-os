@@ -3,17 +3,22 @@
  *
  * Orchestration service for POST /api/govolo/generate.
  *
- * Full flow:
+ * Phase 2 flow:
  *   1. Validate campaignId ownership
  *   2. Fetch campaign (CampaignService)
- *   3. Fetch or generate concept (ConceptService)
- *   4. Call Sonnet → MasterBlueprint (sonnet-orchestrator)
+ *   3. Fetch concept (ConceptService)
+ *   4. Generate MasterBlueprint via Sonnet (sonnet-orchestrator)
  *   5. Validate + auto-fix blueprint (blueprint-validator)
- *   6. Map blueprint → generation payload (execution-mapper)
- *   7. Execute via existing VideoService / CarouselService / BannerService
- *   8. Return { executionId, blueprintMeta, diagnostics }
- *
- * No new queues. No new DB tables. Everything routes through existing services.
+ *   6. Hand off to ProductionPipelineService:
+ *        a. Fetch Creative DNA
+ *        b. Compute routing decision (SmartRoutingService)
+ *        c. Extract virtual scenes → optimise (hook-boost + rewrite + DNA inject)
+ *        d. Route each scene → kling / veo
+ *        e. Execute via VideoService / CarouselService / BannerService
+ *        f. Score result (ScoringService)
+ *        g. Select winner (AutoWinnerService)
+ *        h. Report outcomes + trigger learning (fire-and-forget)
+ *   7. Return PipelineResult
  */
 
 import {
@@ -29,17 +34,14 @@ import { ConfigService }    from '@nestjs/config';
 
 import { CampaignService }  from '../campaign/campaign.service';
 import { ConceptService }   from '../concept/concept.service';
-import { VideoService }     from '../video/video.service';
-import { CarouselService }  from '../carousel/carousel.service';
-import { BannerService }    from '../banner/banner.service';
 
 import { generateBlueprint, type MasterBlueprint } from './sonnet-orchestrator';
 import { validateAndFix }                           from './blueprint-validator';
+import { diagnoseBlueprint }                        from './execution-mapper';
 import {
-  mapBlueprintToGenerationPayload,
-  diagnoseBlueprint,
-  type ExecutionDiagnostics,
-} from './execution-mapper';
+  ProductionPipelineService,
+  type PipelineResult,
+} from './lib/production-pipeline';
 
 // ─── Request / Response types ─────────────────────────────────────────────────
 
@@ -49,16 +51,7 @@ export interface GovoloGenerateDto {
   preferredAngleSlug?: string;
 }
 
-export interface GovoloGenerateResponse {
-  /** creativeId returned by the generator (video/carousel/banner service) */
-  executionId:   string;
-  creativeId:    string;
-  format:        string;
-  angleSlug:     string;
-  diagnostics:   ExecutionDiagnostics;
-  blueprintMeta: MasterBlueprint['_meta'];
-  validationFixes: string[];
-}
+export type GovoloGenerateResponse = PipelineResult;
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -67,23 +60,19 @@ export class GovoloService {
   private readonly logger = new Logger(GovoloService.name);
 
   constructor(
-    private readonly config:   ConfigService,
+    private readonly config:    ConfigService,
     @Inject(forwardRef(() => CampaignService))
     private readonly campaigns: CampaignService,
     @Inject(forwardRef(() => ConceptService))
     private readonly concepts:  ConceptService,
-    @Inject(forwardRef(() => VideoService))
-    private readonly videos:    VideoService,
-    @Inject(forwardRef(() => CarouselService))
-    private readonly carousels: CarouselService,
-    @Inject(forwardRef(() => BannerService))
-    private readonly banners:   BannerService,
+    private readonly pipeline:  ProductionPipelineService,
   ) {}
 
   async generate(
     dto:    GovoloGenerateDto,
     userId: string,
   ): Promise<GovoloGenerateResponse> {
+
     // ── 1. Ownership check ─────────────────────────────────────────────────
     await this.campaigns.assertOwnership(dto.campaignId, userId);
 
@@ -103,7 +92,6 @@ export class GovoloService {
         `Generate a concept via POST /api/concept/generate first.`,
       );
     }
-
     if (!concept) {
       throw new BadRequestException(
         `Campaign ${dto.campaignId} has no concept. ` +
@@ -154,16 +142,16 @@ export class GovoloService {
     }
 
     this.logger.log(
-      `Blueprint generated | campaign=${dto.campaignId} format=${rawBlueprint.format} angle=${rawBlueprint.angle_slug}`,
+      `Blueprint generated | campaign=${dto.campaignId} ` +
+      `format=${rawBlueprint.format} angle=${rawBlueprint.angle_slug}`,
     );
 
     // ── 5. Validate + auto-fix ─────────────────────────────────────────────
     const { valid, fixes, errors, blueprint } = validateAndFix(rawBlueprint);
 
     if (fixes.length > 0) {
-      this.logger.warn(`Blueprint auto-fixed (${fixes.length} changes): ${fixes.join('; ')}`);
+      this.logger.warn(`Blueprint auto-fixed (${fixes.length}): ${fixes.join('; ')}`);
     }
-
     if (!valid) {
       throw new BadRequestException({
         message: 'Blueprint validation failed with unrecoverable errors',
@@ -172,90 +160,29 @@ export class GovoloService {
       });
     }
 
-    // ── 6. Map blueprint → generation payload ──────────────────────────────
-    const mapped      = mapBlueprintToGenerationPayload(blueprint);
+    // ── 6. Run production pipeline (route → optimise → execute → score → learn)
     const diagnostics = diagnoseBlueprint(blueprint);
 
-    if (diagnostics.warnings.length > 0) {
-      this.logger.warn(`Execution diagnostics warnings: ${diagnostics.warnings.join('; ')}`);
-    }
-
-    // ── 7. Execute via existing generator ─────────────────────────────────
-    let creativeId: string;
-
     try {
-      switch (mapped.format) {
-        case 'video': {
-          const res = await this.videos.generate(
-            {
-              campaignId:       mapped.payload.campaignId,
-              conceptId:        mapped.payload.conceptId,
-              angleSlug:        mapped.payload.angleSlug,
-              durationTier:     mapped.payload.durationTier as any,
-              styleContext:     mapped.payload.styleContext,
-              keyObjection:     mapped.payload.keyObjection,
-              valueProposition: mapped.payload.valueProposition,
-            },
-            userId,
-          );
-          creativeId = res.creativeId;
-          break;
-        }
-
-        case 'carousel': {
-          const res = await this.carousels.generate(
-            {
-              campaignId:       mapped.payload.campaignId,
-              conceptId:        mapped.payload.conceptId,
-              angleSlug:        mapped.payload.angleSlug,
-              slideCount:       (mapped.payload as any).slideCount,
-              platform:         (mapped.payload as any).platform,
-              styleContext:     mapped.payload.styleContext,
-              keyObjection:     mapped.payload.keyObjection,
-              valueProposition: mapped.payload.valueProposition,
-            },
-            userId,
-          );
-          creativeId = res.creativeId;
-          break;
-        }
-
-        case 'banner': {
-          const res = await this.banners.generate(
-            {
-              campaignId:       mapped.payload.campaignId,
-              conceptId:        mapped.payload.conceptId,
-              angleSlug:        mapped.payload.angleSlug,
-              sizes:            (mapped.payload as any).sizes,
-              styleContext:     mapped.payload.styleContext,
-              keyObjection:     mapped.payload.keyObjection,
-              valueProposition: mapped.payload.valueProposition,
-            },
-            userId,
-          );
-          creativeId = res.creativeId;
-          break;
-        }
-      }
+      return await this.pipeline.run({
+        blueprint,
+        campaignId:      dto.campaignId,
+        conceptId:       concept.id,
+        userId,
+        angleSlug:       blueprint.angle_slug,
+        diagnostics,
+        validationFixes: fixes,
+        concept: {
+          emotion:  concept.emotion,
+          platform: concept.platform,
+          audience: concept.audience,
+          goal:     concept.goal,
+        },
+      });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Generation failed for format=${mapped.format}: ${msg}`);
+      this.logger.error(`Production pipeline failed: ${msg}`);
       throw new InternalServerErrorException(`Creative generation failed: ${msg}`);
     }
-
-    this.logger.log(
-      `Govolo execution complete | creativeId=${creativeId!} format=${blueprint.format}`,
-    );
-
-    // ── 8. Return ──────────────────────────────────────────────────────────
-    return {
-      executionId:     creativeId!,   // creativeId IS the execution handle
-      creativeId:      creativeId!,
-      format:          blueprint.format,
-      angleSlug:       blueprint.angle_slug,
-      diagnostics,
-      blueprintMeta:   blueprint._meta,
-      validationFixes: fixes,
-    };
   }
 }
