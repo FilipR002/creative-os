@@ -79,9 +79,10 @@ async function ensureUser(): Promise<void> {
   const userId = session?.user?.id ?? '';
   if (!userId || _ensuredId === userId) return;
   try {
+    const authHeaders = await getAuthHeaders();
     await fetch(`${BASE}/api/users`, {
       method:  'POST',
-      headers: { 'Content-Type': 'application/json', ...headers },
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
       body:    JSON.stringify({ id: userId }),
     });
   } catch { return; }
