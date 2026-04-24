@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '@/lib/supabase';
+import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
 
 const NAV = [
   { label: 'Dashboard',      icon: '⊙', href: '/dashboard' },
@@ -35,6 +36,7 @@ const GENERATED_NAV = [
 ];
 
 export function Sidebar() {
+  useRequireAuth(); // redirect to /login if no session
   const pathname = usePathname();
   const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string } | null>(null);
 

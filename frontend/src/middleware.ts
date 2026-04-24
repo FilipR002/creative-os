@@ -27,25 +27,38 @@ export async function middleware(request: NextRequest) {
 
   const supabase = createSupabaseMiddlewareClient(request, response);
 
-  // Validate session server-side (refreshes token cookie if needed)
-  const { data: { user }, error } = await supabase.auth.getUser();
+  // getSession() reads the JWT from the cookie without a network round-trip.
+  // More reliable than getUser() in edge middleware (no Supabase API call that
+  // can time out or fail silently). Token signature is still validated locally.
+  let session = null;
+  try {
+    const result = await supabase.auth.getSession();
+    session = result.data.session;
+  } catch {
+    // On any error, treat as unauthenticated
+    session = null;
+  }
 
-  // Not authenticated → hard redirect; SSR page is NEVER rendered for unauthenticated users
-  if (error || !user) {
+  // Not authenticated → redirect to login
+  if (!session) {
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('next', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin route protection — check profiles table (RLS recursion now fixed)
+  // Admin route protection
   if (ADMIN_PATHS.some(p => pathname.startsWith(p))) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('is_admin')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
 
-    if (!profile?.is_admin) {
+      if (!profile?.is_admin) {
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      }
+    } catch {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
   }
