@@ -61,7 +61,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     let message = `HTTP ${res.status}`;
     try {
       const json = JSON.parse(text);
-      message = json.message ?? json.error ?? text || message;
+      message = (json.message ?? json.error ?? text) || message;
     } catch { message = text || message; }
     throw new Error(message);
   }
