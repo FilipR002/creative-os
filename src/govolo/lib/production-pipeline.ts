@@ -9,7 +9,7 @@
  *   2.  Derive routing context → call SmartRoutingService.decide()
  *   3.  Extract virtual scenes from blueprint
  *   4.  Optimise every scene   (scene-optimizer: hook-boost + rewrite + DNA)
- *   5.  Route each scene to kling / veo  (model-router)
+ *   5.  Decide execution mode per scene (model-router: ugc | cinematic | hybrid)
  *   6.  Build enriched generation payload
  *   7.  Execute via VideoService / CarouselService / BannerService
  *   8.  Score the resulting creative  (ScoringService)
@@ -49,10 +49,10 @@ import type { ExecutionDiagnostics } from '../execution-mapper';
 import { mapBlueprintToGenerationPayload } from '../execution-mapper';
 
 import {
-  decideModel,
-  tallyModelUsage,
+  decideMode,
+  tallyModeUsage,
   type ModelDecision,
-  type ModelUsageStats,
+  type ModeUsageStats,
 } from './model-router';
 
 import {
@@ -87,7 +87,8 @@ export interface PipelineInput {
 
 export interface PipelineTrace {
   routing:     { mode: string; variantCount: number; hookAggressiveness: string };
-  scenes:      Array<{ scene_type?: string; model: string; optimization_log: string[] }>;
+  /** Per-scene execution mode + render engine assigned by the Mode Routing Layer */
+  scenes:      Array<{ scene_type?: string; mode: string; model: string; optimization_log: string[] }>;
   dnaContext:  boolean;
   execution:   { service: string; creativeId: string };
   scoring:     { totalScore: number; ctrScore: number; engagement: number; conversion: number };
@@ -102,7 +103,8 @@ export interface PipelineResult {
   angleSlug:       string;
   bestCreative:    { creativeId: string; score: number; isWinner: boolean };
   score:           number;
-  modelUsage:      ModelUsageStats;
+  /** Execution mode usage counts: how many scenes ran in ugc / cinematic / hybrid mode */
+  modeUsage:       ModeUsageStats;
   diagnostics:     ExecutionDiagnostics;
   blueprintMeta:   MasterBlueprint['_meta'];
   validationFixes: string[];
@@ -184,22 +186,23 @@ export class ProductionPipelineService {
       { hookBooster: this.hookBooster, sceneRewriter: this.sceneRewriter },
     );
 
-    // ── 5. Route each scene to kling / veo ───────────────────────────────────
+    // ── 5. Decide execution mode per scene (ugc | cinematic | hybrid) ──────────
     const modelDecisions: ModelDecision[] = rawScenes.map((s, i) =>
-      decideModel(
+      decideMode(
         {
           scene_type: (s.scene_type ?? (i === 0 ? 'hook' : 'solution')),
           pacing:     (s.pacing ?? 'moderate') as 'aggressive' | 'moderate',
+          platform:   concept.platform,
           emotion:    concept.emotion,
         },
         routingDecision,
       ),
     );
-    const modelUsage = tallyModelUsage(modelDecisions);
+    const modeUsage = tallyModeUsage(modelDecisions);
 
     this.logger.log(
       `[Pipeline] Scenes optimized=${optimizedScenes.length} ` +
-      `kling=${modelUsage.kling} veo=${modelUsage.veo}`,
+      `ugc=${modeUsage.ugc} cinematic=${modeUsage.cinematic} hybrid=${modeUsage.hybrid}`,
     );
 
     // ── 6. Build enriched generation payload ─────────────────────────────────
@@ -379,7 +382,7 @@ export class ProductionPipelineService {
         isWinner: scoreResult.isWinner,
       },
       score:           scoreResult.totalScore,
-      modelUsage,
+      modeUsage,
       diagnostics:     input.diagnostics,
       blueprintMeta:   blueprint._meta,
       validationFixes: input.validationFixes,
@@ -391,6 +394,7 @@ export class ProductionPipelineService {
         },
         scenes: optimizedScenes.map((s, i) => ({
           scene_type:       s.scene_type,
+          mode:             modelDecisions[i]?.mode  ?? 'ugc',
           model:            modelDecisions[i]?.model ?? 'kling',
           optimization_log: s.optimization_log,
         })),
