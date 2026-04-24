@@ -92,7 +92,10 @@ export class UserGuard implements CanActivate {
 
     } catch (err) {
       if (err instanceof UnauthorizedException) throw err;
-      // jsonwebtoken throws JsonWebTokenError, TokenExpiredError, etc.
+      // Log the actual JWT error to Railway logs for diagnosis
+      const jwtErr = err instanceof Error ? err.message : String(err);
+      const secretLen = this.jwtSecret?.length ?? 0;
+      console.error(`[UserGuard] jwt.verify failed | error="${jwtErr}" | secret_len=${secretLen} | token_prefix="${token.slice(0,20)}..."`);
       throw new UnauthorizedException('Invalid or expired token. Please sign in again.');
     }
   }
