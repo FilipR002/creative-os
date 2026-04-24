@@ -45,19 +45,19 @@ import {
 
 // ─── Request / Response types ─────────────────────────────────────────────────
 
-export interface GovoloGenerateDto {
+export interface CreativeOSGenerateDto {
   campaignId:          string;
   preferredFormat?:    'video' | 'carousel' | 'banner';
   preferredAngleSlug?: string;
 }
 
-export type GovoloGenerateResponse = PipelineResult;
+export type CreativeOSGenerateResponse = PipelineResult;
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable()
-export class GovoloService {
-  private readonly logger = new Logger(GovoloService.name);
+export class CreativeOSService {
+  private readonly logger = new Logger(CreativeOSService.name);
 
   constructor(
     private readonly config:    ConfigService,
@@ -69,9 +69,9 @@ export class GovoloService {
   ) {}
 
   async generate(
-    dto:    GovoloGenerateDto,
+    dto:    CreativeOSGenerateDto,
     userId: string,
-  ): Promise<GovoloGenerateResponse> {
+  ): Promise<CreativeOSGenerateResponse> {
 
     // ── 1. Ownership check ─────────────────────────────────────────────────
     await this.campaigns.assertOwnership(dto.campaignId, userId);

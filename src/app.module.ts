@@ -63,7 +63,7 @@ import { CompetitorIntelligenceModule }  from './competitor-intelligence/competi
 import { TrendPredictionModule }  from './trend-prediction/trend-prediction.module';
 import { AdIntelligenceModule }   from './ad-intelligence/ad-intelligence.module';
 import { AdGroupsModule }         from './ad-groups/ad-groups.module';
-import { GovoloModule }           from './govolo/govolo.module';
+import { CreativeOSModule }       from './govolo/govolo.module';
 import { CreativeDirectorModule } from './creative-director/creative-director.module';
 
 @Module({
@@ -130,7 +130,7 @@ import { CreativeDirectorModule } from './creative-director/creative-director.mo
     TrendPredictionModule,
     AdIntelligenceModule,
     AdGroupsModule,
-    GovoloModule,
+    CreativeOSModule,
     CreativeDirectorModule,
   ],
   providers: [

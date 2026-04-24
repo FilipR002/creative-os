@@ -10,20 +10,20 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { GovoloService, GovoloGenerateDto } from './govolo.service';
+import { CreativeOSService, CreativeOSGenerateDto } from './govolo.service';
 import { UserId } from '../common/decorators/user-id.decorator';
 
-@ApiTags('Govolo')
+@ApiTags('Creative OS')
 @Controller('api/govolo')
-export class GovoloController {
-  constructor(private readonly service: GovoloService) {}
+export class CreativeOSController {
+  constructor(private readonly service: CreativeOSService) {}
 
   @Post('generate')
   @ApiOperation({
     summary: 'Generate a creative ad (video / carousel / banner) from a campaign + concept via Sonnet blueprint',
   })
   generate(
-    @Body() dto:      GovoloGenerateDto,
+    @Body() dto:      CreativeOSGenerateDto,
     @UserId() userId: string,
   ) {
     return this.service.generate(dto, userId);

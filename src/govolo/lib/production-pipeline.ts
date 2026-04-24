@@ -1,7 +1,7 @@
 /**
  * production-pipeline.ts
  *
- * Self-optimising creative production engine for the Govolo module.
+ * Self-optimising creative production engine for the Creative OS generation module.
  *
  * Full pipeline per execution:
  *
@@ -116,7 +116,7 @@ export class ProductionPipelineService {
   private readonly logger = new Logger(ProductionPipelineService.name);
 
   constructor(
-    // @Global() — no import needed in GovoloModule
+    // @Global() — no import needed in CreativeOSModule
     private readonly routing:     SmartRoutingService,
     private readonly hookBooster: HookBoosterService,
     private readonly sceneRewriter: SceneRewriterService,

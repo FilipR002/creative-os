@@ -1,7 +1,7 @@
 /**
  * govolo.module.ts
  *
- * Phase 2 — registers GovoloController, GovoloService, and the new
+ * Phase 2 — registers CreativeOSController, CreativeOSService, and the new
  * ProductionPipelineService with all its sub-system dependencies.
  *
  * All cross-module imports use forwardRef() to avoid circular dependency issues.
@@ -10,8 +10,8 @@
 
 import { Module, forwardRef } from '@nestjs/common';
 
-import { GovoloController }        from './govolo.controller';
-import { GovoloService }           from './govolo.service';
+import { CreativeOSController }    from './govolo.controller';
+import { CreativeOSService }       from './govolo.service';
 import { ProductionPipelineService } from './lib/production-pipeline';
 
 import { CampaignModule }      from '../campaign/campaign.module';
@@ -42,8 +42,8 @@ import { LearningModule }      from '../learning/learning.module';
     OutcomesModule,
     LearningModule,
   ],
-  controllers: [GovoloController],
-  providers:   [GovoloService, ProductionPipelineService],
-  exports:     [GovoloService],
+  controllers: [CreativeOSController],
+  providers:   [CreativeOSService, ProductionPipelineService],
+  exports:     [CreativeOSService],
 })
-export class GovoloModule {}
+export class CreativeOSModule {}

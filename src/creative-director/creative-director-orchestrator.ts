@@ -3,7 +3,7 @@
  *
  * Calls Claude Sonnet acting as the "Creative Director Brain" of Creative OS.
  *
- * Unlike the Govolo orchestrator (which produces a MasterBlueprint for ONE format),
+ * Unlike the Creative OS blueprint orchestrator (which produces a MasterBlueprint for ONE format),
  * this orchestrator generates a FULL conversion system for ALL THREE formats
  * simultaneously — video scenes, carousel slides, and banner copy — all derived
  * from a single core narrative (hook → problem → solution → CTA).
