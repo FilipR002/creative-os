@@ -36,7 +36,7 @@ export default function DashboardPage() {
 
           {/* Header */}
           <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{greeting}{firstName ? `, ${firstName}` : ''} 👋</h1>
+            <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{greeting}{firstName ? `, ${firstName}` : ''}</h1>
             <p style={{ fontSize: 14, color: 'var(--sub)' }}>Here's what's happening with your campaigns.</p>
           </div>
 
