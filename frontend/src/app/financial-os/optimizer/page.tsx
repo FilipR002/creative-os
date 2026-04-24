@@ -85,7 +85,7 @@ export default function CostOptimizerPage() {
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                     {wasteList.map(c => (
                       <span key={c.campaignId} style={{ fontSize: 11, fontFamily: 'var(--mono)', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 5, padding: '2px 8px', color: 'var(--rose)' }}>
-                        {c.campaignId.slice(0, 8)} · eff: {c.efficiencyScore.toFixed(1)}
+                        {c.campaignId.slice(0, 8)} · eff: {(c.efficiencyScore ?? 0).toFixed(1)}
                       </span>
                     ))}
                   </div>
@@ -142,7 +142,7 @@ export default function CostOptimizerPage() {
                         <div style={{ marginBottom: 12 }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                             <span style={{ fontSize: 11, color: 'var(--muted)' }}>Efficiency Score</span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: eff.color }}>{c.efficiencyScore.toFixed(1)}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: eff.color }}>{(c.efficiencyScore ?? 0).toFixed(1)}</span>
                           </div>
                           <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
                             <div style={{ height: '100%', width: `${Math.min(c.efficiencyScore, 100)}%`, background: isWaste ? 'var(--rose)' : 'var(--indigo)', borderRadius: 3, transition: 'width 0.4s' }} />
@@ -152,9 +152,9 @@ export default function CostOptimizerPage() {
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                           {[
-                            { label: 'ROAS',        value: `${c.roas.toFixed(2)}x`,   color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
-                            { label: 'Performance', value: c.performanceScore.toFixed(1), color: 'var(--indigo-l)' },
-                            { label: 'Spend',       value: `$${c.spend.toFixed(2)}`,  color: 'var(--text)' },
+                            { label: 'ROAS',        value: `${(c.roas ?? 0).toFixed(2)}x`,   color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
+                            { label: 'Performance', value: (c.performanceScore ?? 0).toFixed(1), color: 'var(--indigo-l)' },
+                            { label: 'Spend',       value: `$${(c.spend ?? 0).toFixed(2)}`,  color: 'var(--text)' },
                           ].map(m => (
                             <div key={m.label} style={{ textAlign: 'center' }}>
                               <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{m.label}</div>

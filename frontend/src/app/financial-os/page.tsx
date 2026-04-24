@@ -10,7 +10,7 @@ import {
   type AutonomyInfo,
 } from '@/lib/api/creator-client';
 
-function fmt$(n: number) { return `$${n.toFixed(2)}`; }
+function fmt$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(2)}`; }
 
 export default function FinancialOsOverviewPage() {
   const [cost,     setCost]     = useState<CostSummary | null>(null);
@@ -73,8 +73,8 @@ export default function FinancialOsOverviewPage() {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
                     {[
                       { label: 'Campaigns',      value: String(zones.summary.totalCampaigns),                color: 'var(--text)'     },
-                      { label: 'Scale potential', value: `$${zones.summary.scalePotential.toFixed(0)}`,      color: 'var(--emerald)'  },
-                      { label: 'Total waste',     value: `$${zones.summary.totalWaste.toFixed(0)}`,          color: 'var(--rose)'     },
+                      { label: 'Scale potential', value: `$${(zones.summary.scalePotential ?? 0).toFixed(0)}`,      color: 'var(--emerald)'  },
+                      { label: 'Total waste',     value: `$${(zones.summary.totalWaste ?? 0).toFixed(0)}`,          color: 'var(--rose)'     },
                       { label: 'Gate level',      value: `L${zones.executionGate.level}`,                   color: 'var(--indigo-l)' },
                     ].map(m => (
                       <div key={m.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>

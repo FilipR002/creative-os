@@ -9,7 +9,7 @@ import {
   type ProfitModel,
 } from '@/lib/api/creator-client';
 
-function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%`; }
+function fmtPct(n: number | undefined | null) { return `${((n ?? 0) * 100).toFixed(1)}%`; }
 
 export default function SelfLearningPage() {
   const [model,    setModel]    = useState<ProfitModel | null>(null);
@@ -82,8 +82,8 @@ export default function SelfLearningPage() {
                 {[
                   { label: 'Version',         value: `v${model.version}`,                            color: 'var(--text)'     },
                   { label: 'Accuracy',         value: fmtPct(model.accuracy),                         color: 'var(--emerald)'  },
-                  { label: 'Scale Threshold',  value: model.scaleThreshold.toFixed(2),                color: 'var(--emerald)'  },
-                  { label: 'Kill Threshold',   value: model.killThreshold.toFixed(2),                 color: 'var(--rose)'     },
+                  { label: 'Scale Threshold',  value: (model.scaleThreshold ?? 0).toFixed(2),                color: 'var(--emerald)'  },
+                  { label: 'Kill Threshold',   value: (model.killThreshold ?? 0).toFixed(2),                 color: 'var(--rose)'     },
                   { label: 'Total Cycles',     value: String(model.totalCycles),                      color: 'var(--indigo-l)' },
                 ].map(m => (
                   <div key={m.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>

@@ -9,8 +9,8 @@ import {
   type BudgetStatus,
 } from '@/lib/api/creator-client';
 
-function fmt$(n: number) { return `$${n.toFixed(2)}`; }
-function pct(n: number)  { return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`; }
+function fmt$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(2)}`; }
+function pct(n: number | undefined | null)  { const v = n ?? 0; return `${v >= 0 ? '+' : ''}${v.toFixed(1)}%`; }
 
 export default function BudgetPage() {
   const [data,     setData]    = useState<BudgetStatus | null>(null);
@@ -117,7 +117,7 @@ export default function BudgetPage() {
                             <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', color: 'var(--text)' }}>{fmt$(a.currentBudget)}</td>
                             <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', color: 'var(--indigo-l)' }}>{fmt$(a.proposedBudget)}</td>
                             <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', color: a.delta >= 0 ? 'var(--emerald)' : 'var(--rose)', fontWeight: 700 }}>{pct(a.deltaPercent)}</td>
-                            <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', color: a.roas >= 2 ? 'var(--emerald)' : a.roas >= 1 ? 'var(--amber)' : 'var(--rose)' }}>{a.roas.toFixed(2)}x</td>
+                            <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', color: a.roas >= 2 ? 'var(--emerald)' : a.roas >= 1 ? 'var(--amber)' : 'var(--rose)' }}>{(a.roas ?? 0).toFixed(2)}x</td>
                             <td style={{ padding: '10px 14px', color: 'var(--muted)', fontSize: 11 }}>{a.reason}</td>
                           </tr>
                         ))}
@@ -142,7 +142,7 @@ export default function BudgetPage() {
                             <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
                               {[
                                 { label: 'Budget',  value: fmt$(p.totalBudget),                 color: 'var(--text)'     },
-                                { label: 'ROI est', value: `+${p.expectedROIImprovement.toFixed(1)}%`, color: 'var(--emerald)' },
+                                { label: 'ROI est', value: `+${(p.expectedROIImprovement ?? 0).toFixed(1)}%`, color: 'var(--emerald)' },
                                 { label: 'Conf',    value: `${(p.confidence * 100).toFixed(0)}%`,    color: 'var(--indigo-l)'},
                                 { label: 'Risk',    value: `${(p.riskScore * 100).toFixed(0)}%`,      color: 'var(--amber)'  },
                               ].map(m => (

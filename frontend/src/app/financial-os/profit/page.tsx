@@ -33,9 +33,9 @@ function CampaignRow({ c, requiresApproval }: { c: ProfitProfile; requiresApprov
       </div>
       <div style={{ display: 'flex', gap: 16, flexShrink: 0 }}>
         {[
-          { label: 'ROAS',  value: `${c.roas.toFixed(2)}x`, color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
-          { label: 'ROI',   value: `${c.roi.toFixed(1)}%`,  color: c.roi >= 0 ? 'var(--emerald)' : 'var(--rose)' },
-          { label: 'Spend', value: `$${c.spend.toFixed(0)}`, color: 'var(--text)' },
+          { label: 'ROAS',  value: `${(c.roas ?? 0).toFixed(2)}x`, color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' },
+          { label: 'ROI',   value: `${(c.roi ?? 0).toFixed(1)}%`,  color: c.roi >= 0 ? 'var(--emerald)' : 'var(--rose)' },
+          { label: 'Spend', value: `$${(c.spend ?? 0).toFixed(0)}`, color: 'var(--text)' },
         ].map(m => (
           <div key={m.label} style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 2 }}>{m.label}</div>
@@ -111,8 +111,8 @@ export default function ProfitZonesPage() {
               {/* Summary */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 20 }}>
                 {[
-                  { label: 'Scale potential', value: `$${data.summary.scalePotential.toFixed(0)}`, color: 'var(--emerald)' },
-                  { label: 'Total waste',     value: `$${data.summary.totalWaste.toFixed(0)}`,     color: 'var(--rose)'    },
+                  { label: 'Scale potential', value: `$${(data.summary.scalePotential ?? 0).toFixed(0)}`, color: 'var(--emerald)' },
+                  { label: 'Total waste',     value: `$${(data.summary.totalWaste ?? 0).toFixed(0)}`,     color: 'var(--rose)'    },
                   { label: 'Campaigns',       value: String(data.summary.totalCampaigns),           color: 'var(--text)'    },
                 ].map(m => (
                   <div key={m.label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px', textAlign: 'center' }}>

@@ -14,8 +14,8 @@ interface PortfolioForecast {
   dailyAggregated?: Array<{ date: string; revenue: number; spend: number; profit: number }>;
 }
 
-function fmt$(n: number) { return `$${n.toFixed(2)}`; }
-function fmtPct(n: number) { return `${(n * 100).toFixed(1)}%`; }
+function fmt$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(2)}`; }
+function fmtPct(n: number | undefined | null) { return `${((n ?? 0) * 100).toFixed(1)}%`; }
 
 export default function RevenuePage() {
   const [data,    setData]    = useState<PortfolioForecast | null>(null);

@@ -3,8 +3,8 @@ import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { getCostSummary, getCostEvents, type CostSummary } from '@/lib/api/creator-client';
 
-function fmt$(n: number) { return `$${n.toFixed(4)}`; }
-function fmtShort$(n: number) { return `$${n.toFixed(2)}`; }
+function fmt$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(4)}`; }
+function fmtShort$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(2)}`; }
 
 export default function CostTrackingPage() {
   const [summary, setSummary] = useState<CostSummary | null>(null);

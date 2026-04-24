@@ -9,7 +9,7 @@ import {
   type CeoStrategy,
 } from '@/lib/api/creator-client';
 
-function fmt$(n: number) { return `$${n.toFixed(2)}`; }
+function fmt$(n: number | undefined | null) { return `$${(n ?? 0).toFixed(2)}`; }
 
 const URGENCY_COLOR: Record<string, string> = {
   HIGH:   'var(--rose)',
@@ -60,7 +60,7 @@ export default function AICEOPage() {
                     {[
                       { label: 'Revenue',     value: fmt$(portfolio.totalRevenue),                 color: 'var(--emerald)'  },
                       { label: 'Spend',       value: fmt$(portfolio.totalSpend),                   color: 'var(--rose)'     },
-                      { label: 'ROAS',        value: `${portfolio.portfolioROAS.toFixed(2)}x`,     color: portfolio.portfolioROAS >= 2 ? 'var(--emerald)' : portfolio.portfolioROAS >= 1 ? 'var(--amber)' : 'var(--rose)' },
+                      { label: 'ROAS',        value: `${(portfolio.portfolioROAS ?? 0).toFixed(2)}x`,     color: portfolio.portfolioROAS >= 2 ? 'var(--emerald)' : portfolio.portfolioROAS >= 1 ? 'var(--amber)' : 'var(--rose)' },
                       { label: 'Active',      value: String(portfolio.activeCount),                color: 'var(--text)'     },
                       { label: 'Champions',   value: String(portfolio.championCount),              color: 'var(--emerald)'  },
                       { label: 'Declining',   value: String(portfolio.decliningCount),             color: 'var(--rose)'     },
@@ -104,7 +104,7 @@ export default function AICEOPage() {
                             <tr key={c.campaignId} style={{ borderBottom: i < portfolio.campaigns.length - 1 ? '1px solid var(--border)' : 'none' }}>
                               <td style={{ padding: '10px 14px', color: 'var(--muted)', fontFamily: 'var(--mono)', fontWeight: 700 }}>#{c.rank}</td>
                               <td style={{ padding: '10px 14px', color: 'var(--sub)', fontFamily: 'var(--mono)', fontSize: 11 }}>{c.name ?? c.campaignId.slice(0,8)}</td>
-                              <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontWeight: 700, color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' }}>{c.roas.toFixed(2)}x</td>
+                              <td style={{ padding: '10px 14px', fontFamily: 'var(--mono)', fontWeight: 700, color: c.roas >= 2 ? 'var(--emerald)' : c.roas >= 1 ? 'var(--amber)' : 'var(--rose)' }}>{(c.roas ?? 0).toFixed(2)}x</td>
                               <td style={{ padding: '10px 14px', color: 'var(--muted)' }}>{c.status}</td>
                               <td style={{ padding: '10px 14px', color: 'var(--sub)', fontSize: 11 }}>{c.capitalSuggestion}</td>
                             </tr>
