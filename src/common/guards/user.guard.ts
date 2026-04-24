@@ -62,12 +62,15 @@ export class UserGuard implements CanActivate {
     const token = authHeader.slice(7);
 
     try {
-      const payload = jwt.verify(token, this.jwtSecret) as {
-        sub?:          string;
-        email?:        string;
-        role?:         string;
-        app_metadata?: { role?: string };
-      };
+      // Supabase cloud stores the JWT secret as a base64 string in the dashboard.
+      // GoTrue (their auth server) base64-decodes it before using it as the HMAC key.
+      // We try the decoded bytes first, then fall back to the raw string.
+      let payload: { sub?: string; email?: string; role?: string; app_metadata?: { role?: string } };
+      try {
+        payload = jwt.verify(token, Buffer.from(this.jwtSecret, 'base64')) as typeof payload;
+      } catch {
+        payload = jwt.verify(token, this.jwtSecret) as typeof payload;
+      }
 
       // ── CRIT-1 fix: reject anon and service_role tokens ─────────────────
       // Supabase anon key is a valid JWT signed with the same secret.

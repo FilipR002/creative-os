@@ -57,8 +57,13 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
   if (!res.ok) {
-    const body = await res.text().catch(() => res.statusText);
-    throw new Error(body || `HTTP ${res.status}`);
+    const text = await res.text().catch(() => '');
+    let message = `HTTP ${res.status}`;
+    try {
+      const json = JSON.parse(text);
+      message = json.message ?? json.error ?? text || message;
+    } catch { message = text || message; }
+    throw new Error(message);
   }
   return res.json() as Promise<T>;
 }
