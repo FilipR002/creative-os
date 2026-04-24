@@ -63,6 +63,7 @@ import { CompetitorIntelligenceModule }  from './competitor-intelligence/competi
 import { TrendPredictionModule }  from './trend-prediction/trend-prediction.module';
 import { AdIntelligenceModule }   from './ad-intelligence/ad-intelligence.module';
 import { AdGroupsModule }         from './ad-groups/ad-groups.module';
+import { GovoloModule }           from './govolo/govolo.module';
 
 @Module({
   imports: [
@@ -128,6 +129,7 @@ import { AdGroupsModule }         from './ad-groups/ad-groups.module';
     TrendPredictionModule,
     AdIntelligenceModule,
     AdGroupsModule,
+    GovoloModule,
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).
