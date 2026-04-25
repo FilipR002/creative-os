@@ -3,10 +3,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "sh -c 'npx prisma db push --accept-data-loss && npm run start'"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
-
-[healthcheck]
-path = "/api/financial-os/cost/table"
-timeout = 30
+healthcheckPath = "/health"
+healthcheckTimeout = 60
