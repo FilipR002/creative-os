@@ -69,6 +69,7 @@ import { UGCModule }              from './ugc/ugc.module';
 import { FunnelRouterModule }     from './funnel-router/funnel-router.module';
 import { CreativeOSV2Module }     from './creative-os-v2/creative-os-v2.module';
 import { BillingModule }          from './billing/billing.module';
+import { HealthModule }           from './health/health.module';
 
 @Module({
   imports: [
@@ -140,6 +141,7 @@ import { BillingModule }          from './billing/billing.module';
     FunnelRouterModule,
     CreativeOSV2Module,
     BillingModule,
+    HealthModule,
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).

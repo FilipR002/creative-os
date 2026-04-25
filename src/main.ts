@@ -7,7 +7,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,12 +37,6 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-
-  // Public health-check endpoint — bypasses UserGuard for Railway / uptime monitors
-  const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req: Request, res: Response) => {
-    res.status(200).json({ status: 'ok', ts: new Date().toISOString() });
-  });
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');

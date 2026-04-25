@@ -47,6 +47,6 @@ import { FunnelRouterController }      from './funnel-router.controller';
     FunnelMemoryFeedbackService,
     FunnelRouterService,
   ],
-  exports: [FunnelRouterService],
+  exports: [FunnelRouterService, CrossFormatSyncService],
 })
 export class FunnelRouterModule {}
