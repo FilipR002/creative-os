@@ -1168,12 +1168,19 @@ export default function ResultPage() {
               />
 
               <div className="result-footer-actions">
-                <button className="result-btn primary" onClick={() => handleRerun()} disabled={rerunning}>🔄 Regenerate</button>
-                <button className="result-btn secondary" onClick={() => handleRerun('alt')} disabled={rerunning}>🔀 Alternate Goal</button>
+                <Link
+                  href={`/studio/${executionId}`}
+                  className="result-btn primary"
+                  style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--grad)', color: '#fff', border: 'none' }}
+                >
+                  Preview Creative
+                </Link>
+                <button className="result-btn primary" onClick={() => handleRerun()} disabled={rerunning}>Regenerate</button>
+                <button className="result-btn secondary" onClick={() => handleRerun('alt')} disabled={rerunning}>Alternate Goal</button>
                 <button className="result-btn secondary" onClick={handleImprove} disabled={improving || !result?.campaignId}>
-                  {improving ? '⚙ Optimizing…' : '✦ Improve this ad'}
+                  {improving ? 'Optimizing...' : 'Improve this ad'}
                 </button>
-                <Link href="/campaigns/new" className="result-btn secondary" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✦ New Campaign</Link>
+                <Link href="/campaigns/new" className="result-btn secondary" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>New Campaign</Link>
                 {proMode && (
                   <>
                     <button

@@ -6,6 +6,12 @@ import { usePathname } from 'next/navigation';
 
 const NAV: { section: string; items: { href: string; label: string }[] }[] = [
   {
+    section: 'Profit',
+    items: [
+      { href: '/admin/profit', label: '💰 Profit Dashboard' },
+    ],
+  },
+  {
     section: 'Observability',
     items: [
       { href: '/admin/observability',                     label: '👁 Obs Hub'            },

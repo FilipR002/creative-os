@@ -1,23 +1,26 @@
 /**
- * govolo.service.ts
+ * creative-os.service.ts
  *
- * Orchestration service for POST /api/govolo/generate.
+ * Orchestration service for POST /api/creative-os/generate.
  *
- * Phase 2 flow:
+ * Phase 3 flow (Execution Gateway Fix):
  *   1. Validate campaignId ownership
  *   2. Fetch campaign (CampaignService)
  *   3. Fetch concept (ConceptService)
- *   4. Generate MasterBlueprint via Sonnet (sonnet-orchestrator)
+ *   4. Generate in PARALLEL:
+ *        a. MasterBlueprint via Sonnet (sonnet-orchestrator)
+ *        b. CreativePlan via Creative Director Brain (creative-director-orchestrator)
  *   5. Validate + auto-fix blueprint (blueprint-validator)
  *   6. Hand off to ProductionPipelineService:
  *        a. Fetch Creative DNA
- *        b. Compute routing decision (SmartRoutingService)
- *        c. Extract virtual scenes → optimise (hook-boost + rewrite + DNA inject)
- *        d. Route each scene → kling / veo
- *        e. Execute via VideoService / CarouselService / BannerService
- *        f. Score result (ScoringService)
- *        g. Select winner (AutoWinnerService)
- *        h. Report outcomes + trigger learning (fire-and-forget)
+ *        b. Resolve real routing signals (FatigueService, MirofishService)
+ *        c. Compute routing decision (SmartRoutingService)
+ *        d. Extract virtual scenes → optimise (hook-boost + rewrite + DNA inject)
+ *        e. Route each scene → ugc | cinematic | hybrid + kling | veo | mixed
+ *        f. Execute via ExecutionGatewayService (injects mode + CreativePlan into generation)
+ *        g. Score all variants (ScoringService)
+ *        h. Select winner (AutoWinnerService)
+ *        i. Report outcomes + trigger learning (fire-and-forget)
  *   7. Return PipelineResult
  */
 
@@ -35,13 +38,18 @@ import { ConfigService }    from '@nestjs/config';
 import { CampaignService }  from '../campaign/campaign.service';
 import { ConceptService }   from '../concept/concept.service';
 
-import { generateBlueprint, type MasterBlueprint } from './sonnet-orchestrator';
-import { validateAndFix }                           from './blueprint-validator';
-import { diagnoseBlueprint }                        from './execution-mapper';
+import { generateBlueprint, type MasterBlueprint }   from './sonnet-orchestrator';
+import { validateAndFix }                             from './blueprint-validator';
+import { diagnoseBlueprint }                          from './execution-mapper';
 import {
   ProductionPipelineService,
   type PipelineResult,
 } from './lib/production-pipeline';
+
+import {
+  generateCreativePlan,
+  type CreativePlan,
+} from '../creative-director/creative-director-orchestrator';
 
 // ─── Request / Response types ─────────────────────────────────────────────────
 
@@ -99,51 +107,108 @@ export class CreativeOSService {
       );
     }
 
-    // ── 4. Generate blueprint via Sonnet ───────────────────────────────────
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) {
       throw new InternalServerErrorException('ANTHROPIC_API_KEY is not configured');
     }
 
+    // ── 4. Generate MasterBlueprint + CreativePlan IN PARALLEL ─────────────
+    //    Previously: only blueprint was generated; CreativePlan was missing.
+    //    Now: both run concurrently — CreativePlan becomes first-class pipeline input.
+
+    const blueprintInput = {
+      apiKey,
+      campaignId:          dto.campaignId,
+      conceptId:           concept.id,
+      campaign: {
+        name:    campaign.name,
+        goal:    campaign.goal,
+        formats: campaign.formats,
+        tone:    campaign.tone,
+        persona: campaign.persona,
+      },
+      concept: {
+        goal:             concept.goal,
+        audience:         concept.audience,
+        emotion:          concept.emotion,
+        coreMessage:      concept.coreMessage,
+        offer:            concept.offer,
+        style:            concept.style,
+        platform:         concept.platform,
+        durationTier:     concept.durationTier,
+        angleHint:        concept.angleHint,
+        toneHint:         concept.toneHint,
+        keyObjection:     concept.keyObjection,
+        valueProposition: concept.valueProposition,
+      },
+      preferredFormat:    dto.preferredFormat,
+      preferredAngleSlug: dto.preferredAngleSlug,
+    };
+
+    const creativePlanInput = {
+      apiKey,
+      campaignId: dto.campaignId,
+      conceptId:  concept.id,
+      campaign: {
+        name:    campaign.name,
+        goal:    campaign.goal,
+        tone:    campaign.tone,
+        persona: campaign.persona,
+      },
+      concept: {
+        goal:             concept.goal,
+        audience:         concept.audience,
+        emotion:          concept.emotion,
+        coreMessage:      concept.coreMessage,
+        offer:            concept.offer,
+        style:            concept.style,
+        platform:         concept.platform,
+        durationTier:     concept.durationTier,
+        keyObjection:     concept.keyObjection,
+        valueProposition: concept.valueProposition,
+      },
+    };
+
     let rawBlueprint: MasterBlueprint;
+    let creativePlan: CreativePlan | undefined;
+
     try {
-      rawBlueprint = await generateBlueprint({
-        apiKey,
-        campaignId:          dto.campaignId,
-        conceptId:           concept.id,
-        campaign: {
-          name:    campaign.name,
-          goal:    campaign.goal,
-          formats: campaign.formats,
-          tone:    campaign.tone,
-          persona: campaign.persona,
-        },
-        concept: {
-          goal:             concept.goal,
-          audience:         concept.audience,
-          emotion:          concept.emotion,
-          coreMessage:      concept.coreMessage,
-          offer:            concept.offer,
-          style:            concept.style,
-          platform:         concept.platform,
-          durationTier:     concept.durationTier,
-          angleHint:        concept.angleHint,
-          toneHint:         concept.toneHint,
-          keyObjection:     concept.keyObjection,
-          valueProposition: concept.valueProposition,
-        },
-        preferredFormat:    dto.preferredFormat,
-        preferredAngleSlug: dto.preferredAngleSlug,
-      });
+      // Run both Claude calls in parallel — CreativePlan failure is non-blocking
+      const [blueprintResult, planResult] = await Promise.allSettled([
+        generateBlueprint(blueprintInput),
+        generateCreativePlan(creativePlanInput),
+      ]);
+
+      if (blueprintResult.status === 'rejected') {
+        const msg = (blueprintResult.reason as Error)?.message ?? String(blueprintResult.reason);
+        this.logger.error(`Sonnet blueprint generation failed: ${msg}`);
+        throw new InternalServerErrorException(`Blueprint generation failed: ${msg}`);
+      }
+
+      rawBlueprint = blueprintResult.value;
+
+      if (planResult.status === 'fulfilled') {
+        creativePlan = planResult.value;
+        this.logger.log(
+          `Creative plan generated | campaign=${dto.campaignId} ` +
+          `scenes=${creativePlan.video.scenes.length} slides=${creativePlan.carousel.slides.length}`,
+        );
+      } else {
+        const msg = (planResult.reason as Error)?.message ?? String(planResult.reason);
+        this.logger.warn(
+          `Creative Director plan failed (non-blocking) — pipeline proceeds without it: ${msg}`,
+        );
+      }
     } catch (err) {
+      if (err instanceof InternalServerErrorException) throw err;
       const msg = err instanceof Error ? err.message : String(err);
-      this.logger.error(`Sonnet blueprint generation failed: ${msg}`);
       throw new InternalServerErrorException(`Blueprint generation failed: ${msg}`);
     }
 
     this.logger.log(
       `Blueprint generated | campaign=${dto.campaignId} ` +
-      `format=${rawBlueprint.format} angle=${rawBlueprint.angle_slug}`,
+      `format=${rawBlueprint.format} angle=${rawBlueprint.angle_slug} ` +
+      `creativePlan=${creativePlan ? 'yes' : 'no'}`,
     );
 
     // ── 5. Validate + auto-fix ─────────────────────────────────────────────
@@ -160,7 +225,7 @@ export class CreativeOSService {
       });
     }
 
-    // ── 6. Run production pipeline (route → optimise → execute → score → learn)
+    // ── 6. Run production pipeline ─────────────────────────────────────────
     const diagnostics = diagnoseBlueprint(blueprint);
 
     try {
@@ -178,6 +243,8 @@ export class CreativeOSService {
           audience: concept.audience,
           goal:     concept.goal,
         },
+        // CreativePlan is now first-class — no longer ignored
+        creativePlan,
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

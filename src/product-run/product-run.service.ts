@@ -7,7 +7,7 @@
 //   1. Resolve (or create) campaign
 //   2. Generate concept
 //   3. Select angles  (exploit + explore + secondary)
-//   4. Generate creatives in parallel (one per angle)
+//   4. Generate creatives via ExecutionGatewayService (one per angle)   ← FIX 1
 //   5. Score creatives (synchronous)
 //   6. Store memory   (fire-and-forget)
 //   7. Run learning cycle (fire-and-forget)
@@ -15,21 +15,25 @@
 //   9. Return structured RunResponse
 
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
-import { randomUUID }          from 'crypto';
-import { CampaignService }     from '../campaign/campaign.service';
-import { ConceptService }      from '../concept/concept.service';
-import { AngleService }        from '../angle/angle.service';
-import { VideoService }        from '../video/video.service';
-import { CarouselService }     from '../carousel/carousel.service';
-import { BannerService }       from '../banner/banner.service';
-import { ScoringService }      from '../scoring/scoring.service';
-import { MemoryService }       from '../memory/memory.service';
-import { LearningService }     from '../learning/learning.service';
-import { EvolutionService }    from '../evolution/evolution.service';
-import { UsersService }        from '../users/users.service';
-import { CampaignMode }        from '../campaign/campaign.dto';
-import { ConceptGoal }         from '../concept/concept.dto';
+import { randomUUID }               from 'crypto';
+import { CampaignService }          from '../campaign/campaign.service';
+import { ConceptService }           from '../concept/concept.service';
+import { AngleService }             from '../angle/angle.service';
+import { ScoringService }           from '../scoring/scoring.service';
+import { MemoryService }            from '../memory/memory.service';
+import { LearningService }          from '../learning/learning.service';
+import { EvolutionService }         from '../evolution/evolution.service';
+import { UsersService }             from '../users/users.service';
+import { ExecutionGatewayService }  from '../creative-os/lib/execution-gateway';
+// W3: Real routing signals
+import { SmartRoutingService }      from '../routing/smart/routing.service';
+import { FatigueService }           from '../fatigue/fatigue.service';
+import { MirofishService }          from '../mirofish/mirofish.service';
+import { decideMode }               from '../creative-os/lib/model-router';
+import { CampaignMode }             from '../campaign/campaign.dto';
+import { ConceptGoal }              from '../concept/concept.dto';
 import type { CreativeScoreResult } from '../scoring/scoring.types';
+import type { RoutingContext }       from '../routing/smart/routing.types';
 import type {
   RunDto,
   RunAngleItem,
@@ -49,17 +53,19 @@ export class ProductRunService {
   private readonly logger = new Logger(ProductRunService.name);
 
   constructor(
-    private readonly campaigns: CampaignService,
-    private readonly concepts:  ConceptService,
-    private readonly angles:    AngleService,
-    private readonly video:     VideoService,
-    private readonly carousel:  CarouselService,
-    private readonly banner:    BannerService,
-    private readonly scoring:   ScoringService,
-    private readonly memory:    MemoryService,
-    private readonly learning:  LearningService,
-    private readonly evolution: EvolutionService,
-    private readonly users:     UsersService,
+    private readonly campaigns:    CampaignService,
+    private readonly concepts:     ConceptService,
+    private readonly angles:       AngleService,
+    private readonly scoring:      ScoringService,
+    private readonly memory:       MemoryService,
+    private readonly learning:     LearningService,
+    private readonly evolution:    EvolutionService,
+    private readonly users:        UsersService,
+    private readonly gateway:      ExecutionGatewayService,
+    // W3: Real routing — SmartRouting is @Global, no module import needed
+    private readonly smartRouting: SmartRoutingService,
+    private readonly fatigue:      FatigueService,
+    private readonly mirofish:     MirofishService,
   ) {}
 
   async run(dto: RunDto, userId: string): Promise<RunResponse> {
@@ -107,8 +113,6 @@ export class ProductRunService {
       clientIndustry: dto.industry,
     });
 
-    // Take up to MAX_PARALLEL_ANGLES — the selector already orders by type priority
-    // (exploit → secondary → explore), so slicing preserves strategic intent.
     const pickedAngles = angleResult.selected_angles.slice(0, MAX_PARALLEL_ANGLES);
     const angleItems: RunAngleItem[] = pickedAngles.map(a => ({
       slug:   a.angle,
@@ -118,10 +122,12 @@ export class ProductRunService {
       reason: a.reason,
     }));
     this.logger.log(
-      `[Run:${executionId}] Angles selected: ${angleItems.map(a => `${a.slug}(${a.role})`).join(', ')}`
+      `[Run:${executionId}] Angles: ${angleItems.map(a => `${a.slug}(${a.role})`).join(', ')}`
     );
 
-    // ── Step 4: Generate creatives in parallel ───────────────────────────────
+    // ── Step 4: Generate creatives via ExecutionGateway (FIX 1) ─────────────
+    // No direct VideoService / CarouselService / BannerService calls.
+    // All generation routes through ExecutionGatewayService.execute().
     const creativeResults = await Promise.all(
       pickedAngles.map(a =>
         this.generateCreative(dto, campaignId!, concept.id, a.angle, userId, {
@@ -131,14 +137,13 @@ export class ProductRunService {
       ),
     );
     this.logger.log(
-      `[Run:${executionId}] ${creativeResults.length} creatives generated in ${Date.now() - t0}ms`
+      `[Run:${executionId}] ${creativeResults.length} creatives via gateway in ${Date.now() - t0}ms`
     );
 
     // ── Step 5: Score creatives (synchronous) ────────────────────────────────
     const creativeIds = creativeResults.map(c => c.creativeId);
     const scores      = await this.scoring.evaluate(creativeIds);
 
-    // Build angle lookup for response enrichment
     const angleByCreative = new Map<string, string>(
       creativeResults.map(c => [c.creativeId, c.angleSlug]),
     );
@@ -203,7 +208,9 @@ export class ProductRunService {
     };
   }
 
-  // ── Creative generation dispatch ──────────────────────────────────────────
+  // ── Creative generation via ExecutionGateway ──────────────────────────────
+  // W3: Real routing — SmartRoutingService + FatigueService + MirofishService.
+  // No static routing stubs. Every angle gets its own routing decision.
 
   private async generateCreative(
     dto:        RunDto,
@@ -213,53 +220,101 @@ export class ProductRunService {
     userId:     string,
     enrichment: { keyObjection?: string; valueProposition?: string } = {},
   ): Promise<RunCreativeItem> {
-    if (dto.format === 'video') {
-      const r = await this.video.generate(
-        {
-          campaignId,
-          conceptId,
-          angleSlug,
-          durationTier:    (dto.durationTier ?? 'SHORT') as any,
-          styleContext:    dto.styleContext,
-          keyObjection:    enrichment.keyObjection,
-          valueProposition: enrichment.valueProposition,
-        },
-        userId,
+
+    // ── Signal 1: Angle fatigue (W4: fallback is WARMING, never HEALTHY) ──────
+    let fatigueState: 'HEALTHY' | 'WARMING' | 'FATIGUED' | 'BLOCKED' = 'WARMING';
+    let fatigueScore = 0.30;
+    try {
+      const fr  = await this.fatigue.computeForSlug(angleSlug, userId);
+      fatigueState = fr.fatigue_state;
+      fatigueScore  = fr.fatigue_score;
+    } catch (err) {
+      this.logger.warn(
+        `[ProductRun] FatigueService failed for angle=${angleSlug} — using WARMING (neutral). ` +
+        `Reason: ${(err as Error).message}`,
       );
-      return { creativeId: r.creativeId, angleSlug, format: 'video' };
     }
 
-    if (dto.format === 'carousel') {
-      const r = await this.carousel.generate(
-        {
-          campaignId,
-          conceptId,
-          angleSlug,
-          slideCount:      dto.slideCount ?? 5,
-          platform:        dto.platform,
-          styleContext:    dto.styleContext,
-          keyObjection:    enrichment.keyObjection,
-          valueProposition: enrichment.valueProposition,
-        },
-        userId,
-      );
-      return { creativeId: r.creativeId, angleSlug, format: 'carousel' };
+    // ── Signal 2: MIROFISH prediction confidence ──────────────────────────────
+    let mirofishConfidence = 0;
+    try {
+      const mr = this.mirofish.simulateInline({
+        primaryAngle: angleSlug,
+        goal:         dto.goal ?? 'conversion',
+        emotion:      'confident',
+        format:       dto.format,
+      });
+      mirofishConfidence = mr.learning_signal_strength;
+    } catch {
+      // 0 is the safe fallback — routing degrades gracefully without mirofish
     }
 
-    // banner
-    const r = await this.banner.generate(
+    // ── Build RoutingContext from real signals ─────────────────────────────────
+    const memoryStability    = Math.max(0.10, 0.85 - fatigueScore * 0.60);
+    const explorationEntropy = (
+      fatigueState === 'HEALTHY'  ? 0.20 :
+      fatigueState === 'WARMING'  ? 0.40 :
+      fatigueState === 'FATIGUED' ? 0.65 : 0.82
+    );
+
+    const routingCtx: RoutingContext = {
+      clientId:           campaignId,
+      goal:               (dto.goal as RoutingContext['goal']) ?? 'conversion',
+      fatigueState,
+      memoryStability,
+      explorationEntropy,
+      trendPressure:      0,   // not available at product-run layer
+      mirofishConfidence,
+    };
+
+    const routingDecision = this.smartRouting.decide(routingCtx);
+
+    // ── Derive executionMode + renderEngine from routing decision ─────────────
+    const modeDecision = decideMode(
       {
+        scene_type: 'hook',
+        pacing:     'moderate',
+        platform:   dto.platform,
+        emotion:    'confident',
+      },
+      routingDecision,
+    );
+
+    this.logger.log(
+      `[ProductRun] Routing for angle=${angleSlug}: ` +
+      `fatigue=${fatigueState} mode=${routingDecision.mode} ` +
+      `→ executionMode=${modeDecision.mode} engine=${modeDecision.model} ` +
+      `(${modeDecision.reasoning})`,
+    );
+
+    const result = await this.gateway.execute(
+      {
+        format:            dto.format as 'video' | 'carousel' | 'banner',
         campaignId,
         conceptId,
         angleSlug,
-        sizes:           dto.sizes ?? ['1080x1080'],
-        styleContext:    dto.styleContext,
-        keyObjection:    enrichment.keyObjection,
-        valueProposition: enrichment.valueProposition,
+        styleContext:      dto.styleContext ?? '',
+        keyObjection:      enrichment.keyObjection,
+        valueProposition:  enrichment.valueProposition,
+        executionMode:     modeDecision.mode,
+        renderEngine:      modeDecision.model,
+        modeReasoning:     modeDecision.reasoning,
+        routingDecision,
+        modelDecisions:    [modeDecision],
+        durationTier:      dto.durationTier ?? 'SHORT',
+        slideCount:        dto.slideCount   ?? 5,
+        platform:          dto.platform,
+        sizes:             dto.sizes        ?? ['1080x1080'],
+        variantCount:      routingDecision.variantCount,
       },
       userId,
     );
-    return { creativeId: r.creativeId, angleSlug, format: 'banner' };
+
+    return {
+      creativeId: result.primaryCreativeId,
+      angleSlug,
+      format:     dto.format,
+    };
   }
 }
 

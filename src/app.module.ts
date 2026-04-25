@@ -63,8 +63,12 @@ import { CompetitorIntelligenceModule }  from './competitor-intelligence/competi
 import { TrendPredictionModule }  from './trend-prediction/trend-prediction.module';
 import { AdIntelligenceModule }   from './ad-intelligence/ad-intelligence.module';
 import { AdGroupsModule }         from './ad-groups/ad-groups.module';
-import { CreativeOSModule }       from './govolo/govolo.module';
+import { CreativeOSModule }       from './creative-os/creative-os.module';
 import { CreativeDirectorModule } from './creative-director/creative-director.module';
+import { UGCModule }              from './ugc/ugc.module';
+import { FunnelRouterModule }     from './funnel-router/funnel-router.module';
+import { CreativeOSV2Module }     from './creative-os-v2/creative-os-v2.module';
+import { BillingModule }          from './billing/billing.module';
 
 @Module({
   imports: [
@@ -132,6 +136,10 @@ import { CreativeDirectorModule } from './creative-director/creative-director.mo
     AdGroupsModule,
     CreativeOSModule,
     CreativeDirectorModule,
+    UGCModule,
+    FunnelRouterModule,
+    CreativeOSV2Module,
+    BillingModule,
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).

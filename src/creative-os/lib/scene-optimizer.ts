@@ -217,6 +217,67 @@ export function blueprintToVirtualScenes(blueprint: {
   return scenes;
 }
 
+// ─── CreativePlan → RawScene bridge ──────────────────────────────────────────
+
+import type {
+  VideoScene,
+  CarouselSlide,
+} from '../../creative-director/creative-director-orchestrator';
+
+/**
+ * mapScenePosition
+ *
+ * Assigns a SceneType to a video scene based on its index within the full
+ * sequence. Uses boundary + midpoint heuristic:
+ *
+ *   index 0             → 'hook'
+ *   index 1..30% total  → 'problem'
+ *   index 31%..last-1   → 'solution'
+ *   last index          → 'cta'
+ */
+function mapScenePosition(index: number, total: number): SceneType {
+  if (index === 0)           return 'hook';
+  if (index === total - 1)   return 'cta';
+  const problemCutoff = Math.max(1, Math.floor(total * 0.30));
+  return index <= problemCutoff ? 'problem' : 'solution';
+}
+
+/**
+ * creativePlanVideoScenesToRaw
+ *
+ * Maps CreativePlan.video.scenes → RawScene[] so they can flow into
+ * optimizeSceneSet() for DNA injection and hook enhancement.
+ *
+ * Every field is preserved verbatim from the Creative Director's output.
+ * No synthetic reconstruction occurs.
+ */
+export function creativePlanVideoScenesToRaw(scenes: VideoScene[]): RawScene[] {
+  return scenes.map((s, i) => ({
+    scene_type:   mapScenePosition(i, scenes.length),
+    kling_prompt: s.kling_prompt,
+    overlay_text: s.overlay_text,
+    transition:   s.transition,
+    pacing:       s.pacing,
+    voiceover:    s.voiceover,
+  }));
+}
+
+/**
+ * creativePlanCarouselSlidesToRaw
+ *
+ * Maps CreativePlan.carousel.slides → RawScene[] for the optimizer pipeline.
+ * Uses the slide's visual_direction as kling_prompt and intent as scene_type.
+ */
+export function creativePlanCarouselSlidesToRaw(slides: CarouselSlide[]): RawScene[] {
+  return slides.map(s => ({
+    scene_type:   s.intent as SceneType,
+    kling_prompt: s.visual_direction,
+    overlay_text: s.headline,
+    transition:   'cut',
+    pacing:       'moderate' as const,
+  }));
+}
+
 // ─── Optimised scene context → styleContext string ───────────────────────────
 
 /**

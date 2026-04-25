@@ -718,3 +718,76 @@ model AlcPolicyState {
 
   @@map("alc_policy_state")
 }
+
+// ─── Phase 5: Admin + Profit Engine ──────────────────────────────────────────
+
+// One row per AI API call (Kling, Veo, Claude, etc.) — fire-and-forget logged
+model ApiLog {
+  id            String   @id @default(uuid())
+  provider      String                        // "kling" | "veo" | "claude" | "gemini"
+  operation     String                        // "video_generate" | "status_poll" | "score" | etc.
+  userId        String?  @map("user_id")
+  campaignId    String?  @map("campaign_id")
+  costUsd       Float    @map("cost_usd")     // estimated cost in USD
+  latencyMs     Int?     @map("latency_ms")   // optional response time
+  statusCode    Int?     @map("status_code")  // HTTP status from provider
+  success       Boolean  @default(true)
+  errorMessage  String?  @map("error_message")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([campaignId])
+  @@index([provider])
+  @@index([createdAt])
+  @@map("api_logs")
+}
+
+// One row per successful Stripe payment / subscription event
+model RevenueLog {
+  id              String   @id @default(uuid())
+  stripeEventId   String   @unique @map("stripe_event_id")  // idempotency key
+  stripeCustomerId String? @map("stripe_customer_id")
+  userId          String?  @map("user_id")
+  eventType       String   @map("event_type")               // "payment_intent.succeeded" | "invoice.paid" etc.
+  amountUsd       Float    @map("amount_usd")
+  currency        String   @default("usd")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("revenue_logs")
+}
+
+// Daily profit snapshot — computed by cron or on-demand
+model ProfitSnapshot {
+  id              String   @id @default(uuid())
+  date            String   @unique                            // "YYYY-MM-DD"
+  totalCostUsd    Float    @map("total_cost_usd")
+  totalRevenueUsd Float    @map("total_revenue_usd")
+  profitUsd       Float    @map("profit_usd")
+  marginPct       Float    @map("margin_pct")
+  apiCallCount    Int      @map("api_call_count")
+  revenueEventCount Int    @map("revenue_event_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("profit_snapshots")
+}
+
+// ─── FIX 7: Blueprint persistence ────────────────────────────────────────────
+// MasterBlueprint records persisted so blueprintId in PipelineTrace is a real
+// DB primary key, enabling cross-run lineage tracking and audit queries.
+
+model Blueprint {
+  id         String   @id @default(uuid())
+  campaignId String   @map("campaign_id")
+  conceptId  String?  @map("concept_id")
+  format     String                        // video | carousel | banner
+  angleSlug  String   @map("angle_slug")
+  data       Json                          // full MasterBlueprint JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([campaignId])
+  @@index([angleSlug])
+  @@map("blueprints")
+}

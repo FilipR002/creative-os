@@ -3273,3 +3273,26 @@ textarea.form-input { resize: none; }
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
+
+/* ─── Studio — Phase 4 animations ─────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+@keyframes progress-indeterminate {
+  0%   { width: 0%;   margin-left: 0; }
+  50%  { width: 60%;  margin-left: 20%; }
+  100% { width: 0%;   margin-left: 100%; }
+}
+
+@keyframes studio-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.studio-panel {
+  animation: studio-fade-in 0.25s ease forwards;
+}
+

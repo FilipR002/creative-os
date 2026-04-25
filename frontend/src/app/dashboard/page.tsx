@@ -117,19 +117,22 @@ export default function DashboardPage() {
               </p>
             ) : (
               history.slice(0, 5).map(entry => (
-                <Link key={entry.executionId} href={`/result/${entry.executionId}`}
-                  style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 8, cursor: 'pointer', textDecoration: 'none', transition: 'border-color 0.2s' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#00C97A,#34DFA0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, flexShrink: 0, marginRight: 14 }}>✦</div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4, lineHeight: 1.4 }}>{entry.brief}</div>
+                <div key={entry.executionId}
+                  style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 8, gap: 14 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#00C97A,#34DFA0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, flexShrink: 0 }}>✦</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.brief}</div>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(46,213,115,0.12)', border: '1px solid rgba(46,213,115,0.3)', color: 'var(--success)', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 500 }}>GENERATED</span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(0,201,122,0.1)', border: '1px solid rgba(0,201,122,0.25)', color: 'var(--accent-l)', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 500 }}>{entry.format}</span>
                     </div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginLeft: 12 }}>{timeAgo(entry.createdAt)}</div>
-                  <div style={{ marginLeft: 12, color: 'var(--accent-l)', fontSize: 16 }}>→</div>
-                </Link>
+                  <div style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(entry.createdAt)}</div>
+                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                    <Link href={`/studio/${entry.executionId}`} style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'rgba(0,201,122,0.08)', border: '1px solid rgba(0,201,122,0.2)', borderRadius: 6, padding: '4px 10px', textDecoration: 'none' }}>Preview</Link>
+                    <Link href={`/result/${entry.executionId}`} style={{ fontSize: 11, fontWeight: 600, color: 'var(--sub)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 10px', textDecoration: 'none' }}>Details</Link>
+                  </div>
+                </div>
               ))
             )}
           </div>
