@@ -60,11 +60,11 @@ export class StitcherService implements OnModuleInit {
 
   onModuleInit(): void {
     if (!this.stitchUrl || this.stitchUrl.trim() === '') {
-      throw new Error(
-        '[StitcherService] KLING_STITCH_URL (or STITCH_SERVICE_URL) is missing. ' +
-        'Multi-scene UGC stitching cannot produce a real video without a stitch endpoint. ' +
-        'Set KLING_STITCH_URL in your environment before starting the server.',
+      this.logger.warn(
+        '[Stitcher] KLING_STITCH_URL not set — multi-scene stitching will fail at call time. ' +
+        'Set KLING_STITCH_URL in Railway env vars to enable video stitching.',
       );
+      return;
     }
     this.logger.log(`[Stitcher] Initialized — url=${this.stitchUrl}`);
   }

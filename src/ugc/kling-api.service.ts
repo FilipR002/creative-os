@@ -58,19 +58,23 @@ export class KlingApiService implements OnModuleInit {
   }
 
   // ─── Startup guard ─────────────────────────────────────────────────────────
+  // Warn on missing keys rather than crashing — allows server to boot in
+  // environments where Kling is not yet configured. Actual renders will fail
+  // fast at call time with a clear error message.
 
   onModuleInit(): void {
     if (!this.apiKey || this.apiKey.trim() === '') {
-      throw new Error(
-        '[KlingApiService] KLING_API_KEY (Access Key ID) is missing. ' +
-        'Set KLING_API_KEY in your environment before starting the server.',
+      this.logger.warn(
+        '[KlingAPI] KLING_API_KEY not set — Kling video generation will fail at call time. ' +
+        'Set KLING_API_KEY + KLING_API_SECRET in Railway env vars to enable.',
       );
+      return;
     }
     if (!this.apiSecret || this.apiSecret.trim() === '') {
-      throw new Error(
-        '[KlingApiService] KLING_API_SECRET (Secret Key) is missing. ' +
-        'Set KLING_API_SECRET in your environment before starting the server.',
+      this.logger.warn(
+        '[KlingAPI] KLING_API_SECRET not set — Kling video generation will fail at call time.',
       );
+      return;
     }
     this.logger.log(`[KlingAPI] Initialized — base=${this.baseUrl} poll=${this.pollInterval}ms timeout=${this.pollTimeout}ms`);
   }
@@ -106,6 +110,9 @@ export class KlingApiService implements OnModuleInit {
     platform: string,
     quality:  'standard' | 'high' | 'ultra' = 'standard',
   ): Promise<SceneRenderResult[]> {
+    if (!this.apiKey || !this.apiSecret) {
+      throw new Error('[KlingAPI] KLING_API_KEY and KLING_API_SECRET must be set to render video scenes.');
+    }
     const results = await Promise.all(
       scenes.map(scene => this.renderScene(scene, platform, quality)),
     );
