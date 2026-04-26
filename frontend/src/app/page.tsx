@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ParticleGlobe } from '@/components/ParticleGlobe';
 import { BentoGrid, BentoCard, useBentoReveal } from '@/components/BentoCard';
+import { useAuth } from '@/lib/auth-context';
 
 const FEATURES = [
   { icon: '✦', title: 'AI Campaign Engine',    desc: 'One brief → full campaign strategy, angles, and creatives automatically.',  tag: 'Core',     featured: true },
@@ -103,6 +105,13 @@ function FeaturesSection() {
 }
 
 export default function LandingPage() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) router.replace('/dashboard');
+  }, [loading, user, router]);
+
   useScrollReveal();
 
   return (
