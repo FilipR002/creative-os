@@ -47,6 +47,50 @@ import type { CreativePlan } from '../creative-director/creative-director-orches
 // Fix 4: product-run builds a minimal CreativePlan from RunDto + angle so the
 // gateway always receives a structured plan at execution time.
 
+// Kling hard cap per scene (pro tier). Standard tier caps at 5s.
+const KLING_MAX_SCENE_SECS = 10;
+
+const DURATION_TIER_SECS: Record<string, number> = {
+  SHORT:    15,
+  MEDIUM:   30,
+  LONG:     60,
+  EXTENDED: 90,
+};
+
+/** Scene templates — cycled/trimmed to match the required scene count */
+function buildSceneTemplates(
+  hook:      string,
+  cta:       string,
+  platform:  string,
+  angleSlug: string,
+  count:     number,
+): Array<{ kling_prompt: string; overlay_text: string; transition: string; pacing: string }> {
+  const slug = angleSlug.replace(/_/g, ' ');
+  const pool = [
+    { kling_prompt: `${hook} | authentic UGC | platform:${platform}`,          overlay_text: hook.slice(0, 60),         transition: 'cut',  pacing: 'aggressive' },
+    { kling_prompt: `Problem | tension | close-up | ${platform}`,               overlay_text: 'Does this feel familiar?', transition: 'zoom', pacing: 'moderate'   },
+    { kling_prompt: `Solution reveal | confident | ${platform}`,                overlay_text: `${slug} works.`,          transition: 'cut',  pacing: 'moderate'   },
+    { kling_prompt: `Social proof | testimonial style | ${platform}`,           overlay_text: 'Others are seeing it too.', transition: 'zoom', pacing: 'moderate' },
+    { kling_prompt: `Before vs after | transformation | ${platform}`,           overlay_text: 'See the difference.',      transition: 'cut',  pacing: 'aggressive' },
+    { kling_prompt: `Feature highlight | close-up detail | ${platform}`,        overlay_text: `Why ${slug} works.`,       transition: 'cut',  pacing: 'moderate'   },
+    { kling_prompt: `Emotional peak | aspirational moment | ${platform}`,       overlay_text: 'This could be you.',       transition: 'zoom', pacing: 'moderate'   },
+    { kling_prompt: `Objection handling | reassurance | ${platform}`,           overlay_text: 'No catch. Just results.',  transition: 'cut',  pacing: 'moderate'   },
+    { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,            overlay_text: cta,                        transition: 'cut',  pacing: 'moderate'   },
+  ];
+
+  // Always end with CTA, fill middle from pool, start with hook
+  if (count === 1) return [pool[0]];
+  if (count === 2) return [pool[0], pool[8]];
+
+  const middle = pool.slice(1, 8);
+  const needed = count - 2; // slots between hook and CTA
+  const middleSlots: typeof pool = [];
+  for (let i = 0; i < needed; i++) {
+    middleSlots.push(middle[i % middle.length]);
+  }
+  return [pool[0], ...middleSlots, pool[8]];
+}
+
 function buildMinimalPlan(
   dto:        RunDto,
   angleSlug:  string,
@@ -58,6 +102,10 @@ function buildMinimalPlan(
   const platform = dto.platform ?? 'tiktok';
   const now      = new Date().toISOString();
 
+  // Derive scene count from duration: each scene = up to KLING_MAX_SCENE_SECS
+  const totalSecs  = DURATION_TIER_SECS[dto.durationTier ?? 'SHORT'] ?? 15;
+  const sceneCount = Math.max(1, Math.ceil(totalSecs / KLING_MAX_SCENE_SECS));
+
   return {
     core_story: {
       hook,
@@ -66,12 +114,7 @@ function buildMinimalPlan(
       cta,
     },
     video: {
-      scenes: [
-        { kling_prompt: `${hook} | authentic UGC | platform:${platform}`, overlay_text: hook.slice(0, 60), transition: 'cut',  pacing: 'aggressive' },
-        { kling_prompt: `Problem | tension | close-up | ${platform}`,     overlay_text: 'Does this feel familiar?',            transition: 'zoom', pacing: 'moderate'   },
-        { kling_prompt: `Solution reveal | confident | ${platform}`,      overlay_text: `${angleSlug.replace(/_/g, ' ')} works.`, transition: 'cut', pacing: 'moderate' },
-        { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,   overlay_text: cta,                                  transition: 'cut',  pacing: 'moderate'   },
-      ],
+      scenes: buildSceneTemplates(hook, cta, platform, angleSlug, sceneCount),
     },
     carousel: {
       slides: [
