@@ -3,13 +3,12 @@
  *
  * UGC Stitcher — seventh stage of the UGC Engine.
  *
- * Assembles rendered scene clips into a final stitched video.
+ * Calls the Creative OS stitch-service microservice (FFmpeg-based).
+ * The service accepts a list of scene URLs, stitches them, and returns a
+ * final video URL. The call is async (job-based) — we poll until done.
  *
- * Two execution paths:
- *   1. KLING_STITCH_URL is configured → POST timeline to Kling stitch endpoint
- *   2. Fallback → call a configurable external stitching service (STITCH_SERVICE_URL)
- *
- * Returns a StitchResult with the final video URL, total duration, and timeline.
+ * Set STITCH_SERVICE_URL in Railway env vars, e.g.:
+ *   https://stitch-service.up.railway.app
  */
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
@@ -22,23 +21,21 @@ import type {
   Timeline,
 } from '../types/ugc.types';
 
-// ─── Stitch request/response shapes ──────────────────────────────────────────
+// ─── Stitch service shapes ────────────────────────────────────────────────────
 
-interface StitchRequest {
-  scenes: Array<{
-    video_url:      string;
-    start_time:     number;
-    end_time:       number;
-    transition:     string;
-    transition_dur: number;
-  }>;
-  output_format: 'mp4';
-  quality:       'standard' | 'high' | 'ultra';
+interface StitchJobRequest {
+  scenes:      string[];
+  transitions: 'cut' | 'fade';
+  audio?:      string;
 }
 
-interface StitchResponse {
-  stitched_url:   string;
-  duration:       number;
+interface StitchJobResponse {
+  jobId:    string;
+  status:   string;
+  videoUrl?: string;
+  duration?: number;
+  scenes?:  number;
+  error?:   string;
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -49,23 +46,22 @@ export class StitcherService implements OnModuleInit {
   private readonly stitchUrl:     string;
   private readonly stitchApiKey:  string;
 
+  private readonly pollInterval: number;
+  private readonly pollTimeout:  number;
+
   constructor(private readonly config: ConfigService) {
-    this.stitchUrl    = config.get<string>('KLING_STITCH_URL')   ??
-                        config.get<string>('STITCH_SERVICE_URL') ?? '';
-    this.stitchApiKey = config.get<string>('KLING_API_KEY')      ??
-                        config.get<string>('STITCH_API_KEY')     ?? '';
+    this.stitchUrl    = config.get<string>('STITCH_SERVICE_URL') ??
+                        config.get<string>('KLING_STITCH_URL')  ?? '';
+    this.stitchApiKey = config.get<string>('STITCH_API_KEY')    ?? '';
+    this.pollInterval = Number(config.get('STITCH_POLL_INTERVAL_MS') ?? 4_000);
+    this.pollTimeout  = Number(config.get('STITCH_POLL_TIMEOUT_MS')  ?? 300_000);
   }
 
-  // ─── Startup guard ────────────────────────────────────────────────────────────
-  // Warn on missing stitch URL — server boots without it so other features remain
-  // available. Multi-scene UGC stitching will fail fast at call time.
-  // Set KLING_STITCH_URL in Railway env vars to enable video stitching.
-
   onModuleInit(): void {
-    if (!this.stitchUrl || this.stitchUrl.trim() === '') {
+    if (!this.stitchUrl) {
       this.logger.warn(
-        '[Stitcher] KLING_STITCH_URL not set — multi-scene stitching disabled. ' +
-        'Add KLING_STITCH_URL to Railway env vars to enable video stitching.',
+        '[Stitcher] STITCH_SERVICE_URL not set — multi-scene stitching disabled. ' +
+        'Deploy stitch-service and set STITCH_SERVICE_URL in Railway env vars.',
       );
       return;
     }
@@ -107,50 +103,69 @@ export class StitcherService implements OnModuleInit {
     return this.stitchViaApi(timeline, quality);
   }
 
-  // ─── API stitching ──────────────────────────────────────────────────────
+  // ─── Stitch via stitch-service microservice ────────────────────────────────
 
   private async stitchViaApi(
     timeline: Timeline,
-    quality:  'standard' | 'high' | 'ultra',
+    _quality: 'standard' | 'high' | 'ultra',
   ): Promise<StitchResult> {
-    const body: StitchRequest = {
-      scenes: timeline.segments.map(seg => ({
-        video_url:      seg.videoUrl,
-        start_time:     seg.startTime,
-        end_time:       seg.endTime,
-        transition:     seg.transition,
-        transition_dur: seg.transitionDur,
-      })),
-      output_format: 'mp4',
-      quality,
+    const sceneUrls = timeline.segments.map(s => s.videoUrl);
+
+    const body: StitchJobRequest = {
+      scenes:      sceneUrls,
+      transitions: 'cut',
     };
 
-    const response = await fetch(this.stitchUrl, {
+    // ── 1. Submit job ────────────────────────────────────────────────────────
+    const submitRes = await fetch(`${this.stitchUrl}/stitch`, {
       method:  'POST',
-      headers: {
-        'Authorization': `Bearer ${this.stitchApiKey}`,
-        'Content-Type':  'application/json',
-      },
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
+      signal:  AbortSignal.timeout(15_000),
     });
 
-    if (!response.ok) {
-      const text = await response.text().catch(() => 'unknown');
-      throw new Error(`[Stitcher] API call failed ${response.status}: ${text}`);
+    if (!submitRes.ok) {
+      const text = await submitRes.text().catch(() => 'unknown');
+      throw new Error(`[Stitcher] Submit failed ${submitRes.status}: ${text}`);
     }
 
-    const result = await response.json() as StitchResponse;
+    const { jobId } = await submitRes.json() as { jobId: string };
+    this.logger.log(`[Stitcher] Job submitted — jobId=${jobId}`);
 
-    this.logger.log(
-      `[Stitcher] Done → url=${result.stitched_url} duration=${result.duration}s`,
-    );
+    // ── 2. Poll until done ───────────────────────────────────────────────────
+    const deadline = Date.now() + this.pollTimeout;
 
-    return {
-      stitchedVideoUrl: result.stitched_url,
-      totalDuration:    result.duration,
-      sceneCount:       timeline.segments.length,
-      timeline,
-    };
+    while (Date.now() < deadline) {
+      await new Promise(r => setTimeout(r, this.pollInterval));
+
+      const pollRes = await fetch(`${this.stitchUrl}/stitch/${jobId}`, {
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (!pollRes.ok) continue;
+
+      const job = await pollRes.json() as StitchJobResponse;
+
+      if (job.status === 'done' && job.videoUrl) {
+        this.logger.log(
+          `[Stitcher] Done — jobId=${jobId} url=${job.videoUrl} duration=${job.duration}s`,
+        );
+        return {
+          stitchedVideoUrl: job.videoUrl,
+          totalDuration:    job.duration ?? timeline.totalDuration,
+          sceneCount:       timeline.segments.length,
+          timeline,
+        };
+      }
+
+      if (job.status === 'failed') {
+        throw new Error(`[Stitcher] Job ${jobId} failed: ${job.error ?? 'unknown'}`);
+      }
+
+      this.logger.debug(`[Stitcher] jobId=${jobId} status=${job.status}`);
+    }
+
+    throw new Error(`[Stitcher] Job ${jobId} timed out after ${this.pollTimeout}ms`);
   }
 
 }
