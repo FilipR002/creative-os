@@ -21,7 +21,7 @@
  *   KLING_POLL_TIMEOUT_MS  — Max wait per scene ms (default: 300000 / 5 min)
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService }                    from '@nestjs/config';
 import { createHmac }                       from 'crypto';
 import { ApiLogService, estimateCost }      from '../billing/api-log.service';
@@ -112,7 +112,11 @@ export class KlingApiService implements OnModuleInit {
     quality:  'standard' | 'high' | 'ultra' = 'standard',
   ): Promise<SceneRenderResult[]> {
     if (!this.apiKey || !this.apiSecret) {
-      throw new Error('[KlingAPI] KLING_API_KEY and KLING_API_SECRET must be set to render video scenes.');
+      throw new ServiceUnavailableException(
+        'Video generation is not yet configured on this server. ' +
+        'KLING_API_KEY and KLING_API_SECRET must be set in Railway environment variables. ' +
+        'Contact the admin to enable video generation.',
+      );
     }
     const results = await Promise.all(
       scenes.map(scene => this.renderScene(scene, platform, quality)),

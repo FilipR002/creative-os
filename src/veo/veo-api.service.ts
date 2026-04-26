@@ -16,7 +16,7 @@
  *   VEO_POLL_TIMEOUT_MS    — Max wait per scene ms (default: 600000 / 10 min)
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService }      from '@nestjs/config';
 import { ApiLogService, estimateCost } from '../billing/api-log.service';
 
@@ -83,6 +83,12 @@ export class VeoApiService {
     platform: string,
     quality:  'standard' | 'high' | 'ultra' = 'high',
   ): Promise<SceneRenderResult[]> {
+    if (!this.apiKey) {
+      throw new ServiceUnavailableException(
+        'Cinematic video generation is not yet configured on this server. ' +
+        'GEMINI_API_KEY must be set in Railway environment variables.',
+      );
+    }
     this.logger.log(`[VeoAPI] Rendering ${scenes.length} scene(s) quality=${quality} model=${this.model}`);
 
     const results = await Promise.all(
