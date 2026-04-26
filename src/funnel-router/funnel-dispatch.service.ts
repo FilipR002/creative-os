@@ -30,6 +30,62 @@ import type {
   CreativeFormat,
 } from './funnel-router.types';
 import type { RoutingDecision, RoutingContext } from '../routing/smart/routing.types';
+import type { CreativePlan }                    from '../creative-director/creative-director-orchestrator';
+
+// ─── Synthetic CreativePlan builder ──────────────────────────────────────────
+// Fix 4: FunnelDispatch builds a minimal plan from SharedCreativeCore so the
+// gateway always receives a structured plan at execution time.
+
+function buildPlanFromCore(
+  core:       SharedCreativeCore,
+  campaignId: string,
+  conceptId:  string,
+  format:     'carousel' | 'banner',
+  platform:   string,
+): CreativePlan {
+  const now   = new Date().toISOString();
+  const cta   = core.ctaLogic.split('|')[0].trim().slice(0, 40) || 'Get started now →';
+
+  return {
+    core_story: {
+      hook:     core.hook,
+      problem:  `Your audience is looking for a better solution — and hasn't found it yet.`,
+      solution: `This changes everything. Built for ${core.emotion} results.`,
+      cta,
+    },
+    video: {
+      scenes: [
+        { kling_prompt: `${core.hook} | ${core.emotion} energy | authentic UGC | platform:${platform}`, overlay_text: core.hook.slice(0, 60), transition: 'cut',  pacing: 'aggressive' },
+        { kling_prompt: `Problem reveal | ${core.emotion} | close-up | platform:${platform}`,            overlay_text: 'Sound familiar?',          transition: 'zoom', pacing: 'moderate'   },
+        { kling_prompt: `Solution reveal | ${core.emotion} confident | product demo | ${platform}`,      overlay_text: 'Here is what changes.',     transition: 'cut',  pacing: 'moderate'   },
+        { kling_prompt: `CTA: ${cta} | ${core.emotion} | direct to camera | ${platform}`,               overlay_text: cta,                        transition: 'cut',  pacing: 'moderate'   },
+      ],
+    },
+    carousel: {
+      slides: [
+        { headline: core.hook.slice(0, 80),              intent: 'hook'     as const, visual_direction: `Bold typography, ${core.emotion} energy` },
+        { headline: 'The problem is real.',              intent: 'problem'  as const, visual_direction: `Pain point visual, contrast`, subtext: 'Sound familiar?' },
+        { headline: 'Here is what changes.',            intent: 'solution' as const, visual_direction: `Product hero, clean, ${core.emotion}` },
+        { headline: 'Why this works.',                  intent: 'solution' as const, visual_direction: 'Feature highlight, minimal layout' },
+        { headline: cta,                                intent: 'cta'      as const, visual_direction: `Strong CTA, brand colors, ${core.emotion}` },
+      ],
+    },
+    banner: {
+      headline:           core.hook.slice(0, 50),
+      subtext:            core.ctaLogic.slice(0, 80),
+      cta,
+      visual_composition: `${core.emotion} visual, ${platform} optimized`,
+    },
+    _meta: {
+      generated_at:  now,
+      model:         'funnel-dispatch-synthetic',
+      campaign_id:   campaignId,
+      concept_id:    conceptId,
+      duration_tier: 'MEDIUM',
+      version:       '2.0',
+    },
+  };
+}
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -170,6 +226,9 @@ export class FunnelDispatchService {
     const { executionMode, renderEngine, routingDecision } =
       this.resolveDispatchMode(campaignId, platform, variantCount);
 
+    // Fix 4: Build synthetic CreativePlan from SharedCreativeCore
+    const creativePlan = buildPlanFromCore(sharedCore, campaignId, conceptId ?? '', 'carousel', platform);
+
     this.logger.log(
       `[FunnelDispatch] Carousel → ${variantCount} variant(s) via gateway | ` +
       `angle=${sharedCore.angle} executionMode=${executionMode} engine=${renderEngine}`,
@@ -194,6 +253,7 @@ export class FunnelDispatchService {
           modeReasoning:   modeDecision.reasoning,
           routingDecision: { ...routingDecision, variantCount: 1 },
           modelDecisions:  [modeDecision],
+          creativePlan,  // Fix 4: required plan
           slideCount:      5,
           platform,
           variantCount:    1,
@@ -226,6 +286,9 @@ export class FunnelDispatchService {
     const { executionMode, renderEngine, routingDecision } =
       this.resolveDispatchMode(campaignId, platform, variantCount);
 
+    // Fix 4: Build synthetic CreativePlan from SharedCreativeCore
+    const creativePlan = buildPlanFromCore(sharedCore, campaignId, conceptId ?? '', 'banner', platform);
+
     this.logger.log(
       `[FunnelDispatch] Banner → ${variantCount} variant(s) via gateway | ` +
       `signal=${sharedCore.ctaLogic.split('|')[0].trim()} executionMode=${executionMode} engine=${renderEngine}`,
@@ -250,6 +313,7 @@ export class FunnelDispatchService {
           modeReasoning:   modeDecision.reasoning,
           routingDecision: { ...routingDecision, variantCount: 1 },
           modelDecisions:  [modeDecision],
+          creativePlan,  // Fix 4: required plan
           sizes:           ['1200x628', '1080x1080', '1080x1920'],
           variantCount:    1,
         },

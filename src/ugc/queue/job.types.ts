@@ -29,6 +29,10 @@ export interface UGCJobPayload {
   /** ISO timestamp */
   enqueuedAt:    string;
 
+  // ── Fix 5: Retry tracking ─────────────────────────────────────────────────
+  /** Number of previous failed attempts. 0 on first attempt. Max 3 before permanent failure. */
+  retryCount?:   number;
+
   // ── Phase 1.1 viral test fields (optional for backward compat) ───────────
   /** Test run identifier — groups all jobs in a viral test */
   testId?:       string;

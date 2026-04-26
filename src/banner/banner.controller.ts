@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Param, Post, HttpCode } from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BannerService } from './banner.service';
-import { GenerateBannerDto } from './banner.dto';
 import { UserId } from '../common/decorators/user-id.decorator';
 
 @ApiTags('Banner')
@@ -9,11 +8,9 @@ import { UserId } from '../common/decorators/user-id.decorator';
 export class BannerController {
   constructor(private readonly service: BannerService) {}
 
-  @Post('generate')
-  @ApiOperation({ summary: 'Generate banner ad copy for multiple sizes' })
-  generate(@Body() dto: GenerateBannerDto, @UserId() userId: string) {
-    return this.service.generate(dto, userId);
-  }
+  // NOTE: POST /api/banner/generate has been removed.
+  // All generation must go through POST /api/product/decision (ExecutionGateway)
+  // which enforces token checks, deductions, CreativePlan, and V2 routing.
 
   @Post(':id/images')
   @HttpCode(200)

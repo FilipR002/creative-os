@@ -36,6 +36,9 @@ import type { UGCJobPayload } from './job.types';
 /** How often to poll the queue in milliseconds */
 const POLL_INTERVAL_MS = 5_000;
 
+/** Fix 5: Maximum number of retry attempts before a job is permanently failed */
+const MAX_RETRIES = 3;
+
 // ─── Processor ────────────────────────────────────────────────────────────────
 
 @Injectable()
@@ -130,9 +133,22 @@ export class UGCQueueProcessor implements OnModuleInit, OnModuleDestroy {
       );
 
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err);
-      this.logger.error(`[UGCProcessor] Failed jobId=${jobId}: ${message}`);
-      await this.queue.markFailed(jobId, message);
+      const message    = err instanceof Error ? err.message : String(err);
+      const retryCount = job.retryCount ?? 0;
+
+      if (retryCount < MAX_RETRIES) {
+        // Fix 5: Re-enqueue with backoff — don't permanently fail until MAX_RETRIES exceeded
+        this.logger.warn(
+          `[UGCProcessor] Failed jobId=${jobId} (attempt ${retryCount + 1}/${MAX_RETRIES + 1}): ${message} — requeueing`,
+        );
+        await this.queue.requeue(job, message);
+      } else {
+        // All retries exhausted — mark permanently failed
+        this.logger.error(
+          `[UGCProcessor] Permanently failed jobId=${jobId} after ${retryCount + 1} attempts: ${message}`,
+        );
+        await this.queue.markFailed(jobId, `[final] ${message}`);
+      }
     }
   }
 }

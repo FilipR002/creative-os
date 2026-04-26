@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Param, Post, HttpCode } from '@nestjs/common';
+import { Controller, Get, Param, Post, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CarouselService } from './carousel.service';
-import { GenerateCarouselDto } from './carousel.dto';
 import { UserId } from '../common/decorators/user-id.decorator';
 
 @ApiTags('Carousel')
@@ -9,11 +8,9 @@ import { UserId } from '../common/decorators/user-id.decorator';
 export class CarouselController {
   constructor(private readonly service: CarouselService) {}
 
-  @Post('generate')
-  @ApiOperation({ summary: 'Generate carousel slides from a concept' })
-  generate(@Body() dto: GenerateCarouselDto, @UserId() userId: string) {
-    return this.service.generate(dto, userId);
-  }
+  // NOTE: POST /api/carousel/generate has been removed.
+  // All generation must go through POST /api/product/decision (ExecutionGateway)
+  // which enforces token checks, deductions, CreativePlan, and V2 routing.
 
   /**
    * POST /api/carousel/:creativeId/images

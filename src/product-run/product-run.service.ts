@@ -41,6 +41,63 @@ import type {
   RunScoringItem,
   RunResponse,
 } from './product-run.types';
+import type { CreativePlan } from '../creative-director/creative-director-orchestrator';
+
+// ─── Synthetic plan builder ───────────────────────────────────────────────────
+// Fix 4: product-run builds a minimal CreativePlan from RunDto + angle so the
+// gateway always receives a structured plan at execution time.
+
+function buildMinimalPlan(
+  dto:        RunDto,
+  angleSlug:  string,
+  campaignId: string,
+  conceptId:  string,
+): CreativePlan {
+  const hook     = dto.styleContext?.split('|')[0].trim().slice(0, 80) ?? `Discover ${angleSlug}`;
+  const cta      = dto.goal === 'conversion' ? 'Get started now →' : dto.goal === 'awareness' ? 'Learn more →' : 'See how it works →';
+  const platform = dto.platform ?? 'tiktok';
+  const now      = new Date().toISOString();
+
+  return {
+    core_story: {
+      hook,
+      problem:  'The gap between where you are and where you want to be is wider than it needs to be.',
+      solution: `${angleSlug.replace(/_/g, ' ')} closes that gap — built for real results.`,
+      cta,
+    },
+    video: {
+      scenes: [
+        { kling_prompt: `${hook} | authentic UGC | platform:${platform}`, overlay_text: hook.slice(0, 60), transition: 'cut',  pacing: 'aggressive' },
+        { kling_prompt: `Problem | tension | close-up | ${platform}`,     overlay_text: 'Does this feel familiar?',            transition: 'zoom', pacing: 'moderate'   },
+        { kling_prompt: `Solution reveal | confident | ${platform}`,      overlay_text: `${angleSlug.replace(/_/g, ' ')} works.`, transition: 'cut', pacing: 'moderate' },
+        { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,   overlay_text: cta,                                  transition: 'cut',  pacing: 'moderate'   },
+      ],
+    },
+    carousel: {
+      slides: [
+        { headline: hook,                                              intent: 'hook'     as const, visual_direction: `Bold typography, high-energy, ${platform}` },
+        { headline: 'The problem most people miss.',                  intent: 'problem'  as const, visual_direction: 'Pain point visual, contrast',  subtext: 'Sound familiar?' },
+        { headline: `${angleSlug.replace(/_/g, ' ')} solves it.`,    intent: 'solution' as const, visual_direction: 'Product hero, clean composition' },
+        { headline: 'Here is why it works.',                         intent: 'solution' as const, visual_direction: 'Feature highlight, minimal layout' },
+        { headline: cta,                                              intent: 'cta'      as const, visual_direction: 'Strong CTA, brand colors' },
+      ],
+    },
+    banner: {
+      headline:           hook.slice(0, 50),
+      subtext:            `${angleSlug.replace(/_/g, ' ')} — built for results.`.slice(0, 80),
+      cta,
+      visual_composition: `High-impact visual, ${platform} optimized`,
+    },
+    _meta: {
+      generated_at:  now,
+      model:         'product-run-synthetic',
+      campaign_id:   campaignId,
+      concept_id:    conceptId,
+      duration_tier: dto.durationTier ?? 'SHORT',
+      version:       '2.0',
+    },
+  };
+}
 
 // Minimum winner score required to fire an evolution cycle
 const EVOLUTION_THRESHOLD = 0.70;
@@ -287,6 +344,9 @@ export class ProductRunService {
       `(${modeDecision.reasoning})`,
     );
 
+    // Fix 4: Build synthetic CreativePlan — gateway requires a plan at execution time
+    const creativePlan = buildMinimalPlan(dto, angleSlug, campaignId, conceptId);
+
     const result = await this.gateway.execute(
       {
         format:            dto.format as 'video' | 'carousel' | 'banner',
@@ -301,6 +361,7 @@ export class ProductRunService {
         modeReasoning:     modeDecision.reasoning,
         routingDecision,
         modelDecisions:    [modeDecision],
+        creativePlan,     // Fix 4: required plan
         durationTier:      dto.durationTier ?? 'SHORT',
         slideCount:        dto.slideCount   ?? 5,
         platform:          dto.platform,

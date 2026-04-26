@@ -87,10 +87,11 @@ export interface PipelineInput {
   };
   /**
    * Full multi-format plan from Creative Director Brain.
-   * When present, core narrative + format-specific signals flow into the
-   * execution gateway's styleContext.
+   * Fix 4: creativePlan is now REQUIRED — the gateway enforces it at runtime.
+   * Callers must generate a plan via CreativeDirectorService before invoking
+   * the pipeline. The pipeline throws if creativePlan is missing.
    */
-  creativePlan?: CreativePlan;
+  creativePlan: CreativePlan;
 }
 
 /**

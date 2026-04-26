@@ -85,8 +85,10 @@ export interface GatewayExecutionInput {
   /** Per-scene mode decisions for per-variant context derivation */
   modelDecisions:  ModelDecision[];
 
-  // ── Creative Director plan (first-class input) ─────────────────────────────
-  creativePlan?: CreativePlan;
+  // ── Creative Director plan (REQUIRED — first-class input) ─────────────────
+  // Fix 4: Gateway rejects requests without a plan. Callers must generate one
+  // (via CreativeDirectorService or V2 synthetic builder) before dispatching.
+  creativePlan: CreativePlan;
 
   // ── Format-specific ────────────────────────────────────────────────────────
   durationTier?: string;
@@ -254,7 +256,16 @@ export class ExecutionGatewayService {
       );
     }
 
-    // ── FIX 4: Respect brain's variantCount — remove hard cap, add safety bound ─
+    // ── Fix 4: CreativePlan is required — reject if missing ───────────────────
+    if (!input.creativePlan) {
+      throw new BadRequestException(
+        '[ExecutionGateway] creativePlan is required. ' +
+        'Generate a plan via CreativeDirectorService or the V2 brain builder ' +
+        'before dispatching to the gateway.',
+      );
+    }
+
+    // ── Respect brain's variantCount — remove hard cap, add safety bound ──────
     const count = input.variantCount;
     if (count > MAX_SAFE_VARIANTS) {
       throw new BadRequestException(

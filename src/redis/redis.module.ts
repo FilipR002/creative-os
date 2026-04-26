@@ -11,10 +11,20 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
     {
       provide: REDIS_CLIENT,
       useFactory: (config: ConfigService) => {
-        const url = config.get<string>('REDIS_URL') ?? 'redis://localhost:6379';
+        const url    = config.get<string>('REDIS_URL');
         const logger = new Logger('RedisModule');
 
-        const client = new Redis(url, {
+        // Fix 3: Hard validation — UGC queue, MirofishService, and rate-limiting
+        // all require Redis. Failing silently produces subtle data loss in production.
+        if (!url || url.trim() === '') {
+          throw new Error(
+            '[Redis] CRITICAL: REDIS_URL env var is not set. ' +
+            'Add REDIS_URL to Railway environment variables. ' +
+            'The UGC queue, Mirofish cache, and several core features require Redis.',
+          );
+        }
+
+        const client = new Redis(url!, {
           lazyConnect:          true,
           enableReadyCheck:     false,
           maxRetriesPerRequest: 1,

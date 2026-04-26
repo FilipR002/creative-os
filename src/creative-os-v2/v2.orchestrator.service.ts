@@ -28,14 +28,18 @@ import { ViralTestService }        from '../ugc/viral-test.service';
 import { ExecutionGatewayService } from '../creative-os/lib/execution-gateway';
 import { MemoryService }           from '../memory/memory.service';
 import { OutcomesService }         from '../outcomes/outcomes.service';
-// W2: Real executionMode — SmartRoutingService is @Global, no module change needed
 import { SmartRoutingService }     from '../routing/smart/routing.service';
 import { decideMode }              from '../creative-os/lib/model-router';
+// Fix 2: Real routing signals — FatigueService, MirofishService, TrendIntelligenceService
+import { FatigueService }          from '../fatigue/fatigue.service';
+import { MirofishService }         from '../mirofish/mirofish.service';
+import { TrendIntelligenceService } from '../trends/trend-intelligence.service';
 
-import type { V2InputSchema, V2OutputSchema }        from './types/v2.schema.types';
+import type { V2InputSchema, V2OutputSchema, V2BrainOutput } from './types/v2.schema.types';
 import type { LaunchViralTestResponse }              from '../ugc/types/viral-test.types';
 import type { FormatDispatchResult }                 from '../funnel-router/funnel-router.types';
 import type { RoutingDecision, RoutingContext }      from '../routing/smart/routing.types';
+import type { CreativePlan }                         from '../creative-director/creative-director-orchestrator';
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -49,8 +53,11 @@ export class V2OrchestratorService {
     private readonly gateway:      ExecutionGatewayService,
     private readonly memory:       MemoryService,
     private readonly outcomes:     OutcomesService,
-    // W2: SmartRoutingService is @Global — inject directly, no module change
     private readonly smartRouting: SmartRoutingService,
+    // Fix 2: Real routing signals injected here
+    private readonly fatigue:      FatigueService,
+    private readonly mirofish:     MirofishService,
+    private readonly trendIntel:   TrendIntelligenceService,
   ) {}
 
   // ─── Public ───────────────────────────────────────────────────────────────
@@ -148,35 +155,177 @@ export class V2OrchestratorService {
     return output;
   }
 
-  // ─── W2: Real executionMode resolver ─────────────────────────────────────
-  // SmartRoutingService returns exploit/balanced/explore.
-  // decideMode() maps that + platform signals → ugc | cinematic | hybrid + engine.
-  // fatigueState defaults to WARMING (neutral) — no per-angle data at V2 dispatch level.
+  // ─── Fix 2: Real executionMode resolver ──────────────────────────────────
+  // Pulls live signals from FatigueService, MirofishService, TrendIntelligenceService
+  // instead of using hardcoded constants.
 
-  private resolveDispatchMode(
+  private async resolveDispatchMode(
     campaignId: string,
     platform:   string,
     goal:       string,
     count:      number,
-  ): { executionMode: string; renderEngine: string; routingDecision: RoutingDecision } {
+    angleSlug:  string,
+    userId:     string,
+    industry:   string,
+    format:     string,
+  ): Promise<{ executionMode: string; renderEngine: string; routingDecision: RoutingDecision }> {
+    // ── Pull real signals concurrently ────────────────────────────────────────
+    const [fatigueResult, mirofishResult, trendBias] = await Promise.all([
+      this.fatigue.computeForSlug(angleSlug, userId, campaignId).catch(() => null),
+      Promise.resolve(this.mirofish.simulateInline({
+        primaryAngle: angleSlug,
+        goal:         goal as 'conversion' | 'awareness' | 'engagement',
+        format,
+        mode:         'v2',
+      })),
+      Promise.resolve(this.trendIntel.getBiasForIndustry(industry)),
+    ]);
+
+    // ── Map fatigue state ─────────────────────────────────────────────────────
+    // FatigueService types: HEALTHY | WARMING | FATIGUED | BLOCKED
+    // RoutingContext types: HEALTHY | WARMING | FATIGUED | BLOCKED (identical)
+    const fatigueState = (fatigueResult?.fatigue_state ?? 'WARMING') as RoutingContext['fatigueState'];
+    const fatigueScore = fatigueResult?.fatigue_score ?? 0.30;
+
+    // ── Derive routing signals ────────────────────────────────────────────────
+    // memoryStability: inverse of fatigue — high fatigue = low stability
+    const memoryStability    = Math.max(0, Math.min(1, 1 - fatigueScore));
+    // explorationEntropy: fatigue exploration_signal biases exploration rate
+    const explorationEntropy = Math.max(0.05, Math.min(0.60,
+      0.30 + (fatigueResult?._signals.rankingDropVelocity ?? 0) * 0.30,
+    ));
+    // trendPressure: average of hook + format bias from trend intelligence
+    const trendPressure      = Math.max(0, Math.min(1,
+      (Math.abs(trendBias.hookBias) + Math.abs(trendBias.formatBias)) / 2,
+    ));
+    // mirofishConfidence: learning signal strength from inline simulation
+    const mirofishConfidence = mirofishResult?.learning_signal_strength ?? 0;
+
+    this.logger.debug(
+      `[V2] RoutingCtx — fatigue=${fatigueState}(${fatigueScore.toFixed(2)}) ` +
+      `stability=${memoryStability.toFixed(2)} entropy=${explorationEntropy.toFixed(2)} ` +
+      `trend=${trendPressure.toFixed(2)} mirofish=${mirofishConfidence.toFixed(2)}`,
+    );
+
     const ctx: RoutingContext = {
       clientId:           campaignId,
       goal:               (goal as RoutingContext['goal']) ?? 'conversion',
-      fatigueState:       'WARMING',  // neutral — no per-angle fatigue at V2 dispatch layer
-      memoryStability:    0.70,
-      explorationEntropy: 0.30,
-      trendPressure:      0,
-      mirofishConfidence: 0,
+      fatigueState,
+      memoryStability,
+      explorationEntropy,
+      trendPressure,
+      mirofishConfidence,
     };
+
     const routingDecision = this.smartRouting.decide({ ...ctx, variantCount: count } as any);
     const modeDecision    = decideMode(
       { scene_type: 'hook', pacing: 'moderate', platform, emotion: 'confident' },
       routingDecision,
     );
+
     return {
       executionMode:  modeDecision.mode,
       renderEngine:   modeDecision.model,
       routingDecision,
+    };
+  }
+
+  // ─── Fix 4: Synthetic CreativePlan builder ───────────────────────────────
+  //
+  // Constructs a CreativePlan from V2BrainOutput + V2InputSchema without an
+  // additional Claude API call. The brain already contains all the narrative
+  // primitives (hook, angle, emotion, intent, funnel stage) needed to populate
+  // the plan. This ensures the gateway always receives a valid plan while keeping
+  // V2 execution fast (no extra LLM round-trip per dispatch).
+
+  private buildCreativePlan(
+    input:    V2InputSchema,
+    brain:    V2BrainOutput,
+    format:   'carousel' | 'banner' | 'video',
+    platform: string,
+  ): CreativePlan {
+    const hook     = brain.shared_hook;
+    const emotion  = brain.shared_emotion;
+    const intent   = brain.intent;    // cold | warm | hot
+    const stage    = brain.funnel_stage; // TOFU | MOFU | BOFU
+
+    // ── Derive core story from brain primitives ───────────────────────────────
+    const problem  = stage === 'TOFU'
+      ? `Most ${input.audience} struggle with exactly this — and don't know there's a better way.`
+      : stage === 'MOFU'
+        ? `You've seen the options. None of them actually fix the root problem.`
+        : `The difference between where you are and where you want to be is one decision.`;
+
+    const solution = intent === 'cold'
+      ? `${input.product} changes the equation — built for ${input.audience} who want real results.`
+      : intent === 'warm'
+        ? `${input.product} is exactly what ${input.audience} have been waiting for.`
+        : `${input.product} — the obvious choice once you see it.`;
+
+    const cta = input.goal === 'conversion'
+      ? 'Get started now →'
+      : input.goal === 'awareness'
+        ? 'Learn more →'
+        : 'See how it works →';
+
+    const now = new Date().toISOString();
+
+    // ── Build format-specific sections ───────────────────────────────────────
+    const videoScenes = [
+      {
+        kling_prompt: `${hook} | ${emotion} energy | platform:${platform} | ${input.audience} | authentic UGC style`,
+        overlay_text: hook.slice(0, 60),
+        transition:   'cut'  as const,
+        pacing:       'aggressive' as const,
+      },
+      {
+        kling_prompt: `Problem reveal: ${problem} | ${emotion} tone | close-up reaction shot | authentic`,
+        overlay_text: problem.slice(0, 60),
+        transition:   'zoom' as const,
+        pacing:       'moderate' as const,
+      },
+      {
+        kling_prompt: `Solution: ${solution} | product demo | ${emotion} | confident | platform:${platform}`,
+        overlay_text: solution.slice(0, 60),
+        transition:   'cut'  as const,
+        pacing:       'moderate' as const,
+      },
+      {
+        kling_prompt: `CTA: ${cta} | ${emotion} | direct to camera | ${input.audience} | authentic close`,
+        overlay_text: cta,
+        transition:   'cut'  as const,
+        pacing:       'moderate' as const,
+      },
+    ];
+
+    const carouselSlides = [
+      { headline: hook.slice(0, 80),           intent: 'hook'     as const, visual_direction: `Bold typography, ${emotion} energy, platform:${platform}` },
+      { headline: problem.slice(0, 80),         intent: 'problem'  as const, visual_direction: `Pain point visual, contrast lighting, ${input.audience} perspective`, subtext: 'Sound familiar?' },
+      { headline: solution.slice(0, 80),        intent: 'solution' as const, visual_direction: `Product hero, clean composition, ${emotion} mood`, subtext: `Built for ${input.audience}` },
+      { headline: `Why ${input.product}?`,       intent: 'solution' as const, visual_direction: `Feature highlight, minimal layout, high trust visual` },
+      { headline: cta,                          intent: 'cta'      as const, visual_direction: `Strong CTA composition, brand colors, ${emotion} close` },
+    ];
+
+    const banner = {
+      headline:           hook.slice(0, 50),
+      subtext:            solution.slice(0, 80),
+      cta,
+      visual_composition: `${emotion} visual, ${input.audience} context, ${platform} optimized`,
+    };
+
+    return {
+      core_story: { hook, problem, solution, cta },
+      video:      { scenes: videoScenes },
+      carousel:   { slides: carouselSlides },
+      banner,
+      _meta: {
+        generated_at:  now,
+        model:         'v2-brain-synthetic',
+        campaign_id:   input.campaign_id,
+        concept_id:    input.concept_id ?? '',
+        duration_tier: 'MEDIUM',
+        version:       '2.0',
+      },
     };
   }
 
@@ -203,7 +352,7 @@ export class V2OrchestratorService {
     );
   }
 
-  // W2 FIX: Carousel via ExecutionGateway — executionMode from SmartRoutingService
+  // Fix 2: Carousel via ExecutionGateway — executionMode from real routing signals
 
   private async dispatchCarousel(
     input:    V2InputSchema,
@@ -213,12 +362,18 @@ export class V2OrchestratorService {
   ): Promise<string[]> {
     const count = brain.variant_allocation.carousel;
     const { executionMode, renderEngine, routingDecision } =
-      this.resolveDispatchMode(input.campaign_id, platform, input.goal, count);
+      await this.resolveDispatchMode(
+        input.campaign_id, platform, input.goal, count,
+        brain.shared_angle, userId, input.industry ?? 'general', 'carousel',
+      );
 
     this.logger.log(
       `[V2] Carousel dispatch: ${count} variant(s) | ` +
       `executionMode=${executionMode} engine=${renderEngine} routing=${routingDecision.mode}`,
     );
+
+    // Fix 4: Build a CreativePlan from brain output before dispatching to gateway
+    const creativePlan = this.buildCreativePlan(input, brain, 'carousel', platform);
 
     const ids: string[] = [];
 
@@ -239,6 +394,7 @@ export class V2OrchestratorService {
           modeReasoning:   modeDecision.reasoning,
           routingDecision: { ...routingDecision, variantCount: 1 },
           modelDecisions:  [modeDecision],
+          creativePlan,   // Fix 4: required plan — synthesized from brain output
           slideCount:      5,
           platform,
           variantCount:    1,
@@ -251,7 +407,7 @@ export class V2OrchestratorService {
     return ids;
   }
 
-  // W2 FIX: Banner via ExecutionGateway — executionMode from SmartRoutingService
+  // Fix 2: Banner via ExecutionGateway — executionMode from real routing signals
 
   private async dispatchBanner(
     input:  V2InputSchema,
@@ -261,12 +417,18 @@ export class V2OrchestratorService {
     const count    = brain.variant_allocation.banner;
     const platform = input.platforms[0] ?? 'tiktok';
     const { executionMode, renderEngine, routingDecision } =
-      this.resolveDispatchMode(input.campaign_id, platform, input.goal, count);
+      await this.resolveDispatchMode(
+        input.campaign_id, platform, input.goal, count,
+        brain.shared_angle, userId, input.industry ?? 'general', 'banner',
+      );
 
     this.logger.log(
       `[V2] Banner dispatch: ${count} variant(s) | ` +
       `executionMode=${executionMode} engine=${renderEngine} routing=${routingDecision.mode}`,
     );
+
+    // Fix 4: Build a CreativePlan from brain output before dispatching to gateway
+    const creativePlan = this.buildCreativePlan(input, brain, 'banner', platform);
 
     const ids: string[] = [];
 
@@ -287,6 +449,7 @@ export class V2OrchestratorService {
           modeReasoning:   modeDecision.reasoning,
           routingDecision: { ...routingDecision, variantCount: 1 },
           modelDecisions:  [modeDecision],
+          creativePlan,   // Fix 4: required plan — synthesized from brain output
           sizes:           ['1080x1080', '1080x1920', '1200x628'],
           variantCount:    1,
         },

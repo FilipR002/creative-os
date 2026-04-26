@@ -2,7 +2,6 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { VideoService } from './video.service';
 import { HookBoosterService } from './hook-booster.service';
-import { GenerateVideoDto } from './video.dto';
 import { UserId } from '../common/decorators/user-id.decorator';
 import { IsString } from 'class-validator';
 
@@ -19,11 +18,9 @@ export class VideoController {
     private readonly hookBooster:  HookBoosterService,
   ) {}
 
-  @Post('generate')
-  @ApiOperation({ summary: 'Generate a video ad script (scene-by-scene) with auto hook boost' })
-  generate(@Body() dto: GenerateVideoDto, @UserId() userId: string) {
-    return this.service.generate(dto, userId);
-  }
+  // NOTE: POST /api/video/generate has been removed.
+  // All generation must go through POST /api/product/decision (ExecutionGateway)
+  // which enforces token checks, deductions, CreativePlan, and V2 routing.
 
   @Post('boost-hook')
   @ApiOperation({ summary: 'Manually run Hook Booster on an existing video creative' })

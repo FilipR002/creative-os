@@ -58,23 +58,23 @@ export class KlingApiService implements OnModuleInit {
   }
 
   // ─── Startup guard ─────────────────────────────────────────────────────────
-  // Warn on missing keys rather than crashing — allows server to boot in
-  // environments where Kling is not yet configured. Actual renders will fail
-  // fast at call time with a clear error message.
+  // Fix 3: Throw at startup on missing Kling credentials so Railway shows a clear
+  // deployment failure instead of silently letting video generation die at call time.
+  // Set KLING_API_KEY + KLING_API_SECRET in Railway env vars before deploying.
 
   onModuleInit(): void {
     if (!this.apiKey || this.apiKey.trim() === '') {
-      this.logger.warn(
-        '[KlingAPI] KLING_API_KEY not set — Kling video generation will fail at call time. ' +
-        'Set KLING_API_KEY + KLING_API_SECRET in Railway env vars to enable.',
+      throw new Error(
+        '[KlingAPI] CRITICAL: KLING_API_KEY env var is not set. ' +
+        'Add KLING_API_KEY to Railway environment variables. ' +
+        'UGC video generation requires a valid Kling API key.',
       );
-      return;
     }
     if (!this.apiSecret || this.apiSecret.trim() === '') {
-      this.logger.warn(
-        '[KlingAPI] KLING_API_SECRET not set — Kling video generation will fail at call time.',
+      throw new Error(
+        '[KlingAPI] CRITICAL: KLING_API_SECRET env var is not set. ' +
+        'Add KLING_API_SECRET to Railway environment variables.',
       );
-      return;
     }
     this.logger.log(`[KlingAPI] Initialized — base=${this.baseUrl} poll=${this.pollInterval}ms timeout=${this.pollTimeout}ms`);
   }

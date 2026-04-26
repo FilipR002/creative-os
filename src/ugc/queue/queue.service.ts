@@ -153,6 +153,32 @@ export class UGCQueueService {
     });
   }
 
+  // ─── Retry ────────────────────────────────────────────────────────────────
+
+  /**
+   * Fix 5: Re-enqueue a failed job with incremented retryCount.
+   * The processor calls this instead of markFailed when retryCount < MAX_RETRIES.
+   * The job record is reset to 'queued' and the full payload is pushed back onto
+   * the queue with an incremented retry counter.
+   */
+  async requeue(job: UGCJobPayload, error: string): Promise<void> {
+    const retryCount = (job.retryCount ?? 0) + 1;
+    const requeuedPayload: UGCJobPayload = { ...job, retryCount };
+
+    // Reset state to queued on the existing record so status polling shows it's retrying
+    await this.patchJobRecord(job.jobId, {
+      state: 'queued',
+      error: `[retry ${retryCount}] ${error}`,
+    });
+
+    // Push back onto queue
+    await this.redis.lpush(UGC_QUEUE_KEY, JSON.stringify(requeuedPayload));
+
+    this.logger.log(
+      `[UGCQueue] Requeued jobId=${job.jobId} retryCount=${retryCount} reason="${error.slice(0, 80)}"`,
+    );
+  }
+
   // ─── Status read ──────────────────────────────────────────────────────────
 
   async getJob(jobId: string): Promise<UGCJobRecord | null> {
