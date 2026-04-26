@@ -7,14 +7,17 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Install deps first (layer cache)
+# Install ALL deps (including devDeps for tsc)
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci
 
 # Copy source + compile
 COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npm run build
+
+# Prune devDeps after build
+RUN npm prune --omit=dev
 
 # Working dirs for downloads and outputs
 RUN mkdir -p temp outputs
