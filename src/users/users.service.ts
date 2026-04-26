@@ -17,12 +17,13 @@ export class UsersService {
 
   /**
    * Idempotent — creates user if they don't exist yet.
-   * Returns user shape with role included.
+   * Always updates email if provided so the Prisma record stays in sync
+   * with the Supabase JWT (required for correct role computation).
    */
   async findOrCreate(userId: string, email?: string, name?: string) {
     const user = await this.prisma.user.upsert({
       where:  { id: userId },
-      update: {},
+      update: { ...(email ? { email } : {}) },
       create: { id: userId, email: email || null, name: name || null },
     });
     return safeUser(user);
@@ -42,11 +43,28 @@ export class UsersService {
   }
 
   /**
-   * Lightweight me() — returns id, email, name, role, counts.
-   * Used by GET /api/users/me.
+   * Returns current user's record. If the Prisma record is missing an email
+   * (common for Supabase-auth users created before email syncing), we sync it
+   * from the JWT so that computeRole() returns the correct value immediately.
    */
-  async me(userId: string) {
-    return this.findById(userId);
+  async me(userId: string, jwtEmail?: string | null) {
+    const user = await this.prisma.user.findUnique({
+      where:   { id: userId },
+      include: { _count: { select: { campaigns: true, memories: true } } },
+    });
+
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+
+    // Sync email from JWT into Prisma if it's missing — makes computeRole() correct
+    if (!user.email && jwtEmail) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data:  { email: jwtEmail },
+      });
+      return safeUser({ ...user, email: jwtEmail });
+    }
+
+    return safeUser(user);
   }
 
   async findAll() {

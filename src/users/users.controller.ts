@@ -1,7 +1,8 @@
 import { Body, Controller, ForbiddenException, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags }                                   from '@nestjs/swagger';
 import { UsersService }                                            from './users.service';
-import { UserId }                                                  from '../common/decorators/user-id.decorator';
+import { UserId }      from '../common/decorators/user-id.decorator';
+import { UserEmail }  from '../common/decorators/user-email.decorator';
 
 @ApiTags('Users')
 @Controller('api/users')
@@ -14,8 +15,8 @@ export class UsersController {
    */
   @Get('me')
   @ApiOperation({ summary: 'Get current authenticated user' })
-  me(@UserId() userId: string) {
-    return this.service.me(userId);
+  me(@UserId() userId: string, @UserEmail() email: string | null) {
+    return this.service.me(userId, email);
   }
 
   /**
