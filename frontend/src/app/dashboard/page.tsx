@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { getSupabase } from '@/lib/supabase';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
+import { listCampaigns } from '@/lib/api/creator-client';
 
 function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -13,20 +14,33 @@ function timeAgo(iso: string): string {
 export default function DashboardPage() {
   const [history,   setHistory]   = useState<HistoryEntry[]>([]);
   const [firstName, setFirstName] = useState('');
+  const [apiStats,  setApiStats]  = useState<{ total: number; ready: number } | null>(null);
 
   useEffect(() => {
     setHistory(loadHistory());
+
     getSupabase().auth.getUser().then(({ data: { user } }) => {
       if (user) {
         const full = (user.user_metadata?.full_name as string | undefined) ?? user.email ?? '';
         setFirstName(full.split(' ')[0] ?? '');
       }
     });
+
+    // Real campaign stats from API — falls back to localStorage if unavailable
+    listCampaigns()
+      .then(list => setApiStats({
+        total: list.length,
+        ready: list.filter(c => c.status === 'SCORED' || c.status === 'DONE' || c.isActive).length,
+      }))
+      .catch(() => { /* keep localStorage fallback */ });
   }, []);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const generated = history.filter(h => (h.score ?? 0) >= 0.40).length;
+
+  const totalCampaigns  = apiStats?.total ?? history.length;
+  const readyToLaunch   = apiStats?.ready ?? generated;
 
   return (
     <div className="app-shell">
@@ -47,14 +61,14 @@ export default function DashboardPage() {
                 <span className="stat-card-label">Total Campaigns</span>
                 <span className="stat-card-icon">💬</span>
               </div>
-              <div className="stat-card-value">{history.length}</div>
+              <div className="stat-card-value">{totalCampaigns}</div>
             </div>
             <div className="stat-card">
               <div className="stat-card-header">
                 <span className="stat-card-label">Ready to Launch</span>
                 <span className="stat-card-icon">✦</span>
               </div>
-              <div className="stat-card-value" style={{ WebkitTextFillColor: 'var(--success)', background: 'none' }}>{generated}</div>
+              <div className="stat-card-value" style={{ WebkitTextFillColor: 'var(--success)', background: 'none' }}>{readyToLaunch}</div>
             </div>
             <div className="stat-card">
               <div className="stat-card-header">
