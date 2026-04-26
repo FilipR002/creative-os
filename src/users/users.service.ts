@@ -48,21 +48,14 @@ export class UsersService {
    * from the JWT so that computeRole() returns the correct value immediately.
    */
   async me(userId: string, jwtEmail?: string | null) {
-    const user = await this.prisma.user.findUnique({
+    // Upsert — creates the record if it doesn't exist yet (first Supabase login),
+    // and always syncs the email from the JWT so computeRole() works correctly.
+    const user = await this.prisma.user.upsert({
       where:   { id: userId },
+      update:  jwtEmail ? { email: jwtEmail } : {},
+      create:  { id: userId, email: jwtEmail ?? null },
       include: { _count: { select: { campaigns: true, memories: true } } },
     });
-
-    if (!user) throw new NotFoundException(`User ${userId} not found`);
-
-    // Sync email from JWT into Prisma if it's missing — makes computeRole() correct
-    if (!user.email && jwtEmail) {
-      await this.prisma.user.update({
-        where: { id: userId },
-        data:  { email: jwtEmail },
-      });
-      return safeUser({ ...user, email: jwtEmail });
-    }
 
     return safeUser(user);
   }
