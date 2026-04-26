@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ConfigService }         from '@nestjs/config';
+import { Public }                from '../common/decorators/public.decorator';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const StripeLib = require('stripe');
 import { RevenueLogService }     from './revenue-log.service';
@@ -53,6 +54,7 @@ export class BillingController {
   }
 
   @Post('stripe-webhook')
+  @Public()
   @HttpCode(200)
   @ApiOperation({ summary: 'Stripe webhook endpoint (signature-verified)' })
   async handleStripeWebhook(@Req() req: RawBodyRequest<Request>): Promise<{ received: boolean }> {

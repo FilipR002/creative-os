@@ -13,6 +13,7 @@ import { ApiOperation, ApiTags, ApiBody } from '@nestjs/swagger';
 import { ConfigService }                  from '@nestjs/config';
 import { SubscriptionService }            from './subscription.service';
 import { TOPUP_PACKAGES, PLAN_TOKENS }    from './tokens.constants';
+import { Public }                         from '../common/decorators/public.decorator';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const StripeLib = require('stripe');
 
@@ -64,6 +65,7 @@ export class UserBillingController {
   // ─── GET /api/billing/costs ──────────────────────────────────────────────
 
   @Get('costs')
+  @Public()
   @ApiOperation({ summary: 'Token cost table — video/carousel/banner + plans + packages' })
   getCosts() {
     return this.subs.getTokenCosts();
