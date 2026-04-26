@@ -506,7 +506,10 @@ export class ExecutionGatewayService {
     const planScenes = input.creativePlan!.video.scenes;
     const platform   = input.platform ?? 'tiktok';
     const totalSecs  = DURATION_TIER_SECONDS[input.durationTier ?? 'SHORT'] ?? 15;
-    const perScene   = Math.max(1, Math.round(totalSecs / planScenes.length));
+    // Kling hard cap: 5s standard tier, 10s pro. Clamp to 10 so we never send
+    // a value Kling silently ignores or rejects.
+    const KLING_MAX_SCENE_SECS = 10;
+    const perScene   = Math.min(KLING_MAX_SCENE_SECS, Math.max(1, Math.round(totalSecs / planScenes.length)));
 
     // Convert CreativePlan scenes → KlingScene[] (enforce engine-required fields)
     const VALID_TRANSITIONS = new Set(['cut', 'zoom', 'glitch', 'burst', 'fade']);
