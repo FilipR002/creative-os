@@ -66,10 +66,11 @@ function buildMinimalPlan(
       cta,
     },
     video: {
-      // Single scene: stitcher bypasses stitch-service for 1-scene plans (no STITCH_SERVICE_URL needed).
-      // Expand to multi-scene once the stitch-service is deployed on Railway.
       scenes: [
-        { kling_prompt: `${hook} | authentic UGC | platform:${platform} | quick cut showcase`, overlay_text: hook.slice(0, 60), transition: 'cut', pacing: 'aggressive' },
+        { kling_prompt: `${hook} | authentic UGC | platform:${platform}`, overlay_text: hook.slice(0, 60), transition: 'cut',  pacing: 'aggressive' },
+        { kling_prompt: `Problem | tension | close-up | ${platform}`,     overlay_text: 'Does this feel familiar?',            transition: 'zoom', pacing: 'moderate'   },
+        { kling_prompt: `Solution reveal | confident | ${platform}`,      overlay_text: `${angleSlug.replace(/_/g, ' ')} works.`, transition: 'cut', pacing: 'moderate' },
+        { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,   overlay_text: cta,                                  transition: 'cut',  pacing: 'moderate'   },
       ],
     },
     carousel: {
