@@ -15,6 +15,7 @@ const MAIN_NAV = [
   { label: 'My Campaigns',   icon: '⊞', href: '/campaigns'     },
   { label: 'Analytics',      icon: '▦', href: '/analytics'     },
   { label: 'Ad Performance', icon: '↗', href: '/ad-performance'},
+  { label: 'Billing',        icon: '◈', href: '/billing'       },
   { label: 'Settings',       icon: '⚙', href: '/settings'      },
   { label: 'Observatory',    icon: '◎', href: '/observatory'   },
 ];
