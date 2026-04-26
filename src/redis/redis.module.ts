@@ -14,17 +14,18 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
         const url    = config.get<string>('REDIS_URL');
         const logger = new Logger('RedisModule');
 
-        // Fix 3: Hard validation — UGC queue, MirofishService, and rate-limiting
-        // all require Redis. Failing silently produces subtle data loss in production.
+        // Warn on missing REDIS_URL — server boots without it so core features
+        // (billing, creative generation, auth) remain available. Queue-dependent
+        // features (UGC rendering, Mirofish cache) will be disabled.
+        // Add REDIS_URL to Railway env vars (Railway Redis add-on or Upstash).
         if (!url || url.trim() === '') {
-          throw new Error(
-            '[Redis] CRITICAL: REDIS_URL env var is not set. ' +
-            'Add REDIS_URL to Railway environment variables. ' +
-            'The UGC queue, Mirofish cache, and several core features require Redis.',
+          logger.warn(
+            '[Redis] REDIS_URL not set — UGC queue and cache features disabled. ' +
+            'Add a Redis database in Railway dashboard to enable them.',
           );
         }
 
-        const client = new Redis(url!, {
+        const client = new Redis(url ?? 'redis://localhost:6379', {
           lazyConnect:          true,
           enableReadyCheck:     false,
           maxRetriesPerRequest: 1,

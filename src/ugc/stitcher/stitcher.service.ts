@@ -57,16 +57,17 @@ export class StitcherService implements OnModuleInit {
   }
 
   // ─── Startup guard ────────────────────────────────────────────────────────────
-  // Fix 3: Throw at startup on missing stitch URL so Railway shows a clear
-  // deployment failure instead of silently letting multi-scene UGC fail at call time.
+  // Warn on missing stitch URL — server boots without it so other features remain
+  // available. Multi-scene UGC stitching will fail fast at call time.
+  // Set KLING_STITCH_URL in Railway env vars to enable video stitching.
 
   onModuleInit(): void {
     if (!this.stitchUrl || this.stitchUrl.trim() === '') {
-      throw new Error(
-        '[Stitcher] CRITICAL: Neither KLING_STITCH_URL nor STITCH_SERVICE_URL is set. ' +
-        'Add KLING_STITCH_URL to Railway environment variables. ' +
-        'Multi-scene UGC stitching will not function without a stitch endpoint.',
+      this.logger.warn(
+        '[Stitcher] KLING_STITCH_URL not set — multi-scene stitching disabled. ' +
+        'Add KLING_STITCH_URL to Railway env vars to enable video stitching.',
       );
+      return;
     }
     this.logger.log(`[Stitcher] Initialized — url=${this.stitchUrl}`);
   }
