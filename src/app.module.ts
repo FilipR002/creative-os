@@ -10,6 +10,7 @@ import { AngleModule } from './angle/angle.module';
 import { VideoModule } from './video/video.module';
 import { CarouselModule } from './carousel/carousel.module';
 import { BannerModule } from './banner/banner.module';
+import { CreativesModule } from './creatives/creatives.module';
 import { ScoringModule } from './scoring/scoring.module';
 import { MemoryModule } from './memory/memory.module';
 import { FeedbackModule } from './feedback/feedback.module';
@@ -92,6 +93,7 @@ import { HealthModule }           from './health/health.module';
     VideoModule,
     CarouselModule,
     BannerModule,
+    CreativesModule,
     ScoringModule,
     MemoryModule,
     FeedbackModule,

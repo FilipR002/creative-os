@@ -98,7 +98,7 @@ export async function fetchUGCJobStatus(
 ): Promise<UGCJobState | null> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`${BASE}/api/ugc/status/${jobId}`, { headers });
+    const res = await fetch(`${BASE}/api/ugc/jobs/${jobId}`, { headers });
     if (!res.ok) return null;
     return res.json() as Promise<UGCJobState>;
   } catch {
