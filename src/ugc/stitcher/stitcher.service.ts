@@ -11,7 +11,7 @@
  *   https://stitch-service.up.railway.app
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService }                    from '@nestjs/config';
 
 import { buildTimeline }           from './timeline.builder';
@@ -109,6 +109,13 @@ export class StitcherService implements OnModuleInit {
     timeline: Timeline,
     _quality: 'standard' | 'high' | 'ultra',
   ): Promise<StitchResult> {
+    if (!this.stitchUrl) {
+      throw new ServiceUnavailableException(
+        'Multi-scene video stitching requires STITCH_SERVICE_URL to be configured in Railway. ' +
+        'Deploy the stitch-service and set STITCH_SERVICE_URL to enable multi-scene videos.',
+      );
+    }
+
     const sceneUrls = timeline.segments.map(s => s.videoUrl);
 
     const body: StitchJobRequest = {
