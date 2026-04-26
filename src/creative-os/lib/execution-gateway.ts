@@ -38,15 +38,16 @@
  *   5. Video creativePlan scenes are rendered scene-by-scene, not as context strings
  */
 
-import { Injectable, Logger, Inject, forwardRef, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, BadRequestException, ForbiddenException } from '@nestjs/common';
 
-import { VideoService }    from '../../video/video.service';
-import { CarouselService } from '../../carousel/carousel.service';
-import { BannerService }   from '../../banner/banner.service';
-import { KlingApiService } from '../../ugc/kling-api.service';
-import { VeoApiService }   from '../../veo/veo-api.service';
-import { StitcherService } from '../../ugc/stitcher/stitcher.service';
-import { PrismaService }   from '../../prisma/prisma.service';
+import { VideoService }         from '../../video/video.service';
+import { CarouselService }      from '../../carousel/carousel.service';
+import { BannerService }        from '../../banner/banner.service';
+import { KlingApiService }      from '../../ugc/kling-api.service';
+import { VeoApiService }        from '../../veo/veo-api.service';
+import { StitcherService }      from '../../ugc/stitcher/stitcher.service';
+import { PrismaService }        from '../../prisma/prisma.service';
+import { SubscriptionService }  from '../../billing/subscription.service';
 
 import type {
   ExecutionMode,
@@ -207,6 +208,8 @@ export class ExecutionGatewayService {
     private readonly stitcher:  StitcherService,
     // FIX 3: Prisma to persist Creative records after stitching
     private readonly prisma:    PrismaService,
+    // Phase 7: token-based usage gating
+    private readonly subs:      SubscriptionService,
   ) {}
 
   /**
@@ -222,6 +225,19 @@ export class ExecutionGatewayService {
     input:  GatewayExecutionInput,
     userId: string,
   ): Promise<GatewayExecutionResult> {
+
+    // ── Phase 7: Token gate — check BEFORE any execution ─────────────────
+    const tokenCheck = await this.subs.checkTokens(userId, input.format);
+    if (!tokenCheck.allowed) {
+      const reason = tokenCheck.reason ?? 'INSUFFICIENT_TOKENS';
+      this.logger.warn(
+        `[Gateway] Token gate blocked — userId=${userId} format=${input.format} ` +
+        `required=${tokenCheck.required} remaining=${tokenCheck.remaining} reason=${reason}`,
+      );
+      throw new ForbiddenException(
+        `${reason}: ${tokenCheck.remaining} tokens remaining, ${tokenCheck.required} required for ${input.format}`,
+      );
+    }
 
     // ── Guard: mode MUST be present and valid ──────────────────────────────
     if (!input.executionMode || !VALID_MODES.has(input.executionMode)) {
@@ -270,6 +286,11 @@ export class ExecutionGatewayService {
 
     // ── Compute result metadata ────────────────────────────────────────────
     const enginesUsed = [...new Set(variants.map(v => v.engineApplied))];
+
+    // ── Phase 7: Deduct tokens ONLY after all variants succeeded ──────────
+    await this.subs.deductTokens(userId, input.format, input.campaignId).catch(err =>
+      this.logger.warn(`[Gateway] Token deduction failed (non-fatal): ${err?.message}`),
+    );
 
     return {
       creatives:         variants,

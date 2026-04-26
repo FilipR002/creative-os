@@ -791,3 +791,69 @@ model Blueprint {
   @@index([angleSlug])
   @@map("blueprints")
 }
+
+// ─── Phase 7: Monetization — Subscriptions + Token System ────────────────────
+
+enum SubscriptionPlan {
+  trial
+  starter
+  pro
+  agency
+}
+
+model Subscription {
+  id                    String           @id @default(uuid())
+  userId                String           @unique @map("user_id")
+  plan                  SubscriptionPlan @default(trial)
+
+  // Token balance
+  tokensRemaining       Int              @default(50)  @map("tokens_remaining")
+  tokensMonthlyLimit    Int              @default(50)  @map("tokens_monthly_limit")
+
+  // Billing cycle
+  billingCycleStart     DateTime         @default(now()) @map("billing_cycle_start")
+  billingCycleEnd       DateTime         @map("billing_cycle_end")
+
+  // Stripe
+  stripeSubscriptionId  String?          @map("stripe_subscription_id")
+  stripeCustomerId      String?          @map("stripe_customer_id")
+
+  // Trial
+  isTrialActive         Boolean          @default(true)  @map("is_trial_active")
+  trialExpiresAt        DateTime?        @map("trial_expires_at")
+
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt      @map("updated_at")
+
+  tokenTransactions     TokenTransaction[]
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
+
+model TokenTransaction {
+  id              String       @id @default(uuid())
+  userId          String       @map("user_id")
+  subscriptionId  String?      @map("subscription_id")
+  subscription    Subscription? @relation(fields: [subscriptionId], references: [id])
+
+  type            String       // "usage" | "topup" | "reset" | "trial_grant"
+  amount          Int          // positive = credit, negative = debit
+  balanceAfter    Int          @map("balance_after")
+
+  // Usage context
+  format          String?      // "video" | "carousel" | "banner"
+  campaignId      String?      @map("campaign_id")
+  description     String?
+
+  // Stripe (for top-ups)
+  stripePaymentId String?      @map("stripe_payment_id")
+
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([createdAt])
+  @@map("token_transactions")
+}

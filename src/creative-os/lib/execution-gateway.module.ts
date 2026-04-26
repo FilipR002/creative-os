@@ -23,6 +23,7 @@ import { BannerModule }   from '../../banner/banner.module';
 import { VeoModule }      from '../../veo/veo.module';
 import { UGCModule }      from '../../ugc/ugc.module';
 import { PrismaModule }   from '../../prisma/prisma.module';
+import { BillingModule }  from '../../billing/billing.module';
 
 import { ExecutionGatewayService } from './execution-gateway';
 
@@ -34,6 +35,7 @@ import { ExecutionGatewayService } from './execution-gateway';
     VeoModule,
     UGCModule,
     PrismaModule,
+    BillingModule,
   ],
   providers: [ExecutionGatewayService],
   exports:   [ExecutionGatewayService],
