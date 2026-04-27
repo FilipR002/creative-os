@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Sidebar } from '@/components/Sidebar';
 import {
   getResource,
   upsertResource,
@@ -11,6 +12,119 @@ import {
   type Persona,
   type CreatePersonaPayload,
 } from '@/lib/api/resources-client';
+
+// ─── Image References ─────────────────────────────────────────────────────────
+
+function ImageReferences({
+  images,
+  onChange,
+}: {
+  images: string[];
+  onChange: (imgs: string[]) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  function handleFiles(files: FileList | null) {
+    if (!files) return;
+    Array.from(files).forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const dataUrl = e.target?.result as string;
+        onChange([...images, dataUrl]);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+  }
+
+  function remove(idx: number) {
+    onChange(images.filter((_, i) => i !== idx));
+  }
+
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: 12, color: '#888', marginBottom: 8 }}>
+        Reference Images
+        <span style={{ color: '#555', fontWeight: 400, marginLeft: 6 }}>
+          — visual style, product shots, mood boards (optional)
+        </span>
+      </label>
+
+      {/* Drop zone */}
+      <div
+        onDragOver={e => e.preventDefault()}
+        onDrop={handleDrop}
+        onClick={() => inputRef.current?.click()}
+        style={{
+          border: '1px dashed #2a2a3e',
+          borderRadius: 10,
+          padding: '20px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          cursor: 'pointer',
+          background: '#0d0d0d',
+          transition: 'border-color 0.15s',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.borderColor = '#4f46e5')}
+        onMouseLeave={e => (e.currentTarget.style.borderColor = '#2a2a3e')}
+      >
+        <span style={{ fontSize: 22 }}>🖼</span>
+        <span style={{ fontSize: 13, color: '#555' }}>
+          Drop images here or <span style={{ color: '#a78bfa' }}>browse</span>
+        </span>
+        <span style={{ fontSize: 11, color: '#444' }}>PNG, JPG, WEBP — max 4 MB each</span>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          style={{ display: 'none' }}
+          onChange={e => handleFiles(e.target.files)}
+        />
+      </div>
+
+      {/* Image grid */}
+      {images.length > 0 && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+          gap: 10,
+          marginTop: 12,
+        }}>
+          {images.map((src, idx) => (
+            <div key={idx} style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', border: '1px solid #1e1e2e' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={`Reference ${idx + 1}`}
+                style={{ width: '100%', height: 90, objectFit: 'cover', display: 'block' }}
+              />
+              <button
+                onClick={() => remove(idx)}
+                style={{
+                  position: 'absolute', top: 4, right: 4,
+                  background: 'rgba(0,0,0,0.7)', border: 'none', borderRadius: '50%',
+                  width: 20, height: 20, color: '#fff', cursor: 'pointer',
+                  fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  lineHeight: 1,
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ─── Tag helpers ──────────────────────────────────────────────────────────────
 
@@ -104,7 +218,7 @@ function Field({
   const sharedStyle = {
     width: '100%', background: '#111', border: '1px solid #2a2a2a', borderRadius: 8,
     padding: '10px 12px', color: '#fff', fontSize: 13, outline: 'none',
-    resize: 'vertical' as const, fontFamily: 'inherit',
+    resize: 'vertical' as const, fontFamily: 'inherit', boxSizing: 'border-box' as const,
   };
   return (
     <div>
@@ -150,7 +264,7 @@ function PersonaCard({
       });
       onUpdate(persona.id, updated);
       setEditing(false);
-    } catch (e) {
+    } catch {
       alert('Failed to save persona');
     } finally {
       setSaving(false);
@@ -321,6 +435,7 @@ export default function ResourcesPage() {
   const [productName,        setProductName]        = useState('');
   const [productDescription, setProductDescription] = useState('');
   const [productBenefits,    setProductBenefits]    = useState<string[]>([]);
+  const [referenceImages,    setReferenceImages]    = useState<string[]>([]);
 
   // Brand form state
   const [brandTone,  setBrandTone]  = useState('');
@@ -336,6 +451,11 @@ export default function ResourcesPage() {
       setProductBenefits(r.productBenefits ?? []);
       setBrandTone(r.brandTone ?? '');
       setBrandVoice(r.brandVoice ?? '');
+      // Load reference images from localStorage (stored separately — too large for API)
+      try {
+        const saved = localStorage.getItem('cos_ref_images');
+        if (saved) setReferenceImages(JSON.parse(saved));
+      } catch { /* ignore */ }
     } catch { /* first visit — empty state */ }
     setLoading(false);
   }, []);
@@ -347,6 +467,8 @@ export default function ResourcesPage() {
     try {
       const updated = await upsertResource({ productName, productDescription, productBenefits });
       setResource(prev => prev ? { ...prev, ...updated } : updated);
+      // Persist reference images to localStorage
+      localStorage.setItem('cos_ref_images', JSON.stringify(referenceImages));
     } catch { alert('Failed to save'); }
     setSaving(false);
   }
@@ -383,114 +505,126 @@ export default function ResourcesPage() {
   const inactiveTab: React.CSSProperties = { ...tabBase, background: 'transparent', color: '#666' };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080808', color: '#e2e8f0', fontFamily: 'system-ui, sans-serif' }}>
-      {/* Header */}
-      <div style={{ borderBottom: '1px solid #111', padding: '20px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px' }}>Resources</div>
+    <div style={{ display: 'flex', height: '100vh', background: '#080808', overflow: 'hidden' }}>
+      <Sidebar />
+
+      <main className="app-main">
+        {/* Header */}
+        <div style={{ borderBottom: '1px solid #111', padding: '20px 32px', flexShrink: 0 }}>
+          <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', color: '#e2e8f0' }}>Resources</div>
           <div style={{ fontSize: 13, color: '#555', marginTop: 2 }}>
             Your product, brand, and audience knowledge — injected into every creative
           </div>
         </div>
-      </div>
 
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 24px' }}>
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: '#0d0d0d', borderRadius: 10, padding: 4, marginBottom: 28, border: '1px solid #1a1a1a', width: 'fit-content' }}>
-          {(['product', 'brand', 'personas'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={tab === t ? activeTab : inactiveTab}>
-              {t === 'product' ? '📦 Product' : t === 'brand' ? '🎨 Brand' : '👤 Personas'}
-            </button>
-          ))}
+        {/* Content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          <div style={{ maxWidth: 720 }}>
+            {/* Tabs */}
+            <div style={{
+              display: 'flex', gap: 4, background: '#0d0d0d', borderRadius: 10, padding: 4,
+              marginBottom: 28, border: '1px solid #1a1a1a', width: 'fit-content',
+            }}>
+              {(['product', 'brand', 'personas'] as Tab[]).map(t => (
+                <button key={t} onClick={() => setTab(t)} style={tab === t ? activeTab : inactiveTab}>
+                  {t === 'product' ? '📦 Product' : t === 'brand' ? '🎨 Brand' : '👤 Personas'}
+                </button>
+              ))}
+            </div>
+
+            {loading ? (
+              <div style={{ color: '#555', fontSize: 14 }}>Loading…</div>
+            ) : (
+              <>
+                {/* ── Product Tab ── */}
+                {tab === 'product' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+                      Tell the AI what you're selling. This context shapes the core message, offer, and angle in every ad.
+                    </div>
+                    <Field
+                      label="Product Name"
+                      value={productName}
+                      onChange={setProductName}
+                      placeholder="e.g. CreativeOS Pro"
+                    />
+                    <Field
+                      label="Product Description"
+                      value={productDescription}
+                      onChange={setProductDescription}
+                      placeholder="What does it do and who is it for? 2–3 sentences."
+                      multiline
+                    />
+                    <TagInput
+                      label="Key Benefits"
+                      value={productBenefits}
+                      onChange={setProductBenefits}
+                      placeholder="e.g. 10x faster creative output"
+                    />
+                    <ImageReferences
+                      images={referenceImages}
+                      onChange={setReferenceImages}
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={saveProduct} disabled={saving} style={btnStyle('primary')}>
+                        {saving ? 'Saving…' : 'Save Product'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Brand Tab ── */}
+                {tab === 'brand' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+                      Define your brand voice. The AI uses this to write in your tone — not generic copy.
+                    </div>
+                    <Field
+                      label="Brand Tone"
+                      value={brandTone}
+                      onChange={setBrandTone}
+                      placeholder="e.g. Bold, direct, no fluff. Like a confident founder talking to a peer."
+                      multiline
+                    />
+                    <Field
+                      label="Brand Voice Rules"
+                      value={brandVoice}
+                      onChange={setBrandVoice}
+                      placeholder="e.g. Never use buzzwords. Always lead with the outcome, not the feature. Short sentences."
+                      multiline
+                    />
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button onClick={saveBrand} disabled={saving} style={btnStyle('primary')}>
+                        {saving ? 'Saving…' : 'Save Brand Voice'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Personas Tab ── */}
+                {tab === 'personas' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+                      Create target personas. Select one on the Create page and every ad is written specifically for that person's pain points and desires.
+                    </div>
+
+                    {(resource?.personas ?? []).map(p => (
+                      <PersonaCard
+                        key={p.id}
+                        persona={p}
+                        onDelete={handlePersonaDeleted}
+                        onUpdate={handlePersonaUpdated}
+                      />
+                    ))}
+
+                    <NewPersonaForm onCreated={handlePersonaCreated} />
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
-
-        {loading ? (
-          <div style={{ color: '#555', fontSize: 14 }}>Loading…</div>
-        ) : (
-          <>
-            {/* ── Product Tab ── */}
-            {tab === 'product' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-                  Tell the AI what you're selling. This context shapes the core message, offer, and angle in every ad.
-                </div>
-                <Field
-                  label="Product Name"
-                  value={productName}
-                  onChange={setProductName}
-                  placeholder="e.g. CreativeOS Pro"
-                />
-                <Field
-                  label="Product Description"
-                  value={productDescription}
-                  onChange={setProductDescription}
-                  placeholder="What does it do and who is it for? 2–3 sentences."
-                  multiline
-                />
-                <TagInput
-                  label="Key Benefits"
-                  value={productBenefits}
-                  onChange={setProductBenefits}
-                  placeholder="e.g. 10x faster creative output"
-                />
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={saveProduct} disabled={saving} style={btnStyle('primary')}>
-                    {saving ? 'Saving…' : 'Save Product'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ── Brand Tab ── */}
-            {tab === 'brand' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-                  Define your brand voice. The AI uses this to write in your tone — not generic copy.
-                </div>
-                <Field
-                  label="Brand Tone"
-                  value={brandTone}
-                  onChange={setBrandTone}
-                  placeholder="e.g. Bold, direct, no fluff. Like a confident founder talking to a peer."
-                  multiline
-                />
-                <Field
-                  label="Brand Voice Rules"
-                  value={brandVoice}
-                  onChange={setBrandVoice}
-                  placeholder="e.g. Never use buzzwords. Always lead with the outcome, not the feature. Short sentences."
-                  multiline
-                />
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button onClick={saveBrand} disabled={saving} style={btnStyle('primary')}>
-                    {saving ? 'Saving…' : 'Save Brand Voice'}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ── Personas Tab ── */}
-            {tab === 'personas' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-                  Create target personas. Select one on the Create page and every ad is written specifically for that person's pain points and desires.
-                </div>
-
-                {(resource?.personas ?? []).map(p => (
-                  <PersonaCard
-                    key={p.id}
-                    persona={p}
-                    onDelete={handlePersonaDeleted}
-                    onUpdate={handlePersonaUpdated}
-                  />
-                ))}
-
-                <NewPersonaForm onCreated={handlePersonaCreated} />
-              </div>
-            )}
-          </>
-        )}
-      </div>
+      </main>
     </div>
   );
 }
