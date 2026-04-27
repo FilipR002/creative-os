@@ -211,6 +211,10 @@ export default function ResultPage() {
   const [metricsRetention,  setMetricsRetention]  = useState('');
   const [metricsSubmitted,  setMetricsSubmitted]  = useState(false);
 
+  // ── Advanced tools accordion ──────────────────────────────────────────────
+  const [advancedOpen,       setAdvancedOpen]       = useState(false);
+  const [advancedTool,       setAdvancedTool]       = useState<'hooks' | 'rewriter' | 'winner' | null>(null);
+
   // ── Phase 1 — Ghost system state ─────────────────────────────────────────
   const [hookBoosterV1,      setHookBoosterV1]      = useState<HookBoosterOutput | null>(null);
   const [hookBoosterV2,      setHookBoosterV2]      = useState<HookBoosterV2Output | null>(null);
@@ -1540,17 +1544,59 @@ export default function ResultPage() {
           />
         )}
 
-        {/* ── PHASE 1: Ghost Systems ───────────────────────────────────────── */}
+        {/* ── Advanced Tools (collapsed by default) ────────────────────────── */}
         {result && (
-          <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ marginTop: 32 }}>
+
+            {/* Accordion header */}
+            <button
+              onClick={() => setAdvancedOpen(o => !o)}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                background: '#0d0e14', border: '1px solid #1e2330', borderRadius: advancedOpen ? '12px 12px 0 0' : 12,
+                padding: '14px 20px', cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#888' }}>⚙ Advanced Tools</span>
+                <span style={{ fontSize: 11, color: '#444' }}>Hook Booster · Scene Rewriter · Auto-Winner</span>
+              </div>
+              <span style={{ fontSize: 16, color: '#444', transform: advancedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
+            </button>
+
+            {advancedOpen && (
+              <div style={{ border: '1px solid #1e2330', borderTop: 'none', borderRadius: '0 0 12px 12px', background: '#0a0b10', padding: '0' }}>
+
+                {/* Tool selector tabs */}
+                <div style={{ display: 'flex', borderBottom: '1px solid #1e2330' }}>
+                  {([
+                    ['hooks',   '⚡', 'Hook Booster'],
+                    ['rewriter','✏️', 'Scene Rewriter'],
+                    ['winner',  '🏆', 'Auto-Winner'],
+                  ] as ['hooks'|'rewriter'|'winner', string, string][]).map(([id, icon, label]) => (
+                    <button
+                      key={id}
+                      onClick={() => setAdvancedTool(t => t === id ? null : id)}
+                      style={{
+                        flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                        background: advancedTool === id ? 'rgba(99,102,241,0.08)' : 'transparent',
+                        borderBottom: advancedTool === id ? '2px solid #6366f1' : '2px solid transparent',
+                        color: advancedTool === id ? '#a5b4fc' : '#555', fontSize: 12, fontWeight: 700,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {icon} {label}
+                    </button>
+                  ))}
+                </div>
+
+                <div style={{ padding: '20px' }}>
 
             {/* ⚡ Hook Booster v1 + v2 */}
-            <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-                ⚡ Hook Booster — Generate & Optimize Hooks
-              </div>
+            {advancedTool === 'hooks' && <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>⚡ Hook Booster</div>
               <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                Generate 3 hook variants (v1) then run the memory + fatigue pipeline to produce EXPLOIT / HYBRID / EXPLORE optimized hooks (v2).
+                Generate 3 hook variants, then boost them with memory + fatigue signals to get EXPLOIT / HYBRID / EXPLORE optimized versions.
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
                 <button
@@ -1668,13 +1714,13 @@ export default function ResultPage() {
               )}
             </div>
 
+            }
+
             {/* ✏️ Scene Rewriter */}
-            <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-                ✏️ Scene Rewriter — Micro-Rewrite Hook / Scene
-              </div>
+            {advancedTool === 'rewriter' && <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>✏️ Scene Rewriter</div>
               <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                Generates 3 targeted rewrites of your current hook — CLARITY, EMOTIONAL, PERFORMANCE — based on the creative's performance signals.
+                Rewrites your current hook 3 ways — Clarity, Emotional, Performance — based on this creative's performance signals.
               </div>
               <button
                 onClick={handleRewriteScene}
@@ -1725,14 +1771,14 @@ export default function ResultPage() {
               )}
             </div>
 
+            }
+
             {/* 🏆 Auto-Winner — Variation Comparison */}
-            {generation && generation.variations.length > 0 && (
+            {advancedTool === 'winner' && generation && generation.variations.length > 0 && (
               <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
-                  🏆 Auto-Winner — Weighted Variation Comparison
-                </div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>🏆 Auto-Winner</div>
                 <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                  Evaluates all variations using weighted scoring: CTR 30% · Retention 30% · Conversion 25% · Clarity 15%.
+                  Compares all your variations using weighted scoring: CTR 30% · Retention 30% · Conversion 25% · Clarity 15%.
                 </div>
                 <button
                   onClick={handleAutoWinner}
@@ -1804,6 +1850,10 @@ export default function ResultPage() {
                 )}
               </div>
             )}
+
+                </div>{/* /padding */}
+              </div>
+            )}{/* /advancedOpen */}
 
           </div>
         )}

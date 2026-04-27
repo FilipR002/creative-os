@@ -39,6 +39,29 @@ const GOAL_LABELS: Record<RunGoal, string> = {
   engagement: 'Engagement',
 };
 
+const ANGLES = [
+  { value: '',               label: '— Auto (AI picks) —' },
+  { value: 'urgency',        label: '⚡ Urgency'          },
+  { value: 'emotional',      label: '❤️ Emotional'        },
+  { value: 'premium',        label: '💎 Premium'          },
+  { value: 'price-focused',  label: '💰 Price-focused'    },
+  { value: 'storytelling',   label: '📖 Storytelling'     },
+  { value: 'pain-point',     label: '🎯 Pain Point'       },
+  { value: 'social-proof',   label: '⭐ Social Proof'     },
+  { value: 'educational',    label: '🧠 Educational'      },
+];
+
+const dropdownStyle: React.CSSProperties = {
+  width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)',
+  borderRadius: 8, padding: '9px 12px', color: 'var(--text)',
+  fontSize: 13, outline: 'none', cursor: 'pointer', fontFamily: 'inherit',
+  appearance: 'none' as const,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 10px center',
+  paddingRight: 32,
+};
+
 /** Map UI AdFormat → API RunFormat */
 function apiFormat(f: AdFormat): RunFormat {
   return f === 'image' ? 'banner' : f;
@@ -72,6 +95,7 @@ function CreatePageInner() {
   const [format,       setFormat]       = useState<AdFormat>('carousel');
   const [platform,     setPlatform]     = useState<AdPlatform>('meta');
   const [goal,         setGoal]         = useState<RunGoal>('conversion');
+  const [angle,        setAngle]        = useState('');
   const [durationTier, setDurationTier] = useState<DurationTier>('MEDIUM');
   const [slideCount,   setSlideCount]   = useState(5);
   const [brief,        setBrief]        = useState('');
@@ -97,6 +121,7 @@ function CreatePageInner() {
   const [camBrief,      setCamBrief]      = useState('');
   const [camPlatform,   setCamPlatform]   = useState<AdPlatform>('meta');
   const [camGoal,       setCamGoal]       = useState<RunGoal>('conversion');
+  const [camAngle,      setCamAngle]      = useState('');
   const [camAssets,     setCamAssets]     = useState<AdFormat[]>(['carousel']);
   const [camDuration,   setCamDuration]   = useState<DurationTier>('MEDIUM');
   const [camSlides,     setCamSlides]     = useState(5);
@@ -219,6 +244,7 @@ function CreatePageInner() {
         format:   apiFormat(format),
         platform,
         goal,
+        ...(angle                            && { styleContext: angle }),
         ...(selectedPersonaId                && { personaId: selectedPersonaId }),
         ...(format === 'video'    && { durationTier, videoMode }),
         ...(format === 'carousel' && { slideCount }),
@@ -311,6 +337,8 @@ function CreatePageInner() {
           platform: camPlatform,
           goal:     camGoal,
           assets:   camAssets.map(apiFormat),
+          ...(camAngle                   && { styleContext: camAngle }),
+          ...(selectedPersonaId          && { personaId: selectedPersonaId }),
           ...(sharedCampaignId          && { campaignId: sharedCampaignId }),
           ...(assetFormat === 'video'   && { durationTier: camDuration }),
           ...(assetFormat === 'carousel'&& { slideCount: camSlides }),
@@ -425,16 +453,21 @@ function CreatePageInner() {
                   </div>
                 </div>
 
-                {/* Goal */}
-                <div style={{ marginBottom: 20 }}>
-                  <div className="form-label">Goal</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['conversion', 'awareness', 'engagement'] as RunGoal[]).map(g => (
-                      <button key={g} onClick={() => setGoal(g)} disabled={generating}
-                        className={`format-btn${goal === g ? ' active' : ''}`} style={{ flex: 1, fontSize: 11 }}>
-                        {GOAL_LABELS[g]}
-                      </button>
-                    ))}
+                {/* Goal + Angle */}
+                <div style={{ marginBottom: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <div className="form-label">Goal</div>
+                    <select value={goal} onChange={e => setGoal(e.target.value as RunGoal)} disabled={generating} style={dropdownStyle}>
+                      <option value="conversion">🎯 Sales</option>
+                      <option value="awareness">📡 Awareness</option>
+                      <option value="engagement">💬 Engagement</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div className="form-label">Angle</div>
+                    <select value={angle} onChange={e => setAngle(e.target.value)} disabled={generating} style={dropdownStyle}>
+                      {ANGLES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                    </select>
                   </div>
                 </div>
 
@@ -655,16 +688,21 @@ function CreatePageInner() {
                   </div>
                 </div>
 
-                {/* Goal */}
-                <div style={{ marginBottom: 20 }}>
-                  <div className="form-label">Goal</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['conversion', 'awareness', 'engagement'] as RunGoal[]).map(g => (
-                      <button key={g} onClick={() => setCamGoal(g)} disabled={camLoading}
-                        className={`format-btn${camGoal === g ? ' active' : ''}`} style={{ flex: 1, fontSize: 11 }}>
-                        {GOAL_LABELS[g]}
-                      </button>
-                    ))}
+                {/* Goal + Angle */}
+                <div style={{ marginBottom: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div>
+                    <div className="form-label">Goal</div>
+                    <select value={camGoal} onChange={e => setCamGoal(e.target.value as RunGoal)} disabled={camLoading} style={dropdownStyle}>
+                      <option value="conversion">🎯 Sales</option>
+                      <option value="awareness">📡 Awareness</option>
+                      <option value="engagement">💬 Engagement</option>
+                    </select>
+                  </div>
+                  <div>
+                    <div className="form-label">Angle</div>
+                    <select value={camAngle} onChange={e => setCamAngle(e.target.value)} disabled={camLoading} style={dropdownStyle}>
+                      {ANGLES.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+                    </select>
                   </div>
                 </div>
 
