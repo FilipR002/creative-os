@@ -63,9 +63,23 @@ export class SubscriptionService {
     return this.toStatus(sub);
   }
 
+  // ── Admin bypass — user IDs listed in ADMIN_USER_IDS skip all token gates ──
+  private isAdmin(userId: string): boolean {
+    const raw = process.env.ADMIN_USER_IDS ?? '';
+    if (!raw.trim()) return false;
+    return raw.split(',').map(s => s.trim()).includes(userId);
+  }
+
   // ── Token check — call BEFORE execution ─────────────────────────────────────
   async checkTokens(userId: string, format: string): Promise<TokenCheckResult> {
     const required = TOKEN_COST[format] ?? 5;
+
+    // Admins always pass — no token cost
+    if (this.isAdmin(userId)) {
+      this.logger.log(`[Tokens] Admin bypass for userId=${userId} format=${format}`);
+      return { allowed: true, remaining: 999999, required };
+    }
+
     const sub      = await this.prisma.subscription.findUnique({ where: { userId } });
 
     if (!sub) {
@@ -103,6 +117,9 @@ export class SubscriptionService {
 
   // ── Deduct tokens — call ONLY AFTER successful execution ───────────────────
   async deductTokens(userId: string, format: string, campaignId?: string): Promise<void> {
+    // Admins are never charged
+    if (this.isAdmin(userId)) return;
+
     const cost = TOKEN_COST[format] ?? 5;
 
     const sub = await this.prisma.subscription.update({
