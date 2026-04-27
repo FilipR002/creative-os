@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { GenerateConceptDto } from './concept.dto';
+import { buildPersonaBlock } from '../resources/persona-prompt';
 import axios from 'axios';
 
 @Injectable()
@@ -20,9 +21,14 @@ export class ConceptService {
 
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
 
-    const systemPrompt = `You are a master creative strategist for digital marketing.
-Your job is to analyze a brief and extract a structured master concept.
-Return ONLY valid JSON. No markdown, no explanation, no backticks.`;
+    const personaBlock = buildPersonaBlock(dto.resourceCtx);
+
+    const systemPrompt = [
+      `You are a master creative strategist for digital marketing.`,
+      `Your job is to analyze a brief and extract a structured master concept.`,
+      `Return ONLY valid JSON. No markdown, no explanation, no backticks.`,
+      personaBlock || '',
+    ].filter(Boolean).join('\n');
 
     const hintLines: string[] = [];
     if (dto.angleHint) hintLines.push(`Preferred angle: ${dto.angleHint}`);

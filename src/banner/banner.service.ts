@@ -5,6 +5,7 @@ import { CampaignService } from '../campaign/campaign.service';
 import { ImageService } from '../image/image.service';
 import { buildBannerImagePrompt } from '../image/utils/prompt-builder';
 import { GenerateBannerDto } from './banner.dto';
+import { buildPersonaBlock }  from '../resources/persona-prompt';
 import axios from 'axios';
 
 // Map size to layout hints
@@ -52,11 +53,14 @@ export class BannerService {
       .map((s) => `- ${s}: ${layoutHint(s)}`)
       .join('\n');
 
+    const personaBlock = buildPersonaBlock(dto.resourceCtx);
+
     const systemPrompt = [
       `You are an expert display banner copywriter and creative director.`,
       `You write banner ad copy that is clear, punchy, and drives clicks.`,
       `Return ONLY valid JSON array. No markdown. No explanation. No backticks.`,
       dto.styleContext ? `\n${dto.styleContext}` : '',
+      personaBlock || '',
     ].filter(Boolean).join('\n');
 
     const objectionLine = dto.keyObjection     ? `- Key objection to overcome: ${dto.keyObjection}`         : '';
@@ -178,6 +182,18 @@ Rules:
         }
       }),
     );
+
+    // ── Validate every result — reject blank / truncated URLs ─────────────────
+    for (const r of results) {
+      if (r.error) continue; // already captured as an error
+      if (!r.imageUrl || r.imageUrl.length < 50) {
+        throw new BadRequestException(
+          `Imagen 4 returned an invalid image for banner ${r.size} (index ${r.bannerIndex}): ` +
+          `URL length ${r.imageUrl?.length ?? 0} is below the 50-character minimum. ` +
+          `Check GEMINI_API_KEY and Imagen 4 quota.`,
+        );
+      }
+    }
 
     // Persist the image URL and prompt back into each banner
     const updatedBanners = banners.map((banner, i) => ({

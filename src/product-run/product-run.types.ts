@@ -46,10 +46,21 @@ export class RunDto {
 
   // ── Video-specific ─────────────────────────────────────────────────────────
 
-  @ApiPropertyOptional({ enum: ['SHORT', 'MEDIUM', 'LONG'], default: 'SHORT' })
+  @ApiPropertyOptional({ enum: ['SHORT', 'MEDIUM', 'LONG', 'EXTENDED'], default: 'SHORT' })
   @IsOptional()
   @IsString()
   durationTier?: string;
+
+  /**
+   * Video pipeline selector — required when format === 'video'.
+   *   ugc      → Kling pipeline (authentic UGC style)
+   *   classic  → Veo / cinematic pipeline
+   * User choice OVERRIDES SmartRouting mode selection.
+   */
+  @ApiPropertyOptional({ enum: ['ugc', 'classic'], description: 'Video rendering pipeline. Required for format=video.' })
+  @IsOptional()
+  @IsString()
+  videoMode?: 'ugc' | 'classic';
 
   // ── Carousel-specific ──────────────────────────────────────────────────────
 
@@ -72,6 +83,13 @@ export class RunDto {
   @IsOptional()
   @IsString()
   styleContext?: string;
+
+  // ── Persona + Resource context ─────────────────────────────────────────────
+
+  @ApiPropertyOptional({ description: 'Persona ID from the user\'s resources — enriches all AI prompts with targeting context' })
+  @IsOptional()
+  @IsString()
+  personaId?: string;
 
   // ── Unified creation system ────────────────────────────────────────────────
 
@@ -101,9 +119,16 @@ export interface RunAngleItem {
 }
 
 export interface RunCreativeItem {
-  creativeId: string;
-  angleSlug:  string;
-  format:     string;
+  creativeId:  string;
+  angleSlug:   string;
+  format:      string;
+  /**
+   * false  → images are being generated in the background (carousel / banner).
+   *          Frontend should poll GET /api/creatives/:id until imageUrl is populated.
+   * true   → all images are ready (or format is video — images concept doesn't apply).
+   * undefined → legacy: not tracked.
+   */
+  imagesReady?: boolean;
 }
 
 export interface RunScoringItem {

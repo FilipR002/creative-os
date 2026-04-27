@@ -13,7 +13,7 @@
 // CAROUSEL / BANNER (sync — fast, Claude-only, no external video API):
 //   1–9 unchanged (ExecutionGateway → scoring → memory → learning → response)
 
-import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { randomUUID }               from 'crypto';
 import { CampaignService }          from '../campaign/campaign.service';
 import { ConceptService }           from '../concept/concept.service';
@@ -43,6 +43,8 @@ import type {
 import type { CreativePlan }        from '../creative-director/creative-director-orchestrator';
 import { VideoQueueService }        from '../video-queue/video-queue.service';
 import type { RunQueuedResponse }   from '../video-queue/video-job.types';
+import { ResourcesService }        from '../resources/resources.service';
+import type { ResourceContext }    from '../resources/resources.service';
 
 // ─── Synthetic plan builder ───────────────────────────────────────────────────
 // Fix 4: product-run builds a minimal CreativePlan from RunDto + angle so the
@@ -169,6 +171,8 @@ export class ProductRunService {
     private readonly mirofish:     MirofishService,
     // Async video queue
     private readonly videoQueue:   VideoQueueService,
+    // Resources + persona context
+    private readonly resourcesSvc: ResourcesService,
   ) {}
 
   async run(dto: RunDto, userId: string): Promise<RunResponse | RunQueuedResponse> {
@@ -184,6 +188,20 @@ export class ProductRunService {
         );
       }
     }
+
+    // ── videoMode validation — required when format === video ────────────────
+    if (dto.format === 'video' && !dto.videoMode) {
+      throw new BadRequestException(
+        'videoMode is required when format is "video". Pass "ugc" or "classic".',
+      );
+    }
+
+    // ── Step 0: Fetch ResourceContext (persona + product + brand) ────────────
+    // Validates that personaId exists; throws 400 if provided but not found.
+    const resourceCtx: ResourceContext = await this.resourcesSvc.getContext(
+      userId,
+      dto.personaId,
+    );
 
     // ── Step 1: Resolve campaign ─────────────────────────────────────────────
     let campaignId = dto.campaignId;
@@ -201,9 +219,10 @@ export class ProductRunService {
     const { concept } = await this.concepts.generate(
       {
         campaignId,
-        brief:    dto.brief,
-        goal:     dto.goal ?? ConceptGoal.CONVERSION,
-        platform: dto.platform,
+        brief:       dto.brief,
+        goal:        dto.goal ?? ConceptGoal.CONVERSION,
+        platform:    dto.platform,
+        resourceCtx,
       },
       userId,
     );
@@ -274,12 +293,21 @@ export class ProductRunService {
         this.generateCreative(dto, campaignId!, concept.id, a.angle, userId, {
           keyObjection:     (concept as any).keyObjection     || undefined,
           valueProposition: (concept as any).valueProposition || undefined,
+          resourceCtx,
         })
       ),
     );
     this.logger.log(
       `[Run:${executionId}] ${creativeResults.length} creatives via gateway in ${Date.now() - t0}ms`
     );
+
+    // ── Step 4c: Stamp imagesReady=false for carousel/banner ─────────────────
+    // Images are generated asynchronously in ExecutionGateway (fire-and-forget).
+    // Frontend must poll GET /api/creatives/:id until imageUrl fields are populated.
+    const creativeItems: RunCreativeItem[] = creativeResults.map(c => ({
+      ...c,
+      imagesReady: dto.format === 'video' ? undefined : false,
+    }));
 
     // ── Step 5: Score creatives (synchronous) ────────────────────────────────
     const creativeIds = creativeResults.map(c => c.creativeId);
@@ -340,7 +368,7 @@ export class ProductRunService {
         goal:  dto.goal ?? ConceptGoal.CONVERSION,
       },
       angles:               angleItems,
-      creatives:            creativeResults,
+      creatives:            creativeItems,
       scoring:              scoringItems,
       winner,
       learningUpdateStatus,
@@ -359,7 +387,7 @@ export class ProductRunService {
     conceptId:  string,
     angleSlug:  string,
     userId:     string,
-    enrichment: { keyObjection?: string; valueProposition?: string } = {},
+    enrichment: { keyObjection?: string; valueProposition?: string; resourceCtx?: ResourceContext } = {},
   ): Promise<RunCreativeItem> {
 
     // ── Signal 1: Angle fatigue (W4: fallback is WARMING, never HEALTHY) ──────
@@ -411,7 +439,7 @@ export class ProductRunService {
     const routingDecision = this.smartRouting.decide(routingCtx);
 
     // ── Derive executionMode + renderEngine from routing decision ─────────────
-    const modeDecision = decideMode(
+    let modeDecision = decideMode(
       {
         scene_type: 'hook',
         pacing:     'moderate',
@@ -420,6 +448,19 @@ export class ProductRunService {
       },
       routingDecision,
     );
+
+    // ── videoMode USER OVERRIDE — always beats SmartRouting for video ─────────
+    // User explicitly chose UGC or Classic — honour that choice unconditionally.
+    if (dto.format === 'video' && dto.videoMode) {
+      const forcedMode:   'ugc' | 'cinematic' = dto.videoMode === 'ugc' ? 'ugc' : 'cinematic';
+      const forcedEngine: 'kling' | 'veo'     = dto.videoMode === 'ugc' ? 'kling' : 'veo';
+      modeDecision = {
+        mode:       forcedMode,
+        model:      forcedEngine,
+        confidence: 1.0,
+        reasoning:  `User-selected videoMode="${dto.videoMode}" overrides SmartRouting (was: ${modeDecision.mode})`,
+      };
+    }
 
     this.logger.log(
       `[ProductRun] Routing for angle=${angleSlug}: ` +
@@ -440,6 +481,8 @@ export class ProductRunService {
         styleContext:      dto.styleContext ?? '',
         keyObjection:      enrichment.keyObjection,
         valueProposition:  enrichment.valueProposition,
+        resourceCtx:       enrichment.resourceCtx,
+        videoMode:         dto.videoMode,
         executionMode:     modeDecision.mode,
         renderEngine:      modeDecision.model,
         modeReasoning:     modeDecision.reasoning,

@@ -32,6 +32,10 @@ export interface RunRequest {
   sizes?:        string[];
   // Phase 3: personalization
   styleContext?: string;
+  // Phase 4: Persona targeting
+  personaId?: string;
+  // Video pipeline selection
+  videoMode?: 'ugc' | 'classic';
   // Unified creation system
   mode?:   'quick' | 'campaign';
   assets?: string[];
@@ -44,9 +48,11 @@ export interface RunAngle {
 }
 
 export interface RunCreative {
-  creativeId: string;
-  angleSlug:  string;
-  format:     string;
+  creativeId:  string;
+  angleSlug:   string;
+  format:      string;
+  /** false = images generating in background; poll GET /api/creatives/:id */
+  imagesReady?: boolean;
 }
 
 export interface RunScore {
@@ -89,7 +95,52 @@ async function ensureUser(): Promise<void> {
   _ensuredId = userId;
 }
 
-export async function runCampaign(body: RunRequest): Promise<RunResult> {
+// ── Async video job response (video format returns this instead of RunResult) ──
+
+export interface RunQueuedResponse {
+  executionId: string;
+  campaignId:  string;
+  jobId:       string;
+  status:      'queued';
+  concept:     { id: string; brief: string; goal: string };
+  angles:      RunAngle[];
+  message:     string;
+}
+
+export type RunResponse = RunResult | RunQueuedResponse;
+
+export function isQueued(r: RunResponse): r is RunQueuedResponse {
+  return (r as RunQueuedResponse).status === 'queued';
+}
+
+// ── Job status polling (for async video) ──────────────────────────────────────
+
+export type JobState = 'waiting' | 'active' | 'completed' | 'failed' | 'delayed' | 'unknown';
+
+export interface JobStatus {
+  jobId:       string;
+  status:      JobState;
+  progress:    number;
+  result:      RunResult | null;
+  error:       string | null;
+  createdAt:   number;
+  startedAt:   number | null;
+  finishedAt:  number | null;
+  attempts:    number;
+  maxAttempts: number;
+}
+
+export async function getJobStatus(jobId: string): Promise<JobStatus> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${BASE}/api/jobs/${encodeURIComponent(jobId)}`, { headers });
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Unknown error');
+    throw new Error(`Job status failed: ${text}`);
+  }
+  return res.json() as Promise<JobStatus>;
+}
+
+export async function runCampaign(body: RunRequest): Promise<RunResponse> {
   await ensureUser();
   const headers = await getAuthHeaders();
   const res = await fetch(`${BASE}/api/run`, {
@@ -101,7 +152,7 @@ export async function runCampaign(body: RunRequest): Promise<RunResult> {
     const text = await res.text().catch(() => 'Unknown error');
     throw new Error(`Generation failed: ${text}`);
   }
-  return res.json() as Promise<RunResult>;
+  return res.json() as Promise<RunResponse>;
 }
 
 // ── Memory — derives personalized insights ────────────────────────────────────

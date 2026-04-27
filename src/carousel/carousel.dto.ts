@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
+import type { ResourceContext } from '../resources/resources.service';
 
 export class GenerateCarouselDto {
   @ApiProperty({ example: 'uuid-of-campaign' })
@@ -50,4 +51,7 @@ export class GenerateCarouselDto {
   @IsOptional()
   @IsString()
   valueProposition?: string;
+
+  /** Internal — not exposed via API; injected by ExecutionGateway */
+  resourceCtx?: ResourceContext;
 }

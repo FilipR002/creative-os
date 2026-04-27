@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsArray, IsOptional, IsString } from 'class-validator';
+import type { ResourceContext } from '../resources/resources.service';
 
 export const BANNER_SIZES = ['1200x628', '1080x1080', '1080x1920', '300x250', '728x90'];
 
@@ -49,4 +50,7 @@ export class GenerateBannerDto {
   @IsOptional()
   @IsString()
   valueProposition?: string;
+
+  /** Internal — not exposed via API; injected by ExecutionGateway */
+  resourceCtx?: ResourceContext;
 }

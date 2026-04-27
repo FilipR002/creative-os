@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+import type { ResourceContext } from '../resources/resources.service';
 
 export enum ConceptGoal {
   CONVERSION = 'conversion',
@@ -44,4 +45,7 @@ export class GenerateConceptDto {
   @IsOptional()
   @IsString()
   toneHint?: string;
+
+  /** Internal — pre-resolved persona + product/brand context for AI enrichment */
+  resourceCtx?: ResourceContext;
 }

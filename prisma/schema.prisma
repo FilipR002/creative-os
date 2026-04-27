@@ -832,6 +832,40 @@ model Subscription {
   @@map("subscriptions")
 }
 
+// ─── Resources + Personas — Brand / Product / Audience knowledge base ────────
+
+model Resource {
+  id                 String    @id @default(uuid())
+  userId             String    @unique @map("user_id")
+  productName        String?   @map("product_name")
+  productDescription String?   @map("product_description")
+  productBenefits    String[]  @default([]) @map("product_benefits")
+  brandTone          String?   @map("brand_tone")
+  brandVoice         String?   @map("brand_voice")
+  imageUrls          String[]  @default([]) @map("image_urls")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt      @map("updated_at")
+  personas           Persona[]
+
+  @@map("resources")
+}
+
+model Persona {
+  id           String   @id @default(uuid())
+  resourceId   String   @map("resource_id")
+  resource     Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  name         String
+  description  String
+  painPoints   String[] @default([]) @map("pain_points")
+  desires      String[] @default([])
+  demographics String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt      @map("updated_at")
+
+  @@index([resourceId])
+  @@map("personas")
+}
+
 model TokenTransaction {
   id              String       @id @default(uuid())
   userId          String       @map("user_id")

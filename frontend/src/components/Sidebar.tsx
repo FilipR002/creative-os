@@ -13,6 +13,7 @@ const MAIN_NAV = [
   { label: 'Dashboard',      icon: '⊙', href: '/dashboard'    },
   { label: 'Create',         icon: '✦', href: '/create'        },
   { label: 'My Campaigns',   icon: '⊞', href: '/campaigns'     },
+  { label: 'Resources',      icon: '◑', href: '/resources'     },
   { label: 'Analytics',      icon: '▦', href: '/analytics'     },
   { label: 'Ad Performance', icon: '↗', href: '/ad-performance'},
   { label: 'Billing',        icon: '◈', href: '/billing'       },

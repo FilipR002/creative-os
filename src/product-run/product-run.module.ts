@@ -13,6 +13,7 @@ import { ExecutionGatewayModule }  from '../creative-os/lib/execution-gateway.mo
 import { FatigueModule }           from '../fatigue/fatigue.module';
 import { MirofishModule }          from '../mirofish/mirofish.module';
 import { VideoQueueModule }        from '../video-queue/video-queue.module';
+import { ResourcesModule }         from '../resources/resources.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { VideoQueueModule }        from '../video-queue/video-queue.module';
     FatigueModule,
     MirofishModule,
     VideoQueueModule,   // async video-render queue + worker
+    ResourcesModule,    // persona + product/brand context injection
   ],
   controllers: [ProductRunController],
   providers:   [ProductRunService],

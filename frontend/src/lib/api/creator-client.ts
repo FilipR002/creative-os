@@ -2780,3 +2780,24 @@ export const getProfitIntelSummary = () => req<ProfitIntelSummary>('/api/financi
 export const getUnitEconomics     = () => req<UnitEconomicsEntry[]>('/api/financial-os/intelligence/unit-economics');
 export const getProfitTrends      = (range: '7d' | '30d' = '7d') =>
   req<ProfitTrendPoint[]>(`/api/financial-os/intelligence/trends?range=${range}`);
+
+
+// ─── Creative content fetcher ─────────────────────────────────────────────────
+
+export interface CreativeContent {
+  id:               string;
+  format:           string;
+  angleSlug:        string;
+  isWinner:         boolean;
+  score?:           number;
+  // video
+  stitchedVideoUrl?: string;
+  sceneVideoUrls?:   string[];
+  // carousel
+  slides?:          Array<{ slide_number: number; type: string; hook: string; headline: string; body: string; cta: string; imageUrl?: string }>;
+  // banner
+  banners?:         Array<{ size: string; headline: string; subtext: string; cta: string; visual_direction: string; imageUrl?: string }>;
+}
+
+export const getCreativeById = (id: string) =>
+  req<CreativeContent>(`/api/creatives/${encodeURIComponent(id)}`);

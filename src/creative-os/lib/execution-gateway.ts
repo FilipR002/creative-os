@@ -57,6 +57,7 @@ import type {
 import type { RoutingDecision } from '../../routing/smart/routing.types';
 import type { CreativePlan }   from '../../creative-director/creative-director-orchestrator';
 import type { KlingScene, SceneRenderResult } from '../../ugc/types/ugc.types';
+import type { ResourceContext }              from '../../resources/resources.service';
 
 // ─── Public types ──────────────────────────────────────────────────────────────
 
@@ -89,6 +90,18 @@ export interface GatewayExecutionInput {
   // Fix 4: Gateway rejects requests without a plan. Callers must generate one
   // (via CreativeDirectorService or V2 synthetic builder) before dispatching.
   creativePlan: CreativePlan;
+
+  // ── Resource + Persona context ────────────────────────────────────────────
+  /** Optional — injected into all Claude prompts when provided */
+  resourceCtx?: ResourceContext;
+
+  // ── User-selected video pipeline ──────────────────────────────────────────
+  /**
+   * Explicit user choice: 'ugc' → Kling  |  'classic' → Veo/cinematic.
+   * When present, executionMode is already overridden by the caller —
+   * this field is carried through for logging and content persistence.
+   */
+  videoMode?: 'ugc' | 'classic';
 
   // ── Format-specific ────────────────────────────────────────────────────────
   durationTier?: string;
@@ -281,10 +294,14 @@ export class ExecutionGatewayService {
     // ── Build base context ─────────────────────────────────────────────────
     const baseContext = this.buildBaseContext(input);
 
+    const videoModeLabel = input.videoMode
+      ? ` videoMode=${input.videoMode}[user-override]`
+      : '';
     this.logger.log(
       `[Gateway] Executing ${count} variant(s) | ` +
-      `format=${input.format} executionMode=${input.executionMode} engine=${input.renderEngine} ` +
-      `routing=${input.routingDecision.mode} hooks=${input.routingDecision.hookAggressiveness} ` +
+      `format=${input.format} executionMode=${input.executionMode} engine=${input.renderEngine}` +
+      `${videoModeLabel} routing=${input.routingDecision.mode} ` +
+      `hooks=${input.routingDecision.hookAggressiveness} ` +
       `risk=${input.routingDecision.riskTolerance.toFixed(2)}`,
     );
 
@@ -450,8 +467,16 @@ export class ExecutionGatewayService {
             styleContext,
             keyObjection:     input.keyObjection,
             valueProposition: input.valueProposition,
+            resourceCtx:      input.resourceCtx,
           },
           userId,
+        );
+        // Fire image generation in background — don't block the API response.
+        // Frontend polls GET /api/creatives/:id until slides[].imageUrl are populated.
+        this.carousels.generateImages(res.creativeId, userId).catch(err =>
+          this.logger.warn(
+            `[Gateway] Background carousel image gen failed for ${res.creativeId}: ${err?.message}`,
+          ),
         );
         return {
           creativeId:    res.creativeId,
@@ -472,8 +497,16 @@ export class ExecutionGatewayService {
             styleContext,
             keyObjection:     input.keyObjection,
             valueProposition: input.valueProposition,
+            resourceCtx:      input.resourceCtx,
           },
           userId,
+        );
+        // Fire image generation in background — don't block the API response.
+        // Frontend polls GET /api/creatives/:id until banners[].imageUrl are populated.
+        this.banners.generateImages(res.creativeId, userId).catch(err =>
+          this.logger.warn(
+            `[Gateway] Background banner image gen failed for ${res.creativeId}: ${err?.message}`,
+          ),
         );
         return {
           creativeId:    res.creativeId,
@@ -562,6 +595,7 @@ export class ExecutionGatewayService {
           sceneVideoUrls:   sceneResults.map(r => r.videoUrl),
           engine:           overlay.engine,
           mode:             overlay.mode,
+          videoMode:        input.videoMode ?? (overlay.mode === 'ugc' ? 'ugc' : 'classic'),
           sceneCount:       sceneResults.length,
           totalDuration:    stitchResult.totalDuration,
           styleContext,

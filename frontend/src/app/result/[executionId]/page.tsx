@@ -704,13 +704,15 @@ export default function ResultPage() {
         ? (result.concept.goal === 'conversion' ? 'awareness' : 'conversion') as any
         : (override.goal || result.concept.goal) as any;
       const styleContext = buildStyleContext(loadProfile()) || undefined;
-      const newResult = await runCampaign({
+      const newResponse = await runCampaign({
         brief:      result.concept.brief,
         format:     result.creatives[0]?.format as any ?? 'video',
         goal:       effectiveGoal,
         campaignId: result.campaignId,
         styleContext,
       });
+      if ((newResponse as any).status === 'queued') return; // async video — skip inline handling
+      const newResult = newResponse as import('@/lib/api/run-client').RunResult;
       saveRunResult(newResult, result.concept.brief, newResult.creatives[0]?.format as any ?? 'video');
       // Fire generation with overrides (angle + persona) for the new result
       if (newResult.campaignId) {

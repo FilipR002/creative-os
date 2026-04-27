@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { ImageService } from '../image/image.service';
 import { GenerateCarouselDto } from './carousel.dto';
+import { buildPersonaBlock }   from '../resources/persona-prompt';
 import axios from 'axios';
 
 // ─── Slide sequence helper ────────────────────────────────────────────────────
@@ -49,11 +50,14 @@ export class CarouselService {
     const slideSequence = buildSlideSequence(dto.slideCount);
     const platform      = dto.platform || concept.platform || 'instagram';
 
+    const personaBlock = buildPersonaBlock(dto.resourceCtx);
+
     const systemPrompt = [
       `You are an expert carousel ad copywriter for social media.`,
       `You write slide-by-slide carousel scripts that stop scroll, teach value, and drive action.`,
       `Return ONLY valid JSON array. No markdown. No explanation. No backticks.`,
       dto.styleContext ? `\n${dto.styleContext}` : '',
+      personaBlock || '',
     ].filter(Boolean).join('\n');
 
     const objectionLine = dto.keyObjection     ? `- Key objection to overcome: ${dto.keyObjection}`         : '';
@@ -184,9 +188,24 @@ For the LAST slide (slide ${dto.slideCount}) only:
     // Delegate to ImageService — all Gemini logic lives there
     const results = await this.images.generateBatch(inputs);
 
+    // ── Validate every result — reject blank / truncated URLs ─────────────────
+    // A base64 JPEG data URL is always > 100 chars. A URL shorter than 50
+    // characters is definitely wrong (empty string, error fragment, etc.)
+    for (const r of results) {
+      if (r.error) continue; // already captured as an error
+      if (!r.imageUrl || r.imageUrl.length < 50) {
+        throw new BadRequestException(
+          `Imagen 4 returned an invalid image for slide ${r.slideNumber}: ` +
+          `URL length ${r.imageUrl?.length ?? 0} is below the 50-character minimum. ` +
+          `Check GEMINI_API_KEY and Imagen 4 quota.`,
+        );
+      }
+    }
+
     // Persist the prompt used back into each slide for reproducibility
     const updatedSlides = slides.map((slide, i) => ({
       ...slide,
+      imageUrl:    results[i]?.imageUrl   ?? null,
       imagePrompt: results[i]?.promptUsed ?? null,
     }));
 

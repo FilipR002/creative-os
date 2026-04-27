@@ -370,10 +370,22 @@ export class VideoWorkerService implements OnModuleInit, OnModuleDestroy {
 
     const routingDecision = this.smartRouting.decide(routingCtx);
 
-    const modeDecision = decideMode(
+    let modeDecision = decideMode(
       { scene_type: 'hook', pacing: 'moderate', platform: dto.platform, emotion: 'confident' },
       routingDecision,
     );
+
+    // ── videoMode USER OVERRIDE — user choice always beats SmartRouting ───────
+    if (dto.videoMode) {
+      const forcedMode:   'ugc' | 'cinematic' = dto.videoMode === 'ugc' ? 'ugc' : 'cinematic';
+      const forcedEngine: 'kling' | 'veo'     = dto.videoMode === 'ugc' ? 'kling' : 'veo';
+      modeDecision = {
+        mode:       forcedMode,
+        model:      forcedEngine,
+        confidence: 1.0,
+        reasoning:  `User-selected videoMode="${dto.videoMode}" overrides SmartRouting (was: ${modeDecision.mode})`,
+      };
+    }
 
     const creativePlan = buildMinimalPlan(dto, angleSlug, campaignId, concept.id);
 
@@ -385,6 +397,7 @@ export class VideoWorkerService implements OnModuleInit, OnModuleDestroy {
       styleContext:      dto.styleContext ?? '',
       keyObjection:      concept.keyObjection  ?? undefined,
       valueProposition:  concept.valueProposition ?? undefined,
+      videoMode:         dto.videoMode,
       executionMode:     modeDecision.mode,
       renderEngine:      modeDecision.model,
       modeReasoning:     modeDecision.reasoning,
