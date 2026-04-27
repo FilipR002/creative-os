@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { GenerateConceptDto } from './concept.dto';
 import { buildPersonaBlock } from '../resources/persona-prompt';
+import { buildAngleBlock }  from '../creative-os/lib/angle-definitions';
 import axios from 'axios';
 
 @Injectable()
@@ -22,17 +23,18 @@ export class ConceptService {
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
 
     const personaBlock = buildPersonaBlock(dto.resourceCtx);
+    const angleBlock   = buildAngleBlock(dto.angleHint);
 
     const systemPrompt = [
       `You are a master creative strategist for digital marketing.`,
       `Your job is to analyze a brief and extract a structured master concept.`,
       `Return ONLY valid JSON. No markdown, no explanation, no backticks.`,
+      angleBlock,
       personaBlock || '',
-    ].filter(Boolean).join('\n');
+    ].filter(Boolean).join('\n\n');
 
     const hintLines: string[] = [];
-    if (dto.angleHint) hintLines.push(`Preferred angle: ${dto.angleHint}`);
-    if (dto.toneHint)  hintLines.push(`Preferred tone: ${dto.toneHint}`);
+    if (dto.toneHint) hintLines.push(`Preferred tone: ${dto.toneHint}`);
     const hintBlock = hintLines.length
       ? `\nCampaign strategy hints (follow these closely):\n${hintLines.join('\n')}`
       : '';

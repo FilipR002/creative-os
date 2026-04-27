@@ -29,6 +29,7 @@ import { SmartRoutingService }      from '../routing/smart/routing.service';
 import { FatigueService }           from '../fatigue/fatigue.service';
 import { MirofishService }          from '../mirofish/mirofish.service';
 import { decideMode }               from '../creative-os/lib/model-router';
+import { buildAngleBlock }          from '../creative-os/lib/angle-definitions';
 import { CampaignMode }             from '../campaign/campaign.dto';
 import { ConceptGoal }              from '../concept/concept.dto';
 import type { CreativeScoreResult } from '../scoring/scoring.types';
@@ -216,6 +217,8 @@ export class ProductRunService {
     }
 
     // ── Step 2: Generate concept ─────────────────────────────────────────────
+    // Expand the user-selected angle into a full definition for the concept AI
+    const angleBlock = buildAngleBlock(dto.styleContext);
     const { concept } = await this.concepts.generate(
       {
         campaignId,
@@ -223,6 +226,7 @@ export class ProductRunService {
         goal:        dto.goal ?? ConceptGoal.CONVERSION,
         platform:    dto.platform,
         resourceCtx,
+        angleHint:   dto.styleContext || undefined,
       },
       userId,
     );
@@ -478,7 +482,7 @@ export class ProductRunService {
         campaignId,
         conceptId,
         angleSlug,
-        styleContext:      dto.styleContext ?? '',
+        styleContext:      buildAngleBlock(dto.styleContext),
         keyObjection:      enrichment.keyObjection,
         valueProposition:  enrichment.valueProposition,
         resourceCtx:       enrichment.resourceCtx,
