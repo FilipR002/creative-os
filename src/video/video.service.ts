@@ -192,28 +192,30 @@ Rules:
     const angle:   string = content.angle ?? 'general';
     const platform = 'instagram';
 
-    // Generate one image per scene using its visual_prompt
-    const results = await Promise.all(
-      scenes.map(async (scene: any, i: number) => {
-        const prompt = scene.visual_prompt
-          ? `Cinematic marketing photography. ${scene.visual_prompt}. Platform: ${platform}. Angle: ${angle}. No text, no words, no letters in the image. Photorealistic, commercial quality, sharp focus.`
-          : null;
+    // Generate one image per scene sequentially to avoid API rate limits
+    // TODO: revert to Promise.all once on Anthropic Tier 2+
+    const results: any[] = [];
+    for (let i = 0; i < scenes.length; i++) {
+      const scene = scenes[i];
+      if (i > 0) await new Promise(r => setTimeout(r, 1500));
+      const prompt = scene.visual_prompt
+        ? `Cinematic marketing photography. ${scene.visual_prompt}. Platform: ${platform}. Angle: ${angle}. No text, no words, no letters in the image. Photorealistic, commercial quality, sharp focus.`
+        : null;
 
-        if (!prompt) return { sceneNumber: i + 1, imageUrl: null, error: 'No visual prompt' };
+      if (!prompt) { results.push({ sceneNumber: i + 1, imageUrl: null, error: 'No visual prompt' }); continue; }
 
-        try {
-          const result = await this.images.generateFromPrompt(prompt, {
-            angle,
-            format:   'video',
-            platform,
-          });
-          scene.imageUrl = result.imageUrl;
-          return { sceneNumber: i + 1, imageUrl: result.imageUrl, promptUsed: prompt, error: null };
-        } catch (err: any) {
-          return { sceneNumber: i + 1, imageUrl: null, error: err?.message ?? 'Failed' };
-        }
-      }),
-    );
+      try {
+        const result = await this.images.generateFromPrompt(prompt, {
+          angle,
+          format:   'video',
+          platform,
+        });
+        scene.imageUrl = result.imageUrl;
+        results.push({ sceneNumber: i + 1, imageUrl: result.imageUrl, promptUsed: prompt, error: null });
+      } catch (err: any) {
+        results.push({ sceneNumber: i + 1, imageUrl: null, error: err?.message ?? 'Failed' });
+      }
+    }
 
     // Persist updated scenes (with imageUrl) back to DB
     await this.prisma.creative.update({

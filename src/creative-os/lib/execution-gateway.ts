@@ -305,12 +305,13 @@ export class ExecutionGatewayService {
       `risk=${input.routingDecision.riskTolerance.toFixed(2)}`,
     );
 
-    // ── Generate variants — each gets its own mode-specific context ────────
-    const variants = await Promise.all(
-      Array.from({ length: count }, (_, i) =>
-        this.executeVariant(input, baseContext, i, count, userId),
-      ),
-    );
+    // ── Generate variants sequentially to avoid Anthropic rate limits ────────
+    // TODO: revert to Promise.all once on Anthropic Tier 2+
+    const variants: Awaited<ReturnType<typeof this.executeVariant>>[] = [];
+    for (let i = 0; i < count; i++) {
+      if (i > 0) await new Promise(r => setTimeout(r, 1500)); // 1.5s gap between calls
+      variants.push(await this.executeVariant(input, baseContext, i, count, userId));
+    }
 
     // ── Compute result metadata ────────────────────────────────────────────
     const enginesUsed = [...new Set(variants.map(v => v.engineApplied))];
