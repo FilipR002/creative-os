@@ -601,153 +601,229 @@ function CreatePageInner() {
           )}
 
           {/* ═══════════════════════════════════════════════════════════════
-              CAMPAIGN MODE — full pipeline, redirects to /result/:id
+              CAMPAIGN MODE — 2-column mirror of Quick Ad
               ══════════════════════════════════════════════════════════════ */}
           {mode === 'campaign' && (
-            <div className="new-campaign-wrap" style={{ maxWidth: 680 }}>
-              <div className="new-campaign-badge">📋 Campaign Mode</div>
-              <h1 className="new-campaign-title">One idea. Endless creatives.</h1>
-              <p className="new-campaign-sub">
-                Describe your product — AI handles concept, angles, and all selected ad formats.
-              </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: 32, alignItems: 'start' }}>
 
-              {/* Brief */}
-              <div style={{ marginBottom: 20 }}>
-                <div className="form-label">Campaign Brief</div>
-                <textarea className="form-input" rows={5}
-                  placeholder="e.g. A fitness app that creates personalised workout plans using AI — targeting busy professionals who have 20 minutes a day."
-                  value={camBrief} onChange={e => setCamBrief(e.target.value)} disabled={camLoading} />
-              </div>
+              {/* ── LEFT: control panel ──────────────────────────────────── */}
+              <div>
 
-              {/* Platform */}
-              <div style={{ marginBottom: 16 }}>
-                <div className="form-label">Platform</div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {([['meta', '📘', 'Meta'], ['tiktok', '🎵', 'TikTok'], ['google', '🔍', 'Google']] as [AdPlatform, string, string][]).map(([id, icon, label]) => (
-                    <button key={id} onClick={() => setCamPlatform(id)} disabled={camLoading}
-                      className={`format-btn${camPlatform === id ? ' active' : ''}`} style={{ flex: 1 }}>
-                      {icon} {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Goal */}
-              <div style={{ marginBottom: 20 }}>
-                <div className="form-label">Goal</div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {(['conversion', 'awareness', 'engagement'] as RunGoal[]).map(g => (
-                    <button key={g} onClick={() => setCamGoal(g)} disabled={camLoading}
-                      className={`format-btn${camGoal === g ? ' active' : ''}`} style={{ flex: 1 }}>
-                      {GOAL_LABELS[g]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Assets */}
-              <div style={{ marginBottom: 20 }}>
-                <div className="form-label">Assets to Generate</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {([
-                    ['video',    '▶',  'Video',    'High engagement, storytelling, brand recall'],
-                    ['carousel', '⊞',  'Carousel', 'Multi-slide, educational, product features'],
-                    ['image',    '⬜', 'Image',    'Retargeting, display network, brand awareness'],
-                  ] as [AdFormat, string, string, string][]).map(([id, icon, label, desc]) => {
-                    const locked  = id === 'video' && !isAdmin;
-                    const checked = camAssets.includes(id);
-                    return (
-                      <label key={id}
-                        onClick={e => { if (locked) e.preventDefault(); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px', borderRadius: 10, transition: 'all 0.15s',
-                          cursor:     locked ? 'not-allowed' : 'pointer',
-                          opacity:    locked ? 0.6 : 1,
-                          background: locked ? 'var(--surface-2)' : checked ? 'rgba(99,102,241,0.06)' : 'var(--surface)',
-                          border:     `1.5px solid ${locked ? 'var(--border)' : checked ? 'var(--indigo)' : 'var(--border)'}` }}>
-                        <input type="checkbox" checked={checked && !locked}
-                          onChange={() => { if (!locked) toggleCamAsset(id); }}
+                {/* Assets to Generate */}
+                <div style={{ marginBottom: 20 }}>
+                  <div className="form-label">Assets to Generate</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                    {([
+                      ['video',    '▶',  'Video'],
+                      ['carousel', '⊞',  'Carousel'],
+                      ['image',    '⬜', 'Image'],
+                    ] as [AdFormat, string, string][]).map(([id, icon, label]) => {
+                      const locked  = id === 'video' && !isAdmin;
+                      const checked = camAssets.includes(id);
+                      return (
+                        <button key={id}
+                          onClick={() => { if (!locked) toggleCamAsset(id); }}
                           disabled={camLoading || locked}
-                          style={{ width: 16, height: 16, accentColor: 'var(--indigo)', cursor: locked ? 'not-allowed' : 'pointer' }} />
-                        <span style={{ fontSize: 20 }}>{locked ? '🔒' : icon}</span>
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: locked ? 'var(--muted)' : checked ? 'var(--text)' : 'var(--sub)' }}>{label}</div>
-                          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{locked ? 'Admin only' : desc}</div>
-                        </div>
-                        {checked && !locked && (
-                          <span style={{ marginLeft: 'auto', fontSize: 10, padding: '2px 8px', borderRadius: 4, background: 'rgba(99,102,241,0.12)', color: 'var(--indigo-l)', fontWeight: 700 }}>Selected</span>
-                        )}
-                      </label>
-                    );
-                  })}
+                          className={`format-btn${!locked && checked ? ' active' : ''}`}
+                          style={{ flexDirection: 'column', gap: 4, padding: '12px 8px', opacity: locked ? 0.55 : 1, cursor: locked ? 'not-allowed' : 'pointer', position: 'relative' }}>
+                          <span style={{ fontSize: 20 }}>{locked ? '🔒' : icon}</span>
+                          <span>{label}</span>
+                          {locked && (
+                            <span style={{ position: 'absolute', bottom: 4, left: 0, right: 0, fontSize: 8, color: 'var(--amber)', fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}>
+                              ADMIN ONLY
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {camAssets.length === 0 && (
+                    <div style={{ fontSize: 11, color: 'var(--rose)', marginTop: 6 }}>Select at least one format.</div>
+                  )}
                 </div>
-                {camAssets.length === 0 && (
-                  <div style={{ fontSize: 11, color: 'var(--rose)', marginTop: 6 }}>Select at least one format to continue.</div>
+
+                {/* Platform */}
+                <div style={{ marginBottom: 20 }}>
+                  <div className="form-label">Platform</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {([['meta', '📘', 'Meta'], ['tiktok', '🎵', 'TikTok'], ['google', '🔍', 'Google']] as [AdPlatform, string, string][]).map(([id, icon, label]) => (
+                      <button key={id} onClick={() => setCamPlatform(id)} disabled={camLoading}
+                        className={`format-btn${camPlatform === id ? ' active' : ''}`} style={{ flex: 1 }}>
+                        {icon} {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Goal */}
+                <div style={{ marginBottom: 20 }}>
+                  <div className="form-label">Goal</div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {(['conversion', 'awareness', 'engagement'] as RunGoal[]).map(g => (
+                      <button key={g} onClick={() => setCamGoal(g)} disabled={camLoading}
+                        className={`format-btn${camGoal === g ? ' active' : ''}`} style={{ flex: 1, fontSize: 11 }}>
+                        {GOAL_LABELS[g]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Duration — only when video selected */}
+                {camAssets.includes('video') && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label">Video Duration</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {(['SHORT', 'MEDIUM', 'LONG', 'EXTENDED'] as DurationTier[]).map(d => (
+                        <button key={d} onClick={() => setCamDuration(d)} disabled={camLoading}
+                          style={{ flex: 1, padding: '8px 4px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
+                            background: camDuration === d ? 'var(--accent)' : 'var(--surface-2)',
+                            border:     `1px solid ${camDuration === d ? 'var(--accent)' : 'var(--border)'}`,
+                            color:      camDuration === d ? '#fff' : 'var(--sub)' }}>
+                          {DURATION_LABELS[d]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Slides — only when carousel selected */}
+                {camAssets.includes('carousel') && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label">Slides</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      {[3, 5, 7, 10].map(n => (
+                        <button key={n} onClick={() => setCamSlides(n)} disabled={camLoading}
+                          style={{ flex: 1, padding: '8px 4px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'center',
+                            background: camSlides === n ? 'var(--accent)' : 'var(--surface-2)',
+                            border:     `1px solid ${camSlides === n ? 'var(--accent)' : 'var(--border)'}`,
+                            color:      camSlides === n ? '#fff' : 'var(--sub)' }}>
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Persona */}
+                {personas.length > 0 && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      Target Persona
+                      <span style={{ fontSize: 10, color: 'var(--muted)', fontWeight: 400 }}>optional</span>
+                    </div>
+                    <select
+                      value={selectedPersonaId}
+                      onChange={e => setSelectedPersonaId(e.target.value)}
+                      disabled={camLoading}
+                      style={{
+                        width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)',
+                        borderRadius: 8, padding: '9px 12px', color: selectedPersonaId ? 'var(--text)' : 'var(--muted)',
+                        fontSize: 13, outline: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                      }}
+                    >
+                      <option value="">— No persona —</option>
+                      {personas.map(p => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Brief */}
+                <div style={{ marginBottom: 20 }}>
+                  <div className="form-label">Campaign Brief</div>
+                  <textarea className="form-input" rows={5}
+                    placeholder="e.g. A fitness app that creates personalised workout plans using AI — targeting busy professionals who have 20 minutes a day."
+                    value={camBrief} onChange={e => setCamBrief(e.target.value)} disabled={camLoading}
+                    style={{ resize: 'vertical' }} />
+                  <div style={{ marginTop: 4, fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 12 }}>
+                    <span>{camBrief.length} chars</span>
+                    <span>assets: <strong style={{ color: 'var(--accent-l)' }}>{camAssets.length > 0 ? camAssets.join(', ') : 'none'}</strong></span>
+                    <span>~{camAssets.length * 8}s</span>
+                  </div>
+                </div>
+
+                {/* Error */}
+                {camError && (
+                  <div className="form-error" style={{ marginBottom: 16 }}>⚠ {camError}</div>
+                )}
+
+                {/* Generate */}
+                <button className="btn-generate" style={{ width: '100%' }}
+                  onClick={handleCampaignGenerate}
+                  disabled={!camBrief.trim() || camLoading || camAssets.length === 0}>
+                  {camLoading
+                    ? <><div className="spinner" />Generating {camAssets.length > 1 ? `${camAssets.length} assets` : camAssets[0]}…</>
+                    : <>✦ Generate Campaign</>}
+                </button>
+              </div>
+
+              {/* ── RIGHT: status panel ───────────────────────────────────── */}
+              <div style={{
+                minHeight: 480, borderRadius: 16, border: '1px dashed var(--border)',
+                background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {!camLoading && !camError && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: 32, gap: 0 }}>
+                    <div style={{ fontSize: 48, opacity: 0.12, lineHeight: 1 }}>✦</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--sub)', marginTop: 12 }}>
+                      Your campaign will appear here
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>
+                      Select formats, write your brief, and hit Generate
+                    </div>
+                    {camAssets.length > 0 && (
+                      <div style={{ marginTop: 20, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                        {camAssets.map(a => (
+                          <span key={a} style={{
+                            fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
+                            background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)',
+                            color: 'var(--indigo-l)',
+                          }}>
+                            {a === 'video' ? '▶ Video' : a === 'carousel' ? '⊞ Carousel' : '⬜ Image'}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {camLoading && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: 32, gap: 16 }}>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: '50%',
+                      border: '3px solid var(--border)', borderTopColor: 'var(--accent)',
+                      animation: 'spin 1s linear infinite',
+                    }} />
+                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
+                      {camStep || 'Generating campaign…'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                      Concept → Angles → {camAssets.join(' + ')}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center', marginTop: 4 }}>
+                      {camAssets.map(a => (
+                        <span key={a} style={{
+                          fontSize: 11, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
+                          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)',
+                          color: '#10b981',
+                        }}>
+                          {a === 'video' ? '▶ Video' : a === 'carousel' ? '⊞ Carousel' : '⬜ Image'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {camError && (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: 32, gap: 12 }}>
+                    <div style={{ fontSize: 36, opacity: 0.5 }}>⚠</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--rose)' }}>Generation failed</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)', maxWidth: 300, lineHeight: 1.6 }}>{camError}</div>
+                  </div>
                 )}
               </div>
 
-              {/* Duration if video selected */}
-              {camAssets.includes('video') && (
-                <div style={{ marginBottom: 16 }}>
-                  <div className="form-label">Video Duration</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {(['SHORT', 'MEDIUM', 'LONG', 'EXTENDED'] as DurationTier[]).map(d => (
-                      <button key={d} onClick={() => setCamDuration(d)} disabled={camLoading}
-                        style={{ flex: 1, padding: '8px 4px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                          background: camDuration === d ? 'var(--indigo)' : 'var(--surface)',
-                          border:     `1px solid ${camDuration === d ? 'var(--indigo)' : 'var(--border)'}`,
-                          color:      camDuration === d ? '#fff' : 'var(--sub)' }}>
-                        {DURATION_LABELS[d]}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Slides if carousel selected */}
-              {camAssets.includes('carousel') && (
-                <div style={{ marginBottom: 16 }}>
-                  <div className="form-label">Carousel Slides</div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {[3, 5, 7, 10].map(n => (
-                      <button key={n} onClick={() => setCamSlides(n)} disabled={camLoading}
-                        style={{ flex: 1, padding: '8px 4px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-                          background: camSlides === n ? 'var(--indigo)' : 'var(--surface)',
-                          border:     `1px solid ${camSlides === n ? 'var(--indigo)' : 'var(--border)'}`,
-                          color:      camSlides === n ? '#fff' : 'var(--sub)' }}>
-                        {n}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Progress */}
-              {camLoading && camStep && (
-                <div style={{ marginBottom: 16, padding: '8px 14px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.2)', borderRadius: 8, fontSize: 12, color: '#10b981', display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <div className="spinner" />{camStep}
-                </div>
-              )}
-
-              {camError && (
-                <div className="form-error" style={{ marginBottom: 16 }}>⚠ {camError}</div>
-              )}
-
-              <button className="btn-generate" onClick={handleCampaignGenerate}
-                disabled={!camBrief.trim() || camLoading || camAssets.length === 0}>
-                {camLoading
-                  ? <><div className="spinner" />Generating {camAssets.length > 1 ? `${camAssets.length} assets` : camAssets[0]}…</>
-                  : <>✦ Generate Campaign ↗</>}
-              </button>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-                <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>
-                  ~{camAssets.length * 8}s · {camBrief.length} chars
-                </p>
-                <button onClick={() => setMode('quick')}
-                  style={{ fontSize: 12, color: 'var(--indigo-l)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                  Switch to Quick Ad →
-                </button>
-              </div>
             </div>
           )}
 
