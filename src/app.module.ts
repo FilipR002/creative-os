@@ -71,6 +71,7 @@ import { FunnelRouterModule }     from './funnel-router/funnel-router.module';
 import { CreativeOSV2Module }     from './creative-os-v2/creative-os-v2.module';
 import { BillingModule }          from './billing/billing.module';
 import { HealthModule }           from './health/health.module';
+import { VideoQueueModule }       from './video-queue/video-queue.module';
 
 @Module({
   imports: [
@@ -144,6 +145,7 @@ import { HealthModule }           from './health/health.module';
     CreativeOSV2Module,
     BillingModule,
     HealthModule,
+    VideoQueueModule,   // async video-render queue + GET /api/jobs/:jobId
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).

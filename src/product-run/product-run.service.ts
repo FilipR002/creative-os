@@ -3,16 +3,15 @@
 // Single entry point that sequences all existing subsystems in the correct
 // order. Zero business logic lives here — every decision is delegated.
 //
-// Execution order:
-//   1. Resolve (or create) campaign
-//   2. Generate concept
-//   3. Select angles  (exploit + explore + secondary)
-//   4. Generate creatives via ExecutionGatewayService (one per angle)   ← FIX 1
-//   5. Score creatives (synchronous)
-//   6. Store memory   (fire-and-forget)
-//   7. Run learning cycle (fire-and-forget)
-//   8. Trigger evolution  (conditional, fire-and-forget)
-//   9. Return structured RunResponse
+// VIDEO format (async):
+//   1. Resolve/create campaign
+//   2. Generate concept (Claude)
+//   3. Select angles
+//   4. Enqueue VideoQueueService.addVideoJob() → return jobId immediately
+//   Worker handles: Kling render + Stitch + Scoring + Memory + Learning
+//
+// CAROUSEL / BANNER (sync — fast, Claude-only, no external video API):
+//   1–9 unchanged (ExecutionGateway → scoring → memory → learning → response)
 
 import { Injectable, Logger, ForbiddenException } from '@nestjs/common';
 import { randomUUID }               from 'crypto';
@@ -41,7 +40,9 @@ import type {
   RunScoringItem,
   RunResponse,
 } from './product-run.types';
-import type { CreativePlan } from '../creative-director/creative-director-orchestrator';
+import type { CreativePlan }        from '../creative-director/creative-director-orchestrator';
+import { VideoQueueService }        from '../video-queue/video-queue.service';
+import type { RunQueuedResponse }   from '../video-queue/video-job.types';
 
 // ─── Synthetic plan builder ───────────────────────────────────────────────────
 // Fix 4: product-run builds a minimal CreativePlan from RunDto + angle so the
@@ -64,18 +65,18 @@ function buildSceneTemplates(
   platform:  string,
   angleSlug: string,
   count:     number,
-): Array<{ kling_prompt: string; overlay_text: string; transition: string; pacing: string }> {
+): Array<{ kling_prompt: string; overlay_text: string; transition: any; pacing: string }> {
   const slug = angleSlug.replace(/_/g, ' ');
   const pool = [
-    { kling_prompt: `${hook} | authentic UGC | platform:${platform}`,          overlay_text: hook.slice(0, 60),         transition: 'cut',  pacing: 'aggressive' },
-    { kling_prompt: `Problem | tension | close-up | ${platform}`,               overlay_text: 'Does this feel familiar?', transition: 'zoom', pacing: 'moderate'   },
-    { kling_prompt: `Solution reveal | confident | ${platform}`,                overlay_text: `${slug} works.`,          transition: 'cut',  pacing: 'moderate'   },
-    { kling_prompt: `Social proof | testimonial style | ${platform}`,           overlay_text: 'Others are seeing it too.', transition: 'zoom', pacing: 'moderate' },
-    { kling_prompt: `Before vs after | transformation | ${platform}`,           overlay_text: 'See the difference.',      transition: 'cut',  pacing: 'aggressive' },
-    { kling_prompt: `Feature highlight | close-up detail | ${platform}`,        overlay_text: `Why ${slug} works.`,       transition: 'cut',  pacing: 'moderate'   },
-    { kling_prompt: `Emotional peak | aspirational moment | ${platform}`,       overlay_text: 'This could be you.',       transition: 'zoom', pacing: 'moderate'   },
-    { kling_prompt: `Objection handling | reassurance | ${platform}`,           overlay_text: 'No catch. Just results.',  transition: 'cut',  pacing: 'moderate'   },
-    { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,            overlay_text: cta,                        transition: 'cut',  pacing: 'moderate'   },
+    { kling_prompt: `${hook} | authentic UGC | platform:${platform}`,          overlay_text: hook.slice(0, 60),           transition: 'cut'  as const, pacing: 'aggressive' as any },
+    { kling_prompt: `Problem | tension | close-up | ${platform}`,               overlay_text: 'Does this feel familiar?',  transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Solution reveal | confident | ${platform}`,                overlay_text: `${slug} works.`,            transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Social proof | testimonial style | ${platform}`,           overlay_text: 'Others are seeing it too.', transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Before vs after | transformation | ${platform}`,           overlay_text: 'See the difference.',       transition: 'cut'  as any, pacing: 'aggressive' as any },
+    { kling_prompt: `Feature highlight | close-up detail | ${platform}`,        overlay_text: `Why ${slug} works.`,        transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Emotional peak | aspirational moment | ${platform}`,       overlay_text: 'This could be you.',        transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Objection handling | reassurance | ${platform}`,           overlay_text: 'No catch. Just results.',   transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,            overlay_text: cta,                         transition: 'cut'  as any, pacing: 'moderate'   as any },
   ];
 
   // Always end with CTA, fill middle from pool, start with hook
@@ -114,7 +115,7 @@ function buildMinimalPlan(
       cta,
     },
     video: {
-      scenes: buildSceneTemplates(hook, cta, platform, angleSlug, sceneCount),
+      scenes: buildSceneTemplates(hook, cta, platform, angleSlug, sceneCount) as any,
     },
     carousel: {
       slides: [
@@ -166,9 +167,11 @@ export class ProductRunService {
     private readonly smartRouting: SmartRoutingService,
     private readonly fatigue:      FatigueService,
     private readonly mirofish:     MirofishService,
+    // Async video queue
+    private readonly videoQueue:   VideoQueueService,
   ) {}
 
-  async run(dto: RunDto, userId: string): Promise<RunResponse> {
+  async run(dto: RunDto, userId: string): Promise<RunResponse | RunQueuedResponse> {
     const executionId = randomUUID();
     const t0 = Date.now();
 
@@ -225,9 +228,47 @@ export class ProductRunService {
       `[Run:${executionId}] Angles: ${angleItems.map(a => `${a.slug}(${a.role})`).join(', ')}`
     );
 
-    // ── Step 4: Generate creatives via ExecutionGateway (FIX 1) ─────────────
-    // No direct VideoService / CarouselService / BannerService calls.
-    // All generation routes through ExecutionGatewayService.execute().
+    // ── Step 4a: VIDEO — enqueue async job, return immediately ──────────────
+    // Kling rendering + Stitch can take 5–15 minutes per angle.
+    // The worker (VideoWorkerService) handles everything from here.
+    if (dto.format === 'video') {
+      const jobId = await this.videoQueue.addVideoJob({
+        executionId,
+        campaignId:  campaignId!,
+        userId,
+        dto,
+        concept: {
+          id:                concept.id,
+          brief:             dto.brief,
+          goal:              dto.goal ?? ConceptGoal.CONVERSION,
+          keyObjection:      (concept as any).keyObjection     ?? null,
+          valueProposition:  (concept as any).valueProposition ?? null,
+        },
+        angles: angleItems,
+      });
+
+      this.logger.log(
+        `[Run:${executionId}] Video job enqueued — jobId=${jobId} ` +
+        `angles=${angleItems.length} campaignId=${campaignId}`,
+      );
+
+      return {
+        executionId,
+        campaignId:  campaignId!,
+        jobId,
+        status:      'queued',
+        concept: {
+          id:    concept.id,
+          brief: dto.brief,
+          goal:  dto.goal ?? ConceptGoal.CONVERSION,
+        },
+        angles:  angleItems,
+        message: `Video rendering started. Poll GET /api/jobs/${jobId} every 3s for progress and results.`,
+      } as RunQueuedResponse;
+    }
+
+    // ── Step 4b: CAROUSEL / BANNER — execute synchronously ───────────────────
+    // These formats hit Claude only (~5–15s total) — no need for async queue.
     const creativeResults = await Promise.all(
       pickedAngles.map(a =>
         this.generateCreative(dto, campaignId!, concept.id, a.angle, userId, {

@@ -10,10 +10,9 @@ import { LearningModule }          from '../learning/learning.module';
 import { EvolutionModule }         from '../evolution/evolution.module';
 import { UsersModule }             from '../users/users.module';
 import { ExecutionGatewayModule }  from '../creative-os/lib/execution-gateway.module';
-// W3: Real routing signals — SmartRoutingModule is @Global (no import needed).
-// FatigueModule and MirofishModule must be imported explicitly.
 import { FatigueModule }           from '../fatigue/fatigue.module';
 import { MirofishModule }          from '../mirofish/mirofish.module';
+import { VideoQueueModule }        from '../video-queue/video-queue.module';
 
 @Module({
   imports: [
@@ -26,8 +25,9 @@ import { MirofishModule }          from '../mirofish/mirofish.module';
     EvolutionModule,
     UsersModule,
     ExecutionGatewayModule,
-    FatigueModule,    // W3: real angle fatigue signals
-    MirofishModule,   // W3: real mirofish prediction confidence
+    FatigueModule,
+    MirofishModule,
+    VideoQueueModule,   // async video-render queue + worker
   ],
   controllers: [ProductRunController],
   providers:   [ProductRunService],
