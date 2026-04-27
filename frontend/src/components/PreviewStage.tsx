@@ -16,7 +16,7 @@
  *   - Gradients and fake visuals are NEVER shown as content fallbacks
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -78,6 +78,76 @@ export interface PreviewStageProps {
   onNewAngle?:    () => void;
 }
 
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+
+function Lightbox({ src, label, onClose }: { src: string; label?: string; onClose: () => void }) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') onClose(); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.92)',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+        backdropFilter: 'blur(6px)',
+      }}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        style={{
+          position: 'absolute', top: 20, right: 24,
+          background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)',
+          borderRadius: '50%', width: 36, height: 36,
+          color: '#fff', fontSize: 18, cursor: 'pointer',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          lineHeight: 1,
+        }}
+      >
+        ×
+      </button>
+
+      {/* Image */}
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          maxWidth: '90vw', maxHeight: '85vh',
+          borderRadius: 12, overflow: 'hidden',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+          border: '1px solid rgba(255,255,255,0.08)',
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={label ?? 'Preview'}
+          style={{ display: 'block', maxWidth: '90vw', maxHeight: '82vh', objectFit: 'contain' }}
+        />
+      </div>
+
+      {/* Label */}
+      {label && (
+        <div style={{
+          marginTop: 14, fontSize: 12, color: 'rgba(255,255,255,0.45)',
+          fontWeight: 500, letterSpacing: '0.04em',
+        }}>
+          {label}
+        </div>
+      )}
+      <div style={{ marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>
+        Press ESC or click outside to close
+      </div>
+    </div>
+  );
+}
+
 // ─── Skeleton image ───────────────────────────────────────────────────────────
 
 function SkeletonImage({ height = 240, label = 'Rendering image…' }: { height?: number; label?: string }) {
@@ -126,7 +196,8 @@ function VideoPlayer({ url }: { url: string }) {
 // ─── Carousel preview ─────────────────────────────────────────────────────────
 
 function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesReady?: boolean }) {
-  const [active, setActive] = useState(0);
+  const [active,   setActive]   = useState(0);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const slide = slides[active];
   if (!slide) return null;
 
@@ -172,7 +243,10 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
       }}>
         {/* Image zone — real image or skeleton */}
         {hasImage ? (
-          <div style={{ height: 240, overflow: 'hidden', position: 'relative' }}>
+          <div
+            onClick={() => setLightbox(slide.imageUrl!)}
+            style={{ height: 240, overflow: 'hidden', position: 'relative', cursor: 'zoom-in' }}
+          >
             <img
               src={slide.imageUrl!}
               alt={slide.headline}
@@ -243,6 +317,8 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
           }} />
         ))}
       </div>
+
+      {lightbox && <Lightbox src={lightbox} label={`Slide ${active + 1} — ${slide.headline}`} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
@@ -250,7 +326,8 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
 // ─── Banner / image preview ───────────────────────────────────────────────────
 
 function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; imagesReady?: boolean }) {
-  const [active, setActive] = useState(0);
+  const [active,   setActive]   = useState(0);
+  const [lightbox, setLightbox] = useState<string | null>(null);
   const banner = banners[active];
   if (!banner) return null;
 
@@ -313,7 +390,10 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
       }}>
         {/* Visual zone — real image or skeleton */}
         {hasImage ? (
-          <div style={{ height: 220, overflow: 'hidden', position: 'relative' }}>
+          <div
+            onClick={() => setLightbox(banner.imageUrl!)}
+            style={{ height: 220, overflow: 'hidden', position: 'relative', cursor: 'zoom-in' }}
+          >
             <img
               src={banner.imageUrl!}
               alt={banner.headline}
@@ -356,6 +436,8 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
           </button>
         </div>
       </div>
+
+      {lightbox && <Lightbox src={lightbox} label={`${banner.size} — ${banner.headline}`} onClose={() => setLightbox(null)} />}
     </div>
   );
 }
