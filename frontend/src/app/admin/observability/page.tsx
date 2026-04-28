@@ -511,41 +511,53 @@ function SystemHealthTab() {
   const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
-    // Use the same Railway base URL that creator-client uses so health checks
-    // actually reach the backend, not the Vercel frontend.
+    // UserGuard runs globally on every NestJS route — must send a Bearer JWT.
+    // Use the same auth + base-URL pattern as creator-client.
     const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
-    const BASE = API_URL && !API_URL.includes('localhost') ? API_URL : '';
-    const uid  = typeof window !== 'undefined' ? (localStorage.getItem('cos_user_id') ?? 'admin') : 'admin';
-    const h    = { 'Content-Type': 'application/json', 'x-user-id': uid };
+    const BASE    = API_URL && !API_URL.includes('localhost') ? API_URL : '';
 
-    const CHECKS: { label: string; endpoint: string; method?: string }[] = [
-      { label: 'Observability',  endpoint: '/api/observability/status'   },
-      { label: 'Auto-Winner',    endpoint: '/api/auto-winner/status'     },
-      { label: 'Hook Booster',   endpoint: '/api/hook-booster/status'    },
-      { label: 'Scene Rewriter', endpoint: '/api/scene-rewriter/status'  },
-      { label: 'Exploration',    endpoint: '/api/exploration/status'     },
-      { label: 'Orchestrator',   endpoint: '/api/orchestrator/status'    },
-      { label: 'MIROFISH Learn', endpoint: '/api/mirofish/learning/status'},
-      { label: 'Global Memory',  endpoint: '/api/global-memory/status'   },
-      { label: 'Evolution',      endpoint: '/api/evolution/status'       },
-      { label: 'Emergence',      endpoint: '/api/emergence/state'        },
+    const CHECKS: { label: string; endpoint: string }[] = [
+      { label: 'Observability',  endpoint: '/api/observability/status'    },
+      { label: 'Auto-Winner',    endpoint: '/api/auto-winner/status'      },
+      { label: 'Hook Booster',   endpoint: '/api/hook-booster/status'     },
+      { label: 'Scene Rewriter', endpoint: '/api/scene-rewriter/status'   },
+      { label: 'Exploration',    endpoint: '/api/exploration/status'      },
+      { label: 'Orchestrator',   endpoint: '/api/orchestrator/status'     },
+      { label: 'MIROFISH Learn', endpoint: '/api/mirofish/learning/status' },
+      { label: 'Global Memory',  endpoint: '/api/global-memory/status'    },
+      { label: 'Evolution',      endpoint: '/api/evolution/status'        },
+      { label: 'Emergence',      endpoint: '/api/emergence/state'         },
     ];
 
-    Promise.allSettled(
-      CHECKS.map(c =>
-        fetch(`${BASE}${c.endpoint}`, { headers: h })
-          .then(r => r.ok ? r.json() : Promise.reject(r.status))
-          .then(raw => ({ label: c.label, endpoint: c.endpoint, active: true,  ok: true,  raw } as ServiceStatus))
-          .catch(() => ({ label: c.label, endpoint: c.endpoint, active: false, error: true } as ServiceStatus))
-      )
-    ).then(results => {
+    // Get Supabase Bearer token first, then fire all health checks in parallel
+    import('@/lib/supabase').then(({ getSupabase }) =>
+      getSupabase().auth.getSession()
+    ).then(({ data: { session } }) => {
+      const h: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (session?.access_token) h['Authorization'] = `Bearer ${session.access_token}`;
+
+      return Promise.allSettled(
+        CHECKS.map(c =>
+          fetch(`${BASE}${c.endpoint}`, { headers: h })
+            .then(r => r.ok ? r.json() : Promise.reject(r.status))
+            .then(raw => ({ label: c.label, endpoint: c.endpoint, active: true,  ok: true,  raw } as ServiceStatus))
+            .catch(() => ({ label: c.label, endpoint: c.endpoint, active: false, error: true } as ServiceStatus))
+        )
+      );
+    }).then(results => {
       setServices(results.map(r => r.status === 'fulfilled' ? r.value : { label: '?', endpoint: '?', error: true }));
       setLoading(false);
-    });
 
-    // Cost metrics
-    fetch(`${BASE}/api/optimization/metrics`, { headers: h })
-      .then(r => r.json()).then(setCostMetrics).catch(() => {});
+      // Cost metrics — reuse same auth headers if session available
+      import('@/lib/supabase').then(({ getSupabase }) =>
+        getSupabase().auth.getSession()
+      ).then(({ data: { session } }) => {
+        const h: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (session?.access_token) h['Authorization'] = `Bearer ${session.access_token}`;
+        fetch(`${BASE}/api/optimization/metrics`, { headers: h })
+          .then(r => r.json()).then(setCostMetrics).catch(() => {});
+      });
+    }).catch(() => setLoading(false));
   }, []);
 
   const loadTraces = useCallback(async () => {
