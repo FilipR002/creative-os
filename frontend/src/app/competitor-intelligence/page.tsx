@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import {
-  getCIAutonomy, setCIAutonomy, startCompetitorAnalysis,
+  getCIAutonomy, setCIAutonomy,
   listCompetitorJobs, getCompetitorResult, exportIntelToBuilder,
   getCompetitorExports, enableCIMonitoring, disableCIMonitoring,
   getCIMonitoringStatus,
@@ -34,11 +34,6 @@ const STATUS_LABEL: Record<string, string> = {
   scoring: 'Scoring patterns', clustering: 'Clustering', insights: 'Generating insights',
   complete: 'Complete', failed: 'Failed',
 };
-
-const INDUSTRIES = [
-  'E-commerce', 'SaaS', 'DTC / CPG', 'Finance', 'Health & Wellness',
-  'Education', 'Real Estate', 'Agency / Services', 'Other',
-];
 
 const LEVEL_META = [
   { level: 0, color: '#ef4444', label: '🔴 L0 Manual Only',       desc: 'User initiates everything. Zero background activity.' },
@@ -187,12 +182,6 @@ export default function CompetitorIntelligencePage() {
   const [savedScanError, setSavedScanError] = useState<string | null>(null);
   const [expandedSaved,  setExpandedSaved]  = useState<string | null>(null);
 
-  // Input form state
-  const [form, setForm] = useState({
-    competitorName: '', brandUrl: '', industry: 'E-commerce', keywords: '',
-  });
-  const [analyzing, setAnalyzing] = useState(false);
-
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Initial load
@@ -225,7 +214,6 @@ export default function CompetitorIntelligencePage() {
       }
       if (data.job?.status === 'complete' || data.job?.status === 'failed') {
         if (pollRef.current) clearInterval(pollRef.current);
-        setAnalyzing(false);
         if (data.job.status === 'complete') setTab('results');
       }
     }, 3000);
@@ -258,27 +246,6 @@ export default function CompetitorIntelligencePage() {
     await deleteCompetitor(id).catch(() => {});
     setSavedComps(prev => prev.filter(c => c.id !== id));
     if (expandedSaved === id) setExpandedSaved(null);
-  }
-
-  async function handleAnalyze() {
-    if (!form.competitorName.trim() || !form.brandUrl.trim()) return;
-    setAnalyzing(true);
-    setResult(null);
-    setSelectedAds(new Set());
-    setExportResult(null);
-    try {
-      const job = await startCompetitorAnalysis({
-        competitorName: form.competitorName.trim(),
-        brandUrl:       form.brandUrl.trim(),
-        industry:       form.industry,
-        keywords:       form.keywords ? form.keywords.split(',').map(k => k.trim()) : [],
-      });
-      setActiveJob(job);
-      setJobs(prev => [job, ...prev]);
-      startPolling(job.id);
-    } catch {
-      setAnalyzing(false);
-    }
   }
 
   async function handleSelectJob(job: CIJob) {
@@ -413,160 +380,9 @@ export default function CompetitorIntelligencePage() {
           {/* ─── TAB: ANALYZE ──────────────────────────────────────────────── */}
           {tab === 'analyze' && (
             <>
-            <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: 20 }}>
-              {/* Input panel */}
-              <div>
-                <div className="section-label">Competitor Input</div>
-                <div className="intel-panel" style={{ marginBottom: 16 }}>
-                  <div style={{ padding: 16 }}>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>
-                      COMPETITOR NAME
-                    </label>
-                    <input
-                      value={form.competitorName}
-                      onChange={e => setForm(f => ({ ...f, competitorName: e.target.value }))}
-                      placeholder="e.g. Dollar Shave Club"
-                      style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 12px', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }}
-                    />
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>
-                      BRAND URL
-                    </label>
-                    <input
-                      value={form.brandUrl}
-                      onChange={e => setForm(f => ({ ...f, brandUrl: e.target.value }))}
-                      placeholder="e.g. dollarshaveclub.com"
-                      style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 12px', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }}
-                    />
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>
-                      INDUSTRY
-                    </label>
-                    <select
-                      value={form.industry}
-                      onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}
-                      style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 12px', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 12 }}>
-                      {INDUSTRIES.map(i => <option key={i}>{i}</option>)}
-                    </select>
-                    <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted)', display: 'block', marginBottom: 6 }}>
-                      KEYWORDS (optional, comma-separated)
-                    </label>
-                    <input
-                      value={form.keywords}
-                      onChange={e => setForm(f => ({ ...f, keywords: e.target.value }))}
-                      placeholder="e.g. subscription, men's grooming, DTC"
-                      style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '8px 12px', color: 'var(--text)', fontSize: 13, boxSizing: 'border-box', marginBottom: 16 }}
-                    />
-                    <button
-                      onClick={handleAnalyze}
-                      disabled={analyzing || !form.competitorName.trim() || !form.brandUrl.trim()}
-                      style={{ width: '100%', padding: '10px 0', borderRadius: 8, background: 'var(--indigo)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: analyzing ? 'not-allowed' : 'pointer', opacity: analyzing ? 0.7 : 1, fontFamily: 'inherit' }}>
-                      {analyzing ? '⟳ Analyzing...' : '▶ Start Analysis'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Previous jobs */}
-                {jobs.length > 0 && (
-                  <>
-                    <div className="section-label">Previous Analyses</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {jobs.slice(0, 6).map(j => (
-                        <button key={j.id} onClick={() => handleSelectJob(j)}
-                          style={{ padding: '8px 12px', borderRadius: 8, background: activeJob?.id === j.id ? 'rgba(99,102,241,0.1)' : 'var(--surface)', border: `1px solid ${activeJob?.id === j.id ? 'var(--indigo)' : 'var(--border)'}`, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{j.input.competitorName}</span>
-                            <span className="badge" style={{
-                              background: j.status === 'complete' ? 'rgba(16,185,129,0.12)' : j.status === 'failed' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
-                              color: j.status === 'complete' ? 'var(--emerald)' : j.status === 'failed' ? 'var(--rose)' : 'var(--indigo-l)',
-                            }}>
-                              {STATUS_LABEL[j.status] ?? j.status}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: 10, color: 'var(--muted)' }}>{j.input.brandUrl}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* Live processing view */}
-              <div>
-                {activeJob ? (
-                  <>
-                    <div className="section-label">Live Processing</div>
-                    <div className="intel-panel">
-                      <div className="intel-panel-header">
-                        <span style={{ fontSize: 13 }}>🔬</span>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>
-                            {activeJob.input.competitorName}
-                          </div>
-                          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{activeJob.input.brandUrl}</div>
-                        </div>
-                        <span className="badge" style={{
-                          background: activeJob.status === 'complete' ? 'rgba(16,185,129,0.12)' : activeJob.status === 'failed' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
-                          color: activeJob.status === 'complete' ? 'var(--emerald)' : activeJob.status === 'failed' ? 'var(--rose)' : 'var(--indigo-l)',
-                        }}>
-                          {STATUS_LABEL[activeJob.status] ?? activeJob.status}
-                        </span>
-                      </div>
-                      <div style={{ padding: 14 }}>
-                        <div style={{ marginBottom: 14 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                            <span style={{ fontSize: 11, color: 'var(--muted)' }}>Progress</span>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)' }}>{activeJob.progress}%</span>
-                          </div>
-                          <ProgressBar value={activeJob.progress} color={
-                            activeJob.status === 'complete' ? 'var(--emerald)' :
-                            activeJob.status === 'failed'   ? 'var(--rose)' :
-                            'var(--indigo)'
-                          } />
-                        </div>
-                        <div className="intel-stats-grid intel-stats-grid-4" style={{ marginBottom: 14 }}>
-                          {[
-                            { label: 'Sources Found',   value: activeJob.sourcesFound },
-                            { label: 'Ads Discovered',  value: activeJob.adsDiscovered },
-                            { label: 'Clusters',        value: result?.clusters?.length ?? '—' },
-                            { label: 'Insights',        value: result?.insights?.whatIsWorking?.length ?? '—' },
-                          ].map(k => (
-                            <div key={k.label} className="intel-stat-card">
-                              <div className="intel-stat-label">{k.label}</div>
-                              <div className="intel-stat-value" style={{ fontSize: 18 }}>{k.value}</div>
-                            </div>
-                          ))}
-                        </div>
-                        {/* Event log */}
-                        <div className="section-label" style={{ marginBottom: 8 }}>Event Stream</div>
-                        <div className="scroll-pane" style={{ background: 'var(--surface-2)', borderRadius: 6, padding: 10, maxHeight: 200, overflowY: 'auto', border: '1px solid var(--border)' }}>
-                          {(activeJob.events.length > 0 ? [...activeJob.events].reverse() : ['Waiting for events...']).map((e, i) => (
-                            <div key={i} style={{ fontSize: 10, color: i === 0 ? 'var(--emerald)' : 'var(--muted)', marginBottom: 3, fontFamily: 'var(--mono)' }}>
-                              {e}
-                            </div>
-                          ))}
-                        </div>
-                        {activeJob.status === 'complete' && (
-                          <button onClick={() => setTab('results')}
-                            style={{ marginTop: 12, width: '100%', padding: '9px 0', borderRadius: 8, background: 'var(--emerald)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
-                            View Results →
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--muted)', gap: 8 }}>
-                    <span style={{ fontSize: 36 }}>🕵️</span>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>No active analysis</span>
-                    <span style={{ fontSize: 11 }}>Enter a competitor and start analysis</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─── Quick Competitor Scanner ─────────────────────────────────── */}
-            <div style={{ marginTop: 28 }}>
+              {/* Quick Competitor Scanner */}
               <div className="section-label" style={{ marginBottom: 12 }}>⚡ Quick Competitor Scan</div>
-              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 20 }}>
                 <p style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 12px', lineHeight: 1.6 }}>
                   Paste a competitor URL to instantly extract their positioning, key messages, strengths and weaknesses — saved to your profile.
                 </p>
@@ -685,7 +501,30 @@ export default function CompetitorIntelligencePage() {
                   ))}
                 </div>
               )}
-            </div>
+
+              {/* Previous deep analyses (read-only) */}
+              {jobs.length > 0 && (
+                <div style={{ marginTop: 28 }}>
+                  <div className="section-label" style={{ marginBottom: 10 }}>Previous Deep Analyses</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {jobs.slice(0, 6).map(j => (
+                      <button key={j.id} onClick={() => handleSelectJob(j)}
+                        style={{ padding: '8px 12px', borderRadius: 8, background: activeJob?.id === j.id ? 'rgba(99,102,241,0.1)' : 'var(--surface)', border: `1px solid ${activeJob?.id === j.id ? 'var(--indigo)' : 'var(--border)'}`, cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{j.input.competitorName}</span>
+                          <span className="badge" style={{
+                            background: j.status === 'complete' ? 'rgba(16,185,129,0.12)' : j.status === 'failed' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
+                            color: j.status === 'complete' ? 'var(--emerald)' : j.status === 'failed' ? 'var(--rose)' : 'var(--indigo-l)',
+                          }}>
+                            {STATUS_LABEL[j.status] ?? j.status}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: 10, color: 'var(--muted)' }}>{j.input.brandUrl}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
