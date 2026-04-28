@@ -26,7 +26,7 @@ const INTELLIGENCE_NAV = [
   { label: 'AI Brain Stream',   href: '/ai-stream'               },
   { label: 'Pro Diagnostics',   href: '/pro-mode'                },
   { label: 'System Audit',      href: '/system-audit'            },
-  { label: 'Competitor Intel',  href: '/resources?tab=competitors' },
+  { label: 'Competitor Intel',  href: '/competitor-intelligence'   },
   { label: 'Trend Prediction',  href: '/trends'                  },
   { label: 'Ad Intelligence',   href: '/ad-intelligence'         },
 ];
@@ -110,27 +110,42 @@ function NavSection({
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 
+// ─── Admin gate ───────────────────────────────────────────────────────────────
+
+const ADMIN_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+function isAdminUser(userId: string): boolean {
+  // Check against env var list AND the cos_user_id stored in localStorage
+  const localId = typeof window !== 'undefined' ? (localStorage.getItem('cos_user_id') ?? '') : '';
+  return ADMIN_IDS.includes(userId) || (localId !== '' && ADMIN_IDS.includes(localId));
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+
 export function Sidebar() {
   useRequireAuth();
   const pathname = usePathname();
-  const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string } | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string; id: string } | null>(null);
 
   useEffect(() => {
     const supabase = getSupabase();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        const name  = (user.user_metadata?.full_name as string | undefined)
-                   ?? user.email?.split('@')[0]
-                   ?? 'User';
-        setUserInfo({ name, email: user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U' });
+        const name = (user.user_metadata?.full_name as string | undefined)
+                  ?? user.email?.split('@')[0]
+                  ?? 'User';
+        setUserInfo({ name, email: user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U', id: user.id });
       }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        const name  = (session.user.user_metadata?.full_name as string | undefined)
-                   ?? session.user.email?.split('@')[0]
-                   ?? 'User';
-        setUserInfo({ name, email: session.user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U' });
+        const name = (session.user.user_metadata?.full_name as string | undefined)
+                  ?? session.user.email?.split('@')[0]
+                  ?? 'User';
+        setUserInfo({ name, email: session.user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U', id: session.user.id });
       } else {
         setUserInfo(null);
       }
@@ -202,6 +217,22 @@ export function Sidebar() {
           isActive={isActive}
           defaultOpen={inTools}
         />
+
+        {/* Admin OS — only visible to admin users */}
+        {isAdminUser(userInfo?.id ?? '') && (
+          <div style={{ borderTop: '1px solid var(--border)', marginTop: 4, padding: '8px 10px 6px' }}>
+            <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 2px', marginBottom: 4 }}>
+              Admin
+            </div>
+            <Link
+              href="/admin/profit"
+              className={`sidebar-nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}
+            >
+              <span className="sidebar-nav-icon" style={{ fontSize: 13 }}>⚙</span>
+              <span className="sidebar-nav-text">Admin OS</span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Footer — fixed at bottom, always visible */}
