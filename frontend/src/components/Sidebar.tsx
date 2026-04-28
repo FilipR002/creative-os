@@ -118,9 +118,7 @@ const ADMIN_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? '')
   .filter(Boolean);
 
 function isAdminUser(userId: string): boolean {
-  // Check against env var list AND the cos_user_id stored in localStorage
-  const localId = typeof window !== 'undefined' ? (localStorage.getItem('cos_user_id') ?? '') : '';
-  return ADMIN_IDS.includes(userId) || (localId !== '' && ADMIN_IDS.includes(localId));
+  return ADMIN_IDS.includes(userId);
 }
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
