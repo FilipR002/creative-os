@@ -3,9 +3,12 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import type { ResourceContext } from '../resources/resources.service';
 
 export enum ConceptGoal {
-  CONVERSION = 'conversion',
-  AWARENESS = 'awareness',
+  CONVERSION = 'conversion', // legacy alias — maps to SALES
+  SALES      = 'sales',
+  AWARENESS  = 'awareness',
   ENGAGEMENT = 'engagement',
+  RETENTION  = 'retention',
+  INSTALL    = 'install',
 }
 
 export class GenerateConceptDto {

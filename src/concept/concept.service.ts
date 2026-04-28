@@ -5,6 +5,7 @@ import { CampaignService } from '../campaign/campaign.service';
 import { GenerateConceptDto } from './concept.dto';
 import { buildPersonaBlock } from '../resources/persona-prompt';
 import { buildAngleBlock }  from '../creative-os/lib/angle-definitions';
+import { buildGoalBlock }   from '../creative-os/lib/goal-definitions';
 import axios from 'axios';
 
 @Injectable()
@@ -24,11 +25,13 @@ export class ConceptService {
 
     const personaBlock = buildPersonaBlock(dto.resourceCtx);
     const angleBlock   = buildAngleBlock(dto.angleHint);
+    const goalBlock    = buildGoalBlock(dto.goal);
 
     const systemPrompt = [
       `You are a master creative strategist for digital marketing.`,
       `Your job is to analyze a brief and extract a structured master concept.`,
       `Return ONLY valid JSON. No markdown, no explanation, no backticks.`,
+      goalBlock,
       angleBlock,
       personaBlock || '',
     ].filter(Boolean).join('\n\n');

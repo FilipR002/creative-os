@@ -35,9 +35,20 @@ const DURATION_LABELS: Record<DurationTier, string> = {
 
 const GOAL_LABELS: Record<RunGoal, string> = {
   conversion: 'Sales',
+  sales:      'Sales',
   awareness:  'Awareness',
   engagement: 'Engagement',
+  retention:  'Retention',
+  install:    'Install',
 };
+
+const GOALS: { value: RunGoal; label: string }[] = [
+  { value: 'sales',      label: '🎯 Sales'      },
+  { value: 'awareness',  label: '📡 Awareness'  },
+  { value: 'engagement', label: '💬 Engagement' },
+  { value: 'retention',  label: '🔄 Retention'  },
+  { value: 'install',    label: '📲 Install'    },
+];
 
 const ANGLES = [
   { value: '',               label: '— Auto (AI picks) —' },
@@ -94,7 +105,7 @@ function CreatePageInner() {
   // ── Quick-mode controls ───────────────────────────────────────────────────
   const [format,       setFormat]       = useState<AdFormat>('carousel');
   const [platform,     setPlatform]     = useState<AdPlatform>('meta');
-  const [goal,         setGoal]         = useState<RunGoal>('conversion');
+  const [goal,         setGoal]         = useState<RunGoal>('sales');
   const [angle,        setAngle]        = useState('');
   const [durationTier, setDurationTier] = useState<DurationTier>('MEDIUM');
   const [slideCount,   setSlideCount]   = useState(5);
@@ -120,7 +131,7 @@ function CreatePageInner() {
   // ── Campaign-mode state ───────────────────────────────────────────────────
   const [camBrief,      setCamBrief]      = useState('');
   const [camPlatform,   setCamPlatform]   = useState<AdPlatform>('meta');
-  const [camGoal,       setCamGoal]       = useState<RunGoal>('conversion');
+  const [camGoal,       setCamGoal]       = useState<RunGoal>('sales');
   const [camAngle,      setCamAngle]      = useState('');
   const [camAssets,     setCamAssets]     = useState<AdFormat[]>(['carousel']);
   const [camDuration,   setCamDuration]   = useState<DurationTier>('MEDIUM');
@@ -458,9 +469,7 @@ function CreatePageInner() {
                   <div>
                     <div className="form-label">Goal</div>
                     <select value={goal} onChange={e => setGoal(e.target.value as RunGoal)} disabled={generating} style={dropdownStyle}>
-                      <option value="conversion">🎯 Sales</option>
-                      <option value="awareness">📡 Awareness</option>
-                      <option value="engagement">💬 Engagement</option>
+                      {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
                     </select>
                   </div>
                   <div>
@@ -693,9 +702,7 @@ function CreatePageInner() {
                   <div>
                     <div className="form-label">Goal</div>
                     <select value={camGoal} onChange={e => setCamGoal(e.target.value as RunGoal)} disabled={camLoading} style={dropdownStyle}>
-                      <option value="conversion">🎯 Sales</option>
-                      <option value="awareness">📡 Awareness</option>
-                      <option value="engagement">💬 Engagement</option>
+                      {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
                     </select>
                   </div>
                   <div>

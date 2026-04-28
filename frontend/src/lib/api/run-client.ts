@@ -16,7 +16,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
 }
 
 export type RunFormat = 'video' | 'carousel' | 'banner';
-export type RunGoal   = 'conversion' | 'awareness' | 'engagement';
+export type RunGoal   = 'conversion' | 'sales' | 'awareness' | 'engagement' | 'retention' | 'install';
 
 export interface RunRequest {
   brief:      string;

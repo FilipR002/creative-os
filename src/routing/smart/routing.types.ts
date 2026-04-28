@@ -1,7 +1,7 @@
 export interface RoutingContext {
   clientId: string;
 
-  goal: 'conversion' | 'awareness' | 'engagement';
+  goal: 'conversion' | 'sales' | 'awareness' | 'engagement' | 'retention' | 'install';
 
   fatigueState: 'HEALTHY' | 'WARMING' | 'FATIGUED' | 'BLOCKED';
 

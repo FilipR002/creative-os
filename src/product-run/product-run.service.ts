@@ -30,6 +30,7 @@ import { FatigueService }           from '../fatigue/fatigue.service';
 import { MirofishService }          from '../mirofish/mirofish.service';
 import { decideMode }               from '../creative-os/lib/model-router';
 import { buildAngleBlock }          from '../creative-os/lib/angle-definitions';
+import { buildGoalBlock }           from '../creative-os/lib/goal-definitions';
 import { CampaignMode }             from '../campaign/campaign.dto';
 import { ConceptGoal }              from '../concept/concept.dto';
 import type { CreativeScoreResult } from '../scoring/scoring.types';
@@ -102,7 +103,12 @@ function buildMinimalPlan(
   conceptId:  string,
 ): CreativePlan {
   const hook     = dto.styleContext?.split('|')[0].trim().slice(0, 80) ?? `Discover ${angleSlug}`;
-  const cta      = dto.goal === 'conversion' ? 'Get started now →' : dto.goal === 'awareness' ? 'Learn more →' : 'See how it works →';
+  const cta      = dto.goal === 'conversion' || dto.goal === 'sales' ? 'Get started now →'
+                 : dto.goal === 'awareness'  ? 'Learn more →'
+                 : dto.goal === 'engagement' ? 'Join the conversation →'
+                 : dto.goal === 'retention'  ? 'See what\'s new →'
+                 : dto.goal === 'install'    ? 'Download free →'
+                 : 'See how it works →';
   const platform = dto.platform ?? 'tiktok';
   const now      = new Date().toISOString();
 
@@ -476,13 +482,17 @@ export class ProductRunService {
     // Fix 4: Build synthetic CreativePlan — gateway requires a plan at execution time
     const creativePlan = buildMinimalPlan(dto, angleSlug, campaignId, conceptId);
 
+    const goalBlock  = buildGoalBlock(dto.goal);
+    const angleBlock = buildAngleBlock(dto.styleContext);
+    const combinedStyleContext = [goalBlock, angleBlock].filter(Boolean).join('\n\n');
+
     const result = await this.gateway.execute(
       {
         format:            dto.format as 'video' | 'carousel' | 'banner',
         campaignId,
         conceptId,
         angleSlug,
-        styleContext:      buildAngleBlock(dto.styleContext),
+        styleContext:      combinedStyleContext,
         keyObjection:      enrichment.keyObjection,
         valueProposition:  enrichment.valueProposition,
         resourceCtx:       enrichment.resourceCtx,
