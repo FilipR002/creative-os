@@ -130,7 +130,7 @@ function ReplayPanel() {
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <span style={{ fontSize: 10, color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '1px 5px', borderRadius: 3 }}>{g.format ?? '—'}</span>
-                {g.angle && <span style={{ fontSize: 10, color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '1px 5px', borderRadius: 3 }}>{g.angle}</span>}
+                {g.angle && <span style={{ fontSize: 10, color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '1px 5px', borderRadius: 3 }}>{typeof g.angle === 'string' ? g.angle : (g.angle as any)?.slug ?? (g.angle as any)?.label ?? '—'}</span>}
               </div>
               <div style={{ fontSize: 10, color: '#333', marginTop: 2 }}>{new Date(g.createdAt).toLocaleDateString()}</div>
             </div>
