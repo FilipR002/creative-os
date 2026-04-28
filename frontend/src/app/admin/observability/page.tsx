@@ -511,7 +511,10 @@ function SystemHealthTab() {
   const [loading,    setLoading]    = useState(true);
 
   useEffect(() => {
-    const BASE = '';
+    // Use the same Railway base URL that creator-client uses so health checks
+    // actually reach the backend, not the Vercel frontend.
+    const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+    const BASE = API_URL && !API_URL.includes('localhost') ? API_URL : '';
     const uid  = typeof window !== 'undefined' ? (localStorage.getItem('cos_user_id') ?? 'admin') : 'admin';
     const h    = { 'Content-Type': 'application/json', 'x-user-id': uid };
 
