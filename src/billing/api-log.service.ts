@@ -17,7 +17,20 @@ export interface ApiCallMeta {
 export const API_COST_TABLE: Record<string, Record<string, number>> = {
   kling:  { video_generate: 0.14, status_poll: 0.001 },
   veo:    { video_generate: 0.20, status_poll: 0.001 },
-  claude: { score: 0.008, improve: 0.012, concept: 0.010, copy: 0.005, default: 0.008 },
+  claude: {
+    score:         0.008,
+    improve:       0.012,
+    concept:       0.010,
+    copy:          0.005,
+    ad_copy:       0.006,
+    hooks:         0.006,
+    video_script:  0.012,
+    image_prompts: 0.008,
+    refine:        0.008,
+    brand_scan:    0.010,
+    comp_scan:     0.012,
+    default:       0.008,
+  },
   gemini: { vision: 0.004, text: 0.002, default: 0.003 },
 };
 

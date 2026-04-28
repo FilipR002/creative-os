@@ -9,6 +9,10 @@ import {
   type CIJob, type CIResult, type CICluster, type CIAdItem,
   type CIAutonomyMeta, type CIMonitoringState, type CIExportedIntel,
 } from '@/lib/api/creator-client';
+import {
+  scanCompetitor, getCompetitors, deleteCompetitor,
+  type Competitor,
+} from '@/lib/api/resources-client';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -176,6 +180,13 @@ export default function CompetitorIntelligencePage() {
   const [showLevelPanel, setShowLevelPanel] = useState(false);
   const [exporting, setExporting]   = useState(false);
 
+  // Quick scanner (Saved Intel) state
+  const [savedComps,     setSavedComps]     = useState<Competitor[]>([]);
+  const [savedScanUrl,   setSavedScanUrl]   = useState('');
+  const [savedScanning,  setSavedScanning]  = useState(false);
+  const [savedScanError, setSavedScanError] = useState<string | null>(null);
+  const [expandedSaved,  setExpandedSaved]  = useState<string | null>(null);
+
   // Input form state
   const [form, setForm] = useState({
     competitorName: '', brandUrl: '', industry: 'E-commerce', keywords: '',
@@ -191,11 +202,13 @@ export default function CompetitorIntelligencePage() {
       getCIMonitoringStatus().catch(() => null),
       listCompetitorJobs().catch(() => ({ jobs: [] })),
       getCompetitorExports().catch(() => ({ exports: [] })),
-    ]).then(([aut, mon, j, exp]) => {
+      getCompetitors().catch(() => [] as Competitor[]),
+    ]).then(([aut, mon, j, exp, comps]) => {
       if (aut) setAutonomyData(aut);
       if (mon) setMonitoring(mon);
       setJobs(j?.jobs ?? []);
       setExports(exp?.exports ?? []);
+      setSavedComps(comps as Competitor[]);
     });
   }, []);
 
@@ -222,6 +235,30 @@ export default function CompetitorIntelligencePage() {
 
   // suppress unused warning
   void exportResult;
+
+  async function handleQuickScan() {
+    const url = savedScanUrl.trim();
+    if (!url) return;
+    setSavedScanning(true);
+    setSavedScanError(null);
+    try {
+      const result = await scanCompetitor(url);
+      setSavedComps(prev => [result, ...prev]);
+      setSavedScanUrl('');
+      setExpandedSaved(result.id);
+    } catch (err: unknown) {
+      setSavedScanError((err as Error)?.message ?? 'Scan failed — check the URL and try again');
+    } finally {
+      setSavedScanning(false);
+    }
+  }
+
+  async function handleDeleteSaved(id: string) {
+    if (!confirm('Remove this competitor?')) return;
+    await deleteCompetitor(id).catch(() => {});
+    setSavedComps(prev => prev.filter(c => c.id !== id));
+    if (expandedSaved === id) setExpandedSaved(null);
+  }
 
   async function handleAnalyze() {
     if (!form.competitorName.trim() || !form.brandUrl.trim()) return;
@@ -523,6 +560,130 @@ export default function CompetitorIntelligencePage() {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* ─── Quick Competitor Scanner ─────────────────────────────────── */}
+            <div style={{ marginTop: 28 }}>
+              <div className="section-label" style={{ marginBottom: 12 }}>⚡ Quick Competitor Scan</div>
+              <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 16 }}>
+                <p style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 12px', lineHeight: 1.6 }}>
+                  Paste a competitor URL to instantly extract their positioning, key messages, strengths and weaknesses — saved to your profile.
+                </p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <input
+                    value={savedScanUrl}
+                    onChange={e => { setSavedScanUrl(e.target.value); setSavedScanError(null); }}
+                    onKeyDown={e => { if (e.key === 'Enter') handleQuickScan(); }}
+                    placeholder="https://competitor.com"
+                    disabled={savedScanning}
+                    style={{
+                      flex: 1, background: 'var(--surface-2)', border: '1px solid var(--border)',
+                      borderRadius: 8, padding: '9px 14px', color: 'var(--text)', fontSize: 13,
+                      outline: 'none', fontFamily: 'inherit',
+                    }}
+                  />
+                  <button
+                    onClick={handleQuickScan}
+                    disabled={savedScanning || !savedScanUrl.trim()}
+                    style={{
+                      background: savedScanning ? 'var(--surface-2)' : 'var(--indigo)',
+                      border: 'none', borderRadius: 8, padding: '9px 20px',
+                      color: savedScanning ? 'var(--muted)' : '#fff', fontSize: 13, fontWeight: 700,
+                      cursor: savedScanning || !savedScanUrl.trim() ? 'not-allowed' : 'pointer',
+                      whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'background 0.15s',
+                      opacity: savedScanning || !savedScanUrl.trim() ? 0.7 : 1,
+                    }}
+                  >
+                    {savedScanning ? '⏳ Scanning…' : 'Scan Competitor'}
+                  </button>
+                </div>
+                {savedScanError && (
+                  <div style={{ marginTop: 10, fontSize: 12, color: 'var(--rose)', background: 'rgba(239,68,68,0.08)', borderRadius: 6, padding: '8px 12px', border: '1px solid rgba(239,68,68,0.2)' }}>
+                    ⚠️ {savedScanError}
+                  </div>
+                )}
+              </div>
+
+              {/* Saved competitor cards */}
+              {savedComps.length === 0 && !savedScanning ? (
+                <div style={{ textAlign: 'center', padding: '24px 0', border: '1px dashed var(--border)', borderRadius: 10, color: 'var(--muted)', fontSize: 12 }}>
+                  No competitors scanned yet — paste a URL above to start
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {savedComps.map(c => (
+                    <div key={c.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+                      <div
+                        onClick={() => setExpandedSaved(expandedSaved === c.id ? null : c.id)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', cursor: 'pointer' }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{c.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--muted)' }}>{c.url}</div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                          <button
+                            onClick={e => { e.stopPropagation(); handleDeleteSaved(c.id); }}
+                            style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: 11, padding: '4px 8px', fontFamily: 'inherit' }}
+                          >
+                            Remove
+                          </button>
+                          <span style={{ color: 'var(--muted)', fontSize: 11 }}>{expandedSaved === c.id ? '▲' : '▼'}</span>
+                        </div>
+                      </div>
+
+                      {expandedSaved === c.id && (
+                        <div style={{ padding: '0 16px 16px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 14 }}>
+                          <div style={{ paddingTop: 14 }}>
+                            <div className="section-label" style={{ marginBottom: 4 }}>Description</div>
+                            <div style={{ fontSize: 12, color: 'var(--sub)', lineHeight: 1.6 }}>{c.description}</div>
+                          </div>
+                          <div>
+                            <div className="section-label" style={{ marginBottom: 4 }}>Positioning</div>
+                            <div style={{ fontSize: 12, color: 'var(--sub)', lineHeight: 1.6 }}>{c.positioning}</div>
+                          </div>
+                          <div>
+                            <div className="section-label" style={{ marginBottom: 4 }}>Target Audience</div>
+                            <div style={{ fontSize: 12, color: 'var(--sub)' }}>{c.targetAudience}</div>
+                          </div>
+                          {c.keyMessages.length > 0 && (
+                            <div>
+                              <div className="section-label" style={{ marginBottom: 6 }}>Key Messages</div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {c.keyMessages.map((m, i) => (
+                                  <span key={i} className="badge" style={{ background: 'rgba(99,102,241,0.1)', color: 'var(--indigo-l)', border: '1px solid rgba(99,102,241,0.2)' }}>{m}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                            <div>
+                              <div className="section-label" style={{ marginBottom: 6 }}>Strengths</div>
+                              {c.strengths.map((s, i) => (
+                                <div key={i} style={{ fontSize: 12, color: 'var(--emerald)', display: 'flex', gap: 6, marginBottom: 3 }}>
+                                  <span>✓</span>{s}
+                                </div>
+                              ))}
+                            </div>
+                            <div>
+                              <div className="section-label" style={{ marginBottom: 6 }}>Weaknesses / Gaps</div>
+                              {c.weaknesses.map((w, i) => (
+                                <div key={i} style={{ fontSize: 12, color: 'var(--rose)', display: 'flex', gap: 6, marginBottom: 3 }}>
+                                  <span>✗</span>{w}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="section-label" style={{ marginBottom: 4 }}>Tone & Style</div>
+                            <div style={{ fontSize: 12, color: 'var(--sub)', lineHeight: 1.6 }}>{c.tone}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
