@@ -246,6 +246,29 @@ export class ProductRunService {
     });
 
     const pickedAngles = angleResult.selected_angles.slice(0, MAX_PARALLEL_ANGLES);
+
+    // ── Honour user-selected angle ───────────────────────────────────────────
+    // If the user explicitly chose an angle (styleContext is set), ensure it
+    // is always the primary/first angle used for creative generation.
+    // The memory engine may have picked different angles — we override here.
+    if (dto.styleContext) {
+      const forcedSlug = dto.styleContext.trim().toLowerCase().replace(/\s+/g, '_');
+      const idx = pickedAngles.findIndex(
+        (a: any) => a.angle === forcedSlug || a.angle === dto.styleContext!.trim(),
+      );
+      if (idx > 0) {
+        // Already in list but not first — promote to primary slot
+        const [forced] = pickedAngles.splice(idx, 1);
+        pickedAngles.unshift(forced);
+      } else if (idx === -1) {
+        // Not picked by memory engine — inject as primary, drop the last slot
+        pickedAngles.unshift({ angle: forcedSlug, type: 'exploit', reason: 'User-selected angle' } as any);
+        if (pickedAngles.length > MAX_PARALLEL_ANGLES) pickedAngles.pop();
+      }
+      // idx === 0: already first — nothing to do
+      this.logger.log(`[Run:${executionId}] User-selected angle locked: ${forcedSlug}`);
+    }
+
     const angleItems: RunAngleItem[] = pickedAngles.map(a => ({
       slug:   a.angle,
       role:   a.type === 'exploit' ? 'exploit'
