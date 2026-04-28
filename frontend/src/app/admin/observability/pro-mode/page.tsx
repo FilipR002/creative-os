@@ -219,12 +219,12 @@ export default function ProModeAdminPage() {
           }}>
             Self-Improving Loop →
           </a>
-          <a href="/app/admin/registry-ui" style={{
+          <a href="/admin/observability" style={{
             padding: '8px 16px', background: 'transparent',
             border: '1px solid #1e2330', borderRadius: 8,
             color: '#555', fontSize: 13, textDecoration: 'none',
           }}>
-            Endpoint Registry →
+            Observability Hub →
           </a>
         </div>
       </div>

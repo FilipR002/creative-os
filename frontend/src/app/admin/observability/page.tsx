@@ -657,7 +657,7 @@ function AutonomousModeTabContent() {
         {[
           { href: '/admin/observability/self-improving-loop', label: '🔧 Self-Improving Loop', desc: 'Evolution controls, memory weight editor, orchestrator rules, hook strategy' },
           { href: '/admin/observability/live-debug',          label: '🐛 Live Debug Mode',      desc: 'Decision replay timeline, simulation engine, decision diff viewer'         },
-          { href: '/app/admin/registry-ui',                  label: '🗂 Endpoint Registry',     desc: 'Full endpoint coverage map, connection status, gap analysis'               },
+          { href: '/admin/observability#system-health',        label: '❤️ System Health',         desc: 'Full endpoint coverage map, connection status, service health matrix'      },
         ].map(item => (
           <a key={item.href} href={item.href} style={{ padding: '14px 16px', background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 10, textDecoration: 'none' }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: '#f0f0f0', marginBottom: 6 }}>{item.label}</div>
