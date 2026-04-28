@@ -4,7 +4,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserId }                 from '../common/decorators/user-id.decorator';
 import { ResourcesService }       from './resources.service';
-import { UpsertResourceDto, CreatePersonaDto, UpdatePersonaDto, ScanUrlDto } from './resources.dto';
+import { UpsertResourceDto, CreatePersonaDto, UpdatePersonaDto, ScanUrlDto, ScanCompetitorDto } from './resources.dto';
 
 @ApiTags('resources')
 @ApiBearerAuth()
@@ -32,6 +32,26 @@ export class ResourcesController {
   @Post('scan')
   scanUrl(@Body() dto: ScanUrlDto) {
     return this.resources.scanUrl(dto.url);
+  }
+
+  // ── Competitor Intel ───────────────────────────────────────────────────────
+
+  /** Scan a competitor URL and save the intel */
+  @Post('competitors/scan')
+  scanCompetitor(@Body() dto: ScanCompetitorDto, @UserId() userId: string) {
+    return this.resources.scanCompetitor(dto.url, userId);
+  }
+
+  /** Get all saved competitors */
+  @Get('competitors')
+  getCompetitors(@UserId() userId: string) {
+    return this.resources.getCompetitors(userId);
+  }
+
+  /** Delete a competitor */
+  @Delete('competitors/:id')
+  deleteCompetitor(@Param('id') id: string, @UserId() userId: string) {
+    return this.resources.deleteCompetitor(id, userId);
   }
 
   // ── Personas ───────────────────────────────────────────────────────────────

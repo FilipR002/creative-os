@@ -6,12 +6,16 @@ import {
   getResource,
   upsertResource,
   scanUrl,
+  scanCompetitor,
+  getCompetitors,
+  deleteCompetitor,
   createPersona,
   updatePersona,
   deletePersona,
   type Resource,
   type Persona,
   type BrandScan,
+  type Competitor,
   type CreatePersonaPayload,
 } from '@/lib/api/resources-client';
 
@@ -425,7 +429,7 @@ function NewPersonaForm({ onCreated }: { onCreated: (p: Persona) => void }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type Tab = 'product' | 'brand' | 'personas';
+type Tab = 'product' | 'brand' | 'personas' | 'competitors';
 
 export default function ResourcesPage() {
   const [tab,      setTab]      = useState<Tab>('product');
@@ -443,11 +447,18 @@ export default function ResourcesPage() {
   const [brandTone,  setBrandTone]  = useState('');
   const [brandVoice, setBrandVoice] = useState('');
 
-  // URL scanner state
+  // URL scanner state (brand)
   const [scanInput,   setScanInput]   = useState('');
   const [scanning,    setScanning]    = useState(false);
   const [scanError,   setScanError]   = useState<string | null>(null);
   const [scanApplied, setScanApplied] = useState(false);
+
+  // Competitor intel state
+  const [competitors,      setCompetitors]      = useState<Competitor[]>([]);
+  const [compUrl,          setCompUrl]          = useState('');
+  const [compScanning,     setCompScanning]     = useState(false);
+  const [compScanError,    setCompScanError]    = useState<string | null>(null);
+  const [expandedCompId,   setExpandedCompId]   = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -465,6 +476,8 @@ export default function ResourcesPage() {
         if (saved) setReferenceImages(JSON.parse(saved));
       } catch { /* ignore */ }
     } catch { /* first visit — empty state */ }
+    // Load competitors
+    getCompetitors().then(setCompetitors).catch(() => {});
     setLoading(false);
   }, []);
 
@@ -512,6 +525,30 @@ export default function ResourcesPage() {
     } finally {
       setScanning(false);
     }
+  }
+
+  async function handleCompScan() {
+    const url = compUrl.trim();
+    if (!url) return;
+    setCompScanning(true);
+    setCompScanError(null);
+    try {
+      const result = await scanCompetitor(url);
+      setCompetitors(prev => [...prev, result]);
+      setCompUrl('');
+      setExpandedCompId(result.id);
+    } catch (err: any) {
+      setCompScanError(err?.message ?? 'Scan failed — check the URL and try again');
+    } finally {
+      setCompScanning(false);
+    }
+  }
+
+  async function handleDeleteCompetitor(id: string) {
+    if (!confirm('Remove this competitor?')) return;
+    await deleteCompetitor(id);
+    setCompetitors(prev => prev.filter(c => c.id !== id));
+    if (expandedCompId === id) setExpandedCompId(null);
   }
 
   function handlePersonaCreated(p: Persona) {
@@ -605,9 +642,9 @@ export default function ResourcesPage() {
               display: 'flex', gap: 4, background: '#0d0d0d', borderRadius: 10, padding: 4,
               marginBottom: 28, border: '1px solid #1a1a1a', width: 'fit-content',
             }}>
-              {(['product', 'brand', 'personas'] as Tab[]).map(t => (
+              {(['product', 'brand', 'personas', 'competitors'] as Tab[]).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={tab === t ? activeTab : inactiveTab}>
-                  {t === 'product' ? '📦 Product' : t === 'brand' ? '🎨 Brand' : '👤 Personas'}
+                  {t === 'product' ? '📦 Product' : t === 'brand' ? '🎨 Brand' : t === 'personas' ? '👤 Personas' : '🔍 Competitors'}
                 </button>
               ))}
             </div>
@@ -678,6 +715,137 @@ export default function ResourcesPage() {
                         {saving ? 'Saving…' : 'Save Brand Voice'}
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* ── Competitors Tab ── */}
+                {tab === 'competitors' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+                      Scan competitor websites to extract their positioning, key messages, strengths, and weaknesses. Use this intel to sharpen your angle and differentiate your ads.
+                    </div>
+
+                    {/* Scan input */}
+                    <div style={{ display: 'flex', gap: 10 }}>
+                      <input
+                        value={compUrl}
+                        onChange={e => { setCompUrl(e.target.value); setCompScanError(null); }}
+                        onKeyDown={e => { if (e.key === 'Enter') handleCompScan(); }}
+                        placeholder="https://competitor.com"
+                        disabled={compScanning}
+                        style={{
+                          flex: 1, background: '#111', border: '1px solid #2a2a2a', borderRadius: 8,
+                          padding: '9px 14px', color: '#e2e8f0', fontSize: 13, outline: 'none', fontFamily: 'inherit',
+                        }}
+                      />
+                      <button
+                        onClick={handleCompScan}
+                        disabled={compScanning || !compUrl.trim()}
+                        style={{
+                          background: compScanning ? '#1a1a2e' : '#4f46e5',
+                          border: 'none', borderRadius: 8, padding: '9px 20px',
+                          color: compScanning ? '#666' : '#fff', fontSize: 13, fontWeight: 600,
+                          cursor: compScanning || !compUrl.trim() ? 'not-allowed' : 'pointer',
+                          whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'background 0.15s',
+                        }}
+                      >
+                        {compScanning ? '⏳ Scanning…' : 'Scan Competitor'}
+                      </button>
+                    </div>
+
+                    {compScanError && (
+                      <div style={{ fontSize: 12, color: '#f87171', background: '#1e0a0a', borderRadius: 6, padding: '8px 12px' }}>
+                        ⚠️ {compScanError}
+                      </div>
+                    )}
+
+                    {/* Competitor cards */}
+                    {competitors.length === 0 && !compScanning && (
+                      <div style={{ fontSize: 13, color: '#444', textAlign: 'center', padding: '32px 0', border: '1px dashed #1e1e2e', borderRadius: 10 }}>
+                        No competitors scanned yet. Paste a URL above to start.
+                      </div>
+                    )}
+
+                    {competitors.map(c => (
+                      <div key={c.id} style={{ background: '#0d0d0d', border: '1px solid #1e1e2e', borderRadius: 12, overflow: 'hidden' }}>
+                        {/* Header row */}
+                        <div
+                          onClick={() => setExpandedCompId(expandedCompId === c.id ? null : c.id)}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', cursor: 'pointer' }}
+                        >
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <div style={{ fontSize: 14, fontWeight: 600, color: '#e2e8f0' }}>{c.name}</div>
+                            <div style={{ fontSize: 11, color: '#555' }}>{c.url}</div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                            <button
+                              onClick={e => { e.stopPropagation(); handleDeleteCompetitor(c.id); }}
+                              style={{ background: 'none', border: 'none', color: '#555', cursor: 'pointer', fontSize: 12, padding: '4px 8px' }}
+                            >
+                              Remove
+                            </button>
+                            <span style={{ color: '#555', fontSize: 12 }}>{expandedCompId === c.id ? '▲' : '▼'}</span>
+                          </div>
+                        </div>
+
+                        {/* Expanded content */}
+                        {expandedCompId === c.id && (
+                          <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 16, borderTop: '1px solid #111' }}>
+                            <div style={{ paddingTop: 16 }}>
+                              <div style={{ fontSize: 11, color: '#666', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</div>
+                              <div style={{ fontSize: 13, color: '#bbb', lineHeight: 1.6 }}>{c.description}</div>
+                            </div>
+
+                            <div>
+                              <div style={{ fontSize: 11, color: '#666', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Positioning</div>
+                              <div style={{ fontSize: 13, color: '#bbb', lineHeight: 1.6 }}>{c.positioning}</div>
+                            </div>
+
+                            <div>
+                              <div style={{ fontSize: 11, color: '#666', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Target Audience</div>
+                              <div style={{ fontSize: 13, color: '#bbb' }}>{c.targetAudience}</div>
+                            </div>
+
+                            <div>
+                              <div style={{ fontSize: 11, color: '#666', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Key Messages</div>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                {c.keyMessages.map((m, i) => (
+                                  <span key={i} style={{ background: '#0f0f1e', border: '1px solid #2a2a3e', borderRadius: 20, padding: '3px 12px', fontSize: 12, color: '#a78bfa' }}>{m}</span>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                              <div>
+                                <div style={{ fontSize: 11, color: '#666', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Strengths</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  {c.strengths.map((s, i) => (
+                                    <div key={i} style={{ fontSize: 12, color: '#4ade80', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                                      <span style={{ marginTop: 2 }}>✓</span>{s}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div>
+                                <div style={{ fontSize: 11, color: '#666', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Weaknesses / Gaps</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                                  {c.weaknesses.map((w, i) => (
+                                    <div key={i} style={{ fontSize: 12, color: '#f87171', display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                                      <span style={{ marginTop: 2 }}>✗</span>{w}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div>
+                              <div style={{ fontSize: 11, color: '#666', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tone & Style</div>
+                              <div style={{ fontSize: 13, color: '#bbb', lineHeight: 1.6 }}>{c.tone}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 )}
 

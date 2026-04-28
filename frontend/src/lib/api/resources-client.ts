@@ -81,6 +81,22 @@ export interface BrandScan {
   brandVoice:         string;
 }
 
+export interface Competitor {
+  id:             string;
+  resourceId:     string;
+  url:            string;
+  name:           string;
+  description:    string;
+  positioning:    string;
+  targetAudience: string;
+  keyMessages:    string[];
+  strengths:      string[];
+  weaknesses:     string[];
+  tone:           string;
+  createdAt:      string;
+  updatedAt:      string;
+}
+
 // ─── API calls ────────────────────────────────────────────────────────────────
 
 export async function scanUrl(url: string): Promise<BrandScan> {
@@ -88,6 +104,21 @@ export async function scanUrl(url: string): Promise<BrandScan> {
     method: 'POST',
     body: JSON.stringify({ url }),
   });
+}
+
+export async function scanCompetitor(url: string): Promise<Competitor> {
+  return request<Competitor>('/api/resources/competitors/scan', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  });
+}
+
+export async function getCompetitors(): Promise<Competitor[]> {
+  return request<Competitor[]>('/api/resources/competitors');
+}
+
+export async function deleteCompetitor(id: string): Promise<void> {
+  return request<void>(`/api/resources/competitors/${id}`, { method: 'DELETE' });
 }
 
 export async function getResource(): Promise<Resource> {

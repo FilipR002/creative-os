@@ -45,6 +45,14 @@ export class ScanUrlDto {
   url: string;
 }
 
+// ─── Competitor Intel ─────────────────────────────────────────────────────────
+
+export class ScanCompetitorDto {
+  @ApiPropertyOptional()
+  @IsString()
+  url: string;
+}
+
 // ─── Persona ──────────────────────────────────────────────────────────────────
 
 export class CreatePersonaDto {

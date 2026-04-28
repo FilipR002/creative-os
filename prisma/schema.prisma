@@ -846,6 +846,7 @@ model Resource {
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt      @map("updated_at")
   personas           Persona[]
+  competitors        Competitor[]
 
   @@map("resources")
 }
@@ -864,6 +865,26 @@ model Persona {
 
   @@index([resourceId])
   @@map("personas")
+}
+
+model Competitor {
+  id            String   @id @default(uuid())
+  resourceId    String   @map("resource_id")
+  resource      Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  url           String
+  name          String
+  description   String
+  positioning   String
+  targetAudience String  @map("target_audience")
+  keyMessages   String[] @default([]) @map("key_messages")
+  strengths     String[] @default([])
+  weaknesses    String[] @default([])
+  tone          String
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt      @map("updated_at")
+
+  @@index([resourceId])
+  @@map("competitors")
 }
 
 model TokenTransaction {
