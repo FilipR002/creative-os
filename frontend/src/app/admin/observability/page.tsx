@@ -409,9 +409,9 @@ function AdminAnalyticsTab() {
           <div style={{ maxHeight: 260, overflowY: 'auto' }}>
             {feed.map((ev, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, padding: '5px 0', borderBottom: '1px solid #0f1014', alignItems: 'flex-start' }}>
-                <span style={{ fontSize: 10, color: '#6366f1', fontWeight: 700, flexShrink: 0 }}>{ev.type}</span>
-                <span style={{ fontSize: 11, color: '#555', flex: 1 }}>{ev.detail ?? ev.entityId ?? '—'}</span>
-                <span style={{ fontSize: 10, color: '#333', flexShrink: 0 }}>{ev.at ? new Date(ev.at).toLocaleTimeString() : ''}</span>
+                <span style={{ fontSize: 10, color: '#6366f1', fontWeight: 700, flexShrink: 0 }}>{String(ev.type ?? '—')}</span>
+                <span style={{ fontSize: 11, color: '#555', flex: 1 }}>{typeof (ev.detail ?? ev.entityId) === 'object' ? JSON.stringify(ev.detail ?? ev.entityId).slice(0, 80) : String(ev.detail ?? ev.entityId ?? '—')}</span>
+                <span style={{ fontSize: 10, color: '#333', flexShrink: 0 }}>{ev.at ? new Date(String(ev.at)).toLocaleTimeString() : ''}</span>
               </div>
             ))}
           </div>

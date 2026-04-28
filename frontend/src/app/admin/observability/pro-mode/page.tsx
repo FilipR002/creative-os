@@ -66,6 +66,25 @@ const FATIGUE_COLORS: Record<string, string> = {
   HEALTHY: '#22c55e', WARMING: '#f59e0b', FATIGUED: '#ef4444', BLOCKED: '#7f1d1d',
 };
 
+/** Safely converts any backend value to a display string — never crashes React. */
+function safeStr(v: unknown): string {
+  if (v == null) return '—';
+  if (typeof v === 'string') return v;
+  if (typeof v === 'number') return String(v);
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  if (typeof v === 'object') {
+    const o = v as Record<string, unknown>;
+    if (typeof o.slug  === 'string') return o.slug;
+    if (typeof o.label === 'string') return o.label;
+    try { return JSON.stringify(v).slice(0, 80); } catch { return '[object]'; }
+  }
+  return String(v);
+}
+
+function safeFixed(v: unknown, decimals = 3): string {
+  return typeof v === 'number' ? v.toFixed(decimals) : safeStr(v);
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function ProModeAdminPage() {
@@ -216,11 +235,11 @@ export default function ProModeAdminPage() {
         <Card title="Learning System" icon="🧠" accent="#6366f1">
           {learningStatus ? (
             <>
-              <MetricRow label="Cycles Run"        value={learningStatus.system.totalLearningCycles} />
-              <MetricRow label="Angles Tracked"    value={learningStatus.system.anglesTracked}       />
-              <MetricRow label="Health"             value={learningStatus.system.learningHealth}      />
-              <MetricRow label="Dominant Angle"     value={learningStatus.system.dominanceAngle}      />
-              <MetricRow label="Exploration Signal" value={learningStatus.system.explorationSignal.toFixed(4)} />
+              <MetricRow label="Cycles Run"        value={safeStr(learningStatus.system.totalLearningCycles)} />
+              <MetricRow label="Angles Tracked"    value={safeStr(learningStatus.system.anglesTracked)}       />
+              <MetricRow label="Health"             value={safeStr(learningStatus.system.learningHealth)}      />
+              <MetricRow label="Dominant Angle"     value={safeStr(learningStatus.system.dominanceAngle)}      />
+              <MetricRow label="Exploration Signal" value={safeFixed(learningStatus.system.explorationSignal, 4)} />
             </>
           ) : (
             <div style={{ fontSize: 12, color: '#333' }}>No data</div>
@@ -231,7 +250,7 @@ export default function ProModeAdminPage() {
         <Card title="Global Intelligence Stats" icon="📊" accent="#22c55e">
           {globalStats ? (
             <>
-              {globalStats.globalWinner && <MetricRow label="Global Winner" value={globalStats.globalWinner} color="#22c55e" />}
+              {globalStats.globalWinner && <MetricRow label="Global Winner" value={safeStr(globalStats.globalWinner)} color="#22c55e" />}
               {(globalStats.topAngles ?? []).slice(0, 5).map(a => (
                 <MetricRow key={a.slug} label={a.slug} value={`${a.avgScore.toFixed(3)} avg`} />
               ))}
@@ -364,14 +383,14 @@ export default function ProModeAdminPage() {
             <>
               <MetricRow
                 label="Pressure Delta"
-                value={exploration.exploration_pressure_delta.toFixed(4)}
-                color={exploration.exploration_pressure_delta > 0.5 ? '#22c55e' : '#f59e0b'}
+                value={safeFixed(exploration.exploration_pressure_delta, 4)}
+                color={typeof exploration.exploration_pressure_delta === 'number' && exploration.exploration_pressure_delta > 0.5 ? '#22c55e' : '#f59e0b'}
               />
-              <MetricRow label="Confidence" value={`${Math.round(exploration.confidence * 100)}%`} />
-              <MetricRow label="Memory"     value={exploration.breakdown.memory.toFixed(3)}  />
-              <MetricRow label="Fatigue"    value={exploration.breakdown.fatigue.toFixed(3)} />
-              <MetricRow label="MIROFISH"   value={exploration.breakdown.mirofish.toFixed(3)}/>
-              <MetricRow label="Base"       value={exploration.breakdown.base.toFixed(3)}    />
+              <MetricRow label="Confidence" value={typeof exploration.confidence === 'number' ? `${Math.round(exploration.confidence * 100)}%` : safeStr(exploration.confidence)} />
+              <MetricRow label="Memory"     value={safeFixed(exploration.breakdown?.memory,   3)} />
+              <MetricRow label="Fatigue"    value={safeFixed(exploration.breakdown?.fatigue,  3)} />
+              <MetricRow label="MIROFISH"   value={safeFixed(exploration.breakdown?.mirofish, 3)} />
+              <MetricRow label="Base"       value={safeFixed(exploration.breakdown?.base,     3)} />
               {exploration.risk_flags.length > 0 && (
                 <div style={{ marginTop: 10, fontSize: 11, color: '#f59e0b' }}>
                   ⚠ {exploration.risk_flags.join(' · ')}
