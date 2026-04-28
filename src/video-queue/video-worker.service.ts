@@ -42,6 +42,8 @@ import { SmartRoutingService }      from '../routing/smart/routing.service';
 import { FatigueService }           from '../fatigue/fatigue.service';
 import { MirofishService }          from '../mirofish/mirofish.service';
 import { decideMode }               from '../creative-os/lib/model-router';
+import { buildAngleBlock }          from '../creative-os/lib/angle-definitions';
+import { buildGoalBlock }           from '../creative-os/lib/goal-definitions';
 import { CampaignMode }             from '../campaign/campaign.dto';
 import { ConceptGoal }              from '../concept/concept.dto';
 import type { RoutingContext }       from '../routing/smart/routing.types';
@@ -94,7 +96,12 @@ function buildMinimalPlan(
   conceptId: string,
 ): CreativePlan {
   const hook      = dto.styleContext?.split('|')[0].trim().slice(0, 80) ?? `Discover ${angleSlug}`;
-  const cta       = dto.goal === 'conversion' ? 'Get started now →' : dto.goal === 'awareness' ? 'Learn more →' : 'See how it works →';
+  const cta       = dto.goal === 'conversion' || dto.goal === 'sales' ? 'Get started now →'
+                  : dto.goal === 'awareness'  ? 'Learn more →'
+                  : dto.goal === 'engagement' ? 'Join the conversation →'
+                  : dto.goal === 'retention'  ? 'See what\'s new →'
+                  : dto.goal === 'install'    ? 'Download free →'
+                  : 'See how it works →';
   const platform  = dto.platform ?? 'tiktok';
   const totalSecs = DURATION_TIER_SECS[dto.durationTier ?? 'SHORT'] ?? 15;
   const sceneCount = Math.max(1, Math.ceil(totalSecs / KLING_MAX_SCENE_SECS));
@@ -389,12 +396,16 @@ export class VideoWorkerService implements OnModuleInit, OnModuleDestroy {
 
     const creativePlan = buildMinimalPlan(dto, angleSlug, campaignId, concept.id);
 
+    const goalBlock   = buildGoalBlock(dto.goal);
+    const angleBlock  = buildAngleBlock(dto.styleContext);
+    const combinedStyleContext = [goalBlock, angleBlock].filter(Boolean).join('\n\n');
+
     const executionInput: GatewayExecutionInput = {
       format:            dto.format as 'video' | 'carousel' | 'banner',
       campaignId,
       conceptId:         concept.id,
       angleSlug,
-      styleContext:      dto.styleContext ?? '',
+      styleContext:      combinedStyleContext,
       keyObjection:      concept.keyObjection  ?? undefined,
       valueProposition:  concept.valueProposition ?? undefined,
       videoMode:         dto.videoMode,
