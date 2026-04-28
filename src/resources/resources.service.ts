@@ -1,6 +1,8 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService }    from '@nestjs/config';
 import { PrismaService }    from '../prisma/prisma.service';
 import { UpsertResourceDto, CreatePersonaDto, UpdatePersonaDto } from './resources.dto';
+import axios from 'axios';
 
 // ─── Shared type used by AI services ─────────────────────────────────────────
 
@@ -27,7 +29,10 @@ export interface ResourceContext {
 @Injectable()
 export class ResourcesService {
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma:  PrismaService,
+    private readonly config:  ConfigService,
+  ) {}
 
   // ── Resource (Product + Brand) ─────────────────────────────────────────────
 
@@ -146,6 +151,130 @@ export class ResourcesService {
     await this.assertPersonaOwnership(personaId, userId);
     await this.prisma.persona.delete({ where: { id: personaId } });
     return { deleted: true };
+  }
+
+  // ── URL Scanner ────────────────────────────────────────────────────────────
+
+  async scanUrl(url: string): Promise<{
+    productName:        string;
+    productDescription: string;
+    productBenefits:    string[];
+    brandTone:          string;
+    brandVoice:         string;
+  }> {
+    // Normalise URL
+    let target = url.trim();
+    if (!/^https?:\/\//i.test(target)) target = `https://${target}`;
+
+    // ── 1. Fetch the page HTML ─────────────────────────────────────────────
+    let html = '';
+    try {
+      const res = await axios.get<string>(target, {
+        timeout: 12000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; CreativeOS-Scanner/1.0)',
+          'Accept':     'text/html,application/xhtml+xml',
+        },
+        maxContentLength: 2_000_000, // 2 MB cap
+      });
+      html = typeof res.data === 'string' ? res.data : JSON.stringify(res.data);
+    } catch (err: any) {
+      throw new BadRequestException(
+        `Could not fetch "${target}": ${err?.message ?? 'network error'}`,
+      );
+    }
+
+    // ── 2. Extract meta tags + strip HTML to readable text ─────────────────
+    const metaTitle   = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]?.trim() ?? '';
+    const ogTitle     = html.match(/property=["']og:title["'][^>]*content=["']([^"']+)["']/i)?.[1]
+                     ?? html.match(/content=["']([^"']+)["'][^>]*property=["']og:title["']/i)?.[1] ?? '';
+    const ogDesc      = html.match(/property=["']og:description["'][^>]*content=["']([^"']+)["']/i)?.[1]
+                     ?? html.match(/content=["']([^"']+)["'][^>]*property=["']og:description["']/i)?.[1] ?? '';
+    const metaDesc    = html.match(/name=["']description["'][^>]*content=["']([^"']+)["']/i)?.[1]
+                     ?? html.match(/content=["']([^"']+)["'][^>]*name=["']description["']/i)?.[1] ?? '';
+
+    // Strip scripts, styles, head, nav, footer — keep body text
+    const bodyText = html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<head[\s\S]*?<\/head>/gi, '')
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+      .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+      .replace(/<header[\s\S]*?<\/header>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
+      .slice(0, 6000); // cap to avoid token overflow
+
+    const pageContent = [
+      ogTitle     ? `Page title: ${ogTitle}`   : metaTitle ? `Page title: ${metaTitle}` : '',
+      ogDesc      ? `Meta description: ${ogDesc}` : metaDesc ? `Meta description: ${metaDesc}` : '',
+      `URL: ${target}`,
+      `\nPage body text:\n${bodyText}`,
+    ].filter(Boolean).join('\n');
+
+    // ── 3. Ask Claude to extract the brand profile ─────────────────────────
+    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+
+    const systemPrompt = `You are a brand analyst. You read website content and extract a structured brand profile.
+Return ONLY valid JSON. No markdown, no backticks, no explanation.`;
+
+    const userPrompt = `Analyze this website content and extract a brand profile.
+
+${pageContent}
+
+Return a JSON object with EXACTLY these fields:
+{
+  "productName": "the brand or product name (1–4 words)",
+  "productDescription": "what it does and who it is for — 2-3 clear sentences, written in second person if possible",
+  "productBenefits": ["key benefit 1", "key benefit 2", "key benefit 3"],
+  "brandTone": "describe the brand's tone of voice in 1-2 sentences. e.g. Bold and direct, like a confident founder. No fluff.",
+  "brandVoice": "2-4 specific voice rules inferred from the site. e.g. Uses short sentences. Leads with outcome not feature. Avoids jargon."
+}
+
+Rules:
+- productBenefits must be an array of 3–6 short phrases (max 8 words each)
+- If you cannot determine something, make a reasonable inference from the URL and content — never return empty strings
+- Write as if briefing an ad copywriter who has never seen this brand`;
+
+    try {
+      const response = await axios.post(
+        'https://api.anthropic.com/v1/messages',
+        {
+          model:      'claude-sonnet-4-5',
+          max_tokens: 600,
+          system:     systemPrompt,
+          messages:   [{ role: 'user', content: userPrompt }],
+        },
+        {
+          headers: {
+            'x-api-key':         apiKey,
+            'anthropic-version': '2023-06-01',
+            'content-type':      'application/json',
+          },
+          timeout: 30000,
+        },
+      );
+
+      const raw  = response.data.content[0].text.trim();
+      const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+      return {
+        productName:        json.productName        || '',
+        productDescription: json.productDescription || '',
+        productBenefits:    Array.isArray(json.productBenefits) ? json.productBenefits : [],
+        brandTone:          json.brandTone          || '',
+        brandVoice:         json.brandVoice         || '',
+      };
+    } catch (err: any) {
+      const msg = err?.response?.data || err?.message || 'Unknown error';
+      throw new BadRequestException(`Brand scan failed: ${JSON.stringify(msg)}`);
+    }
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────

@@ -5,11 +5,13 @@ import { Sidebar } from '@/components/Sidebar';
 import {
   getResource,
   upsertResource,
+  scanUrl,
   createPersona,
   updatePersona,
   deletePersona,
   type Resource,
   type Persona,
+  type BrandScan,
   type CreatePersonaPayload,
 } from '@/lib/api/resources-client';
 
@@ -441,6 +443,12 @@ export default function ResourcesPage() {
   const [brandTone,  setBrandTone]  = useState('');
   const [brandVoice, setBrandVoice] = useState('');
 
+  // URL scanner state
+  const [scanInput,   setScanInput]   = useState('');
+  const [scanning,    setScanning]    = useState(false);
+  const [scanError,   setScanError]   = useState<string | null>(null);
+  const [scanApplied, setScanApplied] = useState(false);
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -482,6 +490,30 @@ export default function ResourcesPage() {
     setSaving(false);
   }
 
+  async function handleScan() {
+    const url = scanInput.trim();
+    if (!url) return;
+    setScanning(true);
+    setScanError(null);
+    setScanApplied(false);
+    try {
+      const result: BrandScan = await scanUrl(url);
+      // Pre-fill all form fields — user reviews before saving
+      if (result.productName)        setProductName(result.productName);
+      if (result.productDescription) setProductDescription(result.productDescription);
+      if (result.productBenefits?.length) setProductBenefits(result.productBenefits);
+      if (result.brandTone)          setBrandTone(result.brandTone);
+      if (result.brandVoice)         setBrandVoice(result.brandVoice);
+      setScanApplied(true);
+      // Switch to product tab so user sees the filled fields
+      setTab('product');
+    } catch (err: any) {
+      setScanError(err?.message ?? 'Scan failed — check the URL and try again');
+    } finally {
+      setScanning(false);
+    }
+  }
+
   function handlePersonaCreated(p: Persona) {
     setResource(prev => prev ? { ...prev, personas: [...prev.personas, p] } : prev);
   }
@@ -520,6 +552,54 @@ export default function ResourcesPage() {
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
           <div style={{ maxWidth: 720 }}>
+
+            {/* ── URL Scanner ── */}
+            <div style={{
+              background: '#0d0d0d', border: '1px solid #1a1a2e', borderRadius: 12,
+              padding: '16px 20px', marginBottom: 24,
+            }}>
+              <div style={{ fontSize: 12, color: '#666', marginBottom: 10, letterSpacing: '0.04em', textTransform: 'uppercase', fontWeight: 600 }}>
+                🔍 Auto-fill from website
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <input
+                  value={scanInput}
+                  onChange={e => { setScanInput(e.target.value); setScanApplied(false); setScanError(null); }}
+                  onKeyDown={e => { if (e.key === 'Enter') handleScan(); }}
+                  placeholder="https://yourproduct.com"
+                  disabled={scanning}
+                  style={{
+                    flex: 1, background: '#111', border: '1px solid #2a2a2a', borderRadius: 8,
+                    padding: '9px 14px', color: '#e2e8f0', fontSize: 13, outline: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                />
+                <button
+                  onClick={handleScan}
+                  disabled={scanning || !scanInput.trim()}
+                  style={{
+                    background: scanning ? '#1a1a2e' : '#4f46e5',
+                    border: 'none', borderRadius: 8, padding: '9px 20px',
+                    color: scanning ? '#666' : '#fff', fontSize: 13, fontWeight: 600,
+                    cursor: scanning || !scanInput.trim() ? 'not-allowed' : 'pointer',
+                    whiteSpace: 'nowrap', fontFamily: 'inherit', transition: 'background 0.15s',
+                  }}
+                >
+                  {scanning ? '⏳ Scanning…' : 'Scan'}
+                </button>
+              </div>
+              {scanError && (
+                <div style={{ marginTop: 10, fontSize: 12, color: '#f87171', background: '#1e0a0a', borderRadius: 6, padding: '8px 12px' }}>
+                  ⚠️ {scanError}
+                </div>
+              )}
+              {scanApplied && !scanError && (
+                <div style={{ marginTop: 10, fontSize: 12, color: '#4ade80', background: '#0a1e0a', borderRadius: 6, padding: '8px 12px' }}>
+                  ✓ Fields pre-filled from <strong>{scanInput}</strong> — review below, then save.
+                </div>
+              )}
+            </div>
+
             {/* Tabs */}
             <div style={{
               display: 'flex', gap: 4, background: '#0d0d0d', borderRadius: 10, padding: 4,

@@ -73,7 +73,22 @@ export interface UpdatePersonaPayload {
   demographics?: string;
 }
 
+export interface BrandScan {
+  productName:        string;
+  productDescription: string;
+  productBenefits:    string[];
+  brandTone:          string;
+  brandVoice:         string;
+}
+
 // ─── API calls ────────────────────────────────────────────────────────────────
+
+export async function scanUrl(url: string): Promise<BrandScan> {
+  return request<BrandScan>('/api/resources/scan', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  });
+}
 
 export async function getResource(): Promise<Resource> {
   return request<Resource>('/api/resources');

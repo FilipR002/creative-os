@@ -37,6 +37,14 @@ export class UpsertResourceDto {
   imageUrls?: string[];
 }
 
+// ─── URL Scanner ─────────────────────────────────────────────────────────────
+
+export class ScanUrlDto {
+  @ApiPropertyOptional()
+  @IsString()
+  url: string;
+}
+
 // ─── Persona ──────────────────────────────────────────────────────────────────
 
 export class CreatePersonaDto {

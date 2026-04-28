@@ -4,7 +4,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { UserId }                 from '../common/decorators/user-id.decorator';
 import { ResourcesService }       from './resources.service';
-import { UpsertResourceDto, CreatePersonaDto, UpdatePersonaDto } from './resources.dto';
+import { UpsertResourceDto, CreatePersonaDto, UpdatePersonaDto, ScanUrlDto } from './resources.dto';
 
 @ApiTags('resources')
 @ApiBearerAuth()
@@ -24,6 +24,14 @@ export class ResourcesController {
   @Put()
   upsert(@Body() dto: UpsertResourceDto, @UserId() userId: string) {
     return this.resources.upsert(dto, userId);
+  }
+
+  // ── URL Scanner ────────────────────────────────────────────────────────────
+
+  /** Scan a website URL and return a pre-filled brand profile */
+  @Post('scan')
+  scanUrl(@Body() dto: ScanUrlDto) {
+    return this.resources.scanUrl(dto.url);
   }
 
   // ── Personas ───────────────────────────────────────────────────────────────
