@@ -12,6 +12,7 @@ import { InsightPatternService }       from '../angle-insights/insight-pattern.s
 import { AutonomousLoopService }       from '../autonomous-loop/autonomous-loop.service';
 import { CreativeDNAService }          from '../creative-dna/creative-dna.service';
 import { buildAngleBlock }             from '../creative-os/lib/angle-definitions';
+import { ApiLogService, estimateCost } from '../billing/api-log.service';
 import type {
   GenerateAdCopyDto,   AdCopyResult,
   GenerateHooksDto,    HooksResult,
@@ -22,7 +23,11 @@ import type {
 
 const MODEL   = 'claude-opus-4-5';
 const MAX_TOK = 1800;
-const AI_TIMEOUT_MS = 10_000;
+const AI_TIMEOUT_MS = 30_000;   // raised: overloaded retries need more headroom
+
+// Retry config for Anthropic overloaded / rate-limit errors
+const MAX_RETRIES   = 3;
+const RETRY_DELAYS  = [2_000, 5_000, 10_000]; // ms between attempts
 
 // ── Fallback shapes — returned when AI output cannot be parsed ────────────────
 const FALLBACK_AD_COPY: AdCopyResult = {
@@ -45,6 +50,7 @@ export class CreativeAiService {
     @Optional() private readonly insightPatterns:  InsightPatternService,
     @Optional() private readonly autonomousLoop:   AutonomousLoopService,
     @Optional() private readonly creativeDna:      CreativeDNAService,
+    @Optional() private readonly apiLog:           ApiLogService,
   ) {}
 
   // ── Ad Copy ─────────────────────────────────────────────────────────────────
@@ -96,7 +102,7 @@ Return JSON matching this exact schema:
   ]
 }`;
 
-    const raw = await this.callClaude(system, user);
+    const raw = await this.callClaude(system, user, 'ad_copy');
     return this.parseJsonSafe<AdCopyResult>(raw, FALLBACK_AD_COPY, 'generateAdCopy');
   }
 
@@ -130,7 +136,7 @@ Return JSON:
   ]
 }`;
 
-    const raw = await this.callClaude(system, user);
+    const raw = await this.callClaude(system, user, 'hooks');
     return this.parseJsonSafe<HooksResult>(raw, FALLBACK_HOOKS, 'generateHooks');
   }
 
@@ -171,7 +177,7 @@ Return JSON:
   "endCard": "..."
 }`;
 
-    const raw = await this.callClaude(system, user);
+    const raw = await this.callClaude(system, user, 'video_script');
     return this.parseJsonSafe<VideoScriptResult>(raw, FALLBACK_VIDEO, 'generateVideoScript');
   }
 
@@ -207,7 +213,7 @@ Return JSON:
   ]
 }`;
 
-    const raw = await this.callClaude(system, user);
+    const raw = await this.callClaude(system, user, 'image_prompts');
     return this.parseJsonSafe<ImagePromptResult>(raw, FALLBACK_IMAGE, 'generateImagePrompts');
   }
 
@@ -250,47 +256,105 @@ Return JSON exactly:
   "rationale": "..."
 }`;
 
-    const raw = await this.callClaude(system, user);
+    const raw = await this.callClaude(system, user, 'refine');
     return this.parseJsonSafe<RefinedBlockResult>(raw, fallback, 'refineBlock');
   }
 
-  // ── Anthropic API call ────────────────────────────────────────────────────────
+  // ── Anthropic API call (with overload retry) ─────────────────────────────────
 
-  private async callClaude(systemPrompt: string, userPrompt: string): Promise<string> {
+  private async callClaude(
+    systemPrompt: string,
+    userPrompt:   string,
+    operation = 'default',
+    userId?:    string,
+  ): Promise<string> {
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
 
-    const timeoutSignal = AbortSignal.timeout(AI_TIMEOUT_MS);
+    const startMs = Date.now();
+    let lastErr: unknown;
 
-    const response = await axios.post(
-      'https://api.anthropic.com/v1/messages',
-      {
-        model:      MODEL,
-        max_tokens: MAX_TOK,
-        system:     systemPrompt,
-        messages:   [{ role: 'user', content: userPrompt }],
-      },
-      {
-        headers: {
-          'Content-Type':      'application/json',
-          'x-api-key':         apiKey,
-          'anthropic-version': '2023-06-01',
-        },
-        timeout:     AI_TIMEOUT_MS,
-        signal:      timeoutSignal,
-      },
-    );
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      // Back off before retrying
+      if (attempt > 0) {
+        const delay = RETRY_DELAYS[attempt - 1] ?? 10_000;
+        this.logger.warn(`Claude [${operation}] overloaded — retry ${attempt}/${MAX_RETRIES} in ${delay}ms`);
+        await new Promise(r => setTimeout(r, delay));
+      }
 
-    const content = response.data?.content?.[0]?.text ?? '';
+      try {
+        const response = await axios.post(
+          'https://api.anthropic.com/v1/messages',
+          {
+            model:      MODEL,
+            max_tokens: MAX_TOK,
+            system:     systemPrompt,
+            messages:   [{ role: 'user', content: userPrompt }],
+          },
+          {
+            headers: {
+              'Content-Type':      'application/json',
+              'x-api-key':         apiKey,
+              'anthropic-version': '2023-06-01',
+            },
+            timeout: AI_TIMEOUT_MS,
+          },
+        );
 
-    // Strip any accidental markdown fencing
-    const cleaned = content
-      .trim()
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/,           '');
+        const latencyMs = Date.now() - startMs;
+        const content   = response.data?.content?.[0]?.text ?? '';
 
-    this.logger.debug(`Claude response (${cleaned.length} chars)`);
-    return cleaned;
+        // Fire-and-forget cost log
+        this.apiLog?.log({
+          provider:   'claude',
+          operation,
+          userId,
+          costUsd:    estimateCost('claude', operation),
+          latencyMs,
+          statusCode: response.status,
+          success:    true,
+        });
+
+        // Strip any accidental markdown fencing
+        const cleaned = content
+          .trim()
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/\s*```$/,           '');
+
+        this.logger.debug(`Claude [${operation}] attempt ${attempt + 1} — ${latencyMs}ms (${cleaned.length} chars)`);
+        return cleaned;
+
+      } catch (err: unknown) {
+        lastErr = err;
+
+        const statusCode  = (err as any)?.response?.status;
+        const errType     = (err as any)?.response?.data?.error?.type ?? '';
+        const isOverloaded = statusCode === 529 || statusCode === 400 && errType === 'overloaded_error'
+                          || String((err as Error)?.message).includes('overloaded');
+
+        // Only retry on overload — fail immediately on auth / bad request errors
+        if (!isOverloaded || attempt === MAX_RETRIES) {
+          const latencyMs = Date.now() - startMs;
+          const errMsg    = (err as Error)?.message ?? String(err);
+
+          this.apiLog?.log({
+            provider:     'claude',
+            operation,
+            userId,
+            costUsd:      0,
+            latencyMs,
+            statusCode,
+            success:      false,
+            errorMessage: errMsg.slice(0, 200),
+          });
+
+          this.logger.error(`Claude [${operation}] failed after ${latencyMs}ms (attempt ${attempt + 1}): ${errMsg}`);
+          throw err;
+        }
+      }
+    }
+
+    throw lastErr; // unreachable, satisfies TS
   }
 
   // ── Safe JSON parser — never crashes the server ───────────────────────────────
