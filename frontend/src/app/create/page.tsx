@@ -121,6 +121,33 @@ function CreatePageInner() {
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ── Persist / restore preview result across navigations ──────────────────
+  // When the user navigates to /result/:id and comes back, React state is
+  // gone. We save to sessionStorage on every result update and restore on mount.
+  const STORAGE_KEY = 'cos_preview_result';
+
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved) as { result: PreviewResult; status: PreviewStatus };
+        setPreviewResult(parsed.result);
+        setPreviewStatus(parsed.status ?? 'done');
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function persistPreviewResult(pr: PreviewResult | null, status: PreviewStatus) {
+    try {
+      if (pr) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ result: pr, status }));
+      } else {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    } catch { /* ignore */ }
+  }
+
   // Clean up polling on unmount
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
@@ -215,7 +242,12 @@ function CreatePageInner() {
       if (attempts > MAX_ATTEMPTS) {
         stopPolling();
         // Timeout — mark ready so skeletons don't spin forever
-        setPreviewResult(prev => prev ? { ...prev, imagesReady: true } : prev);
+        setPreviewResult(prev => {
+          if (!prev) return prev;
+          const updated = { ...prev, imagesReady: true };
+          persistPreviewResult(updated, 'done');
+          return updated;
+        });
         return;
       }
       try {
@@ -224,12 +256,14 @@ function CreatePageInner() {
           stopPolling();
           setPreviewResult(prev => {
             if (!prev) return prev;
-            return {
+            const updated = {
               ...prev,
               slides:      (creative.slides  as SlideData[]  | undefined) ?? prev.slides,
               banners:     (creative.banners as BannerData[] | undefined) ?? prev.banners,
               imagesReady: true,
             };
+            persistPreviewResult(updated, 'done');
+            return updated;
           });
         }
       } catch {
@@ -247,6 +281,7 @@ function CreatePageInner() {
     setPreviewProgress(0);
     setPreviewResult(null);
     setPreviewError(null);
+    persistPreviewResult(null, 'generating');
 
     try {
       const response = await runCampaign({
@@ -280,6 +315,7 @@ function CreatePageInner() {
               const pr = await fetchPreviewResult(job.result, format);
               setPreviewResult(pr);
               setPreviewStatus('done');
+              persistPreviewResult(pr, 'done');
             } else if (job.status === 'failed') {
               stopPolling();
               setPreviewError(job.error ?? 'Video rendering failed. Check Railway logs.');
@@ -299,6 +335,7 @@ function CreatePageInner() {
         const pr = await fetchPreviewResult(response, format);
         setPreviewResult(pr);
         setPreviewStatus('done');
+        persistPreviewResult(pr, 'done');
 
         // Images are rendering in background — start polling for them
         const winnerId = response.winner?.creativeId;

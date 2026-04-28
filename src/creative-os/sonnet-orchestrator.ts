@@ -83,8 +83,9 @@ export interface OrchestratorInput {
     keyObjection:      string | null;
     valueProposition:  string | null;
   };
-  preferredFormat?:   BlueprintFormat;
+  preferredFormat?:    BlueprintFormat;
   preferredAngleSlug?: string;
+  preferredSlideCount?: number;   // user-selected slide count — lock it in the prompt
 }
 
 // ─── System prompt ────────────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ export async function generateBlueprint(
     ?? input.concept.angleHint
     ?? 'problem_solution';
 
-  const userPrompt = buildPrompt(input, format, angleSlug);
+  const userPrompt = buildPrompt(input, format, angleSlug, input.preferredSlideCount);
 
   const response = await axios.post<{ content: Array<{ type: string; text: string }> }>(
     'https://api.anthropic.com/v1/messages',
@@ -179,13 +180,14 @@ function deriveFormat(formats: string[]): BlueprintFormat {
 }
 
 function buildPrompt(
-  input:      OrchestratorInput,
-  format:     BlueprintFormat,
-  angleSlug:  string,
+  input:               OrchestratorInput,
+  format:              BlueprintFormat,
+  angleSlug:           string,
+  preferredSlideCount?: number,
 ): string {
   const { campaign, concept } = input;
 
-  const formatSpec = getFormatSpec(format, concept.durationTier);
+  const formatSpec = getFormatSpec(format, concept.durationTier, preferredSlideCount);
 
   return `## Campaign Brief
 Name: ${campaign.name ?? 'Untitled'}
@@ -235,29 +237,33 @@ Return this exact JSON structure (fill every field):
     "platform": "${concept.platform}"
   },
   "production_stack": {
-    ${formatProductionStackTemplate(format, concept.durationTier)}
+    ${formatProductionStackTemplate(format, concept.durationTier, preferredSlideCount)}
   },
   "_meta": {}
 }`;
 }
 
-function getFormatSpec(format: BlueprintFormat, durationTier: string): string {
+function getFormatSpec(format: BlueprintFormat, durationTier: string, preferredSlideCount?: number): string {
   switch (format) {
     case 'video':
       return `For VIDEO: Set duration_tier to "${durationTier}" (must match the concept's duration tier exactly).`;
     case 'carousel':
-      return 'For CAROUSEL: Set slide_count to an integer between 3 and 10 based on the depth of the message.';
+      return preferredSlideCount
+        ? `For CAROUSEL: The user has selected exactly ${preferredSlideCount} slides. You MUST set slide_count to ${preferredSlideCount}. Do not change this value.`
+        : 'For CAROUSEL: Set slide_count to an integer between 3 and 10 based on the depth of the message.';
     case 'banner':
       return 'For BANNER: Set sizes to an array. Choose 2-3 from: ["1200x628", "1080x1080", "1080x1920", "300x250", "728x90"] based on the platform.';
   }
 }
 
-function formatProductionStackTemplate(format: BlueprintFormat, durationTier: string): string {
+function formatProductionStackTemplate(format: BlueprintFormat, durationTier: string, preferredSlideCount?: number): string {
   switch (format) {
     case 'video':
       return `"duration_tier": "${durationTier}"`;
     case 'carousel':
-      return `"slide_count": <3-10>`;
+      return preferredSlideCount
+        ? `"slide_count": ${preferredSlideCount}`
+        : `"slide_count": <3-10>`;
     case 'banner':
       return `"sizes": ["1080x1080", "1200x628"]`;
   }

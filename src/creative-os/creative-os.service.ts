@@ -54,9 +54,10 @@ import {
 // ─── Request / Response types ─────────────────────────────────────────────────
 
 export interface CreativeOSGenerateDto {
-  campaignId:          string;
-  preferredFormat?:    'video' | 'carousel' | 'banner';
-  preferredAngleSlug?: string;
+  campaignId:           string;
+  preferredFormat?:     'video' | 'carousel' | 'banner';
+  preferredAngleSlug?:  string;
+  preferredSlideCount?: number;   // user-selected slide count — passed to blueprint
 }
 
 export type CreativeOSGenerateResponse = PipelineResult;
@@ -141,8 +142,9 @@ export class CreativeOSService {
         keyObjection:     concept.keyObjection,
         valueProposition: concept.valueProposition,
       },
-      preferredFormat:    dto.preferredFormat,
-      preferredAngleSlug: dto.preferredAngleSlug,
+      preferredFormat:     dto.preferredFormat,
+      preferredAngleSlug:  dto.preferredAngleSlug,
+      preferredSlideCount: dto.preferredSlideCount,
     };
 
     const creativePlanInput = {

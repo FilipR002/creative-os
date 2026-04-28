@@ -127,13 +127,26 @@ function buildMinimalPlan(
       scenes: buildSceneTemplates(hook, cta, platform, angleSlug, sceneCount) as any,
     },
     carousel: {
-      slides: [
-        { headline: hook,                                              intent: 'hook'     as const, visual_direction: `Bold typography, high-energy, ${platform}` },
-        { headline: 'The problem most people miss.',                  intent: 'problem'  as const, visual_direction: 'Pain point visual, contrast',  subtext: 'Sound familiar?' },
-        { headline: `${angleSlug.replace(/_/g, ' ')} solves it.`,    intent: 'solution' as const, visual_direction: 'Product hero, clean composition' },
-        { headline: 'Here is why it works.',                         intent: 'solution' as const, visual_direction: 'Feature highlight, minimal layout' },
-        { headline: cta,                                              intent: 'cta'      as const, visual_direction: 'Strong CTA, brand colors' },
-      ],
+      // Build slide stubs matching the user's requested slide count.
+      // Extra slides beyond the 5-slide base get "value" intent placeholders.
+      slides: (() => {
+        const count  = dto.slideCount ?? 5;
+        const base = [
+          { headline: hook,                                           intent: 'hook'     as const, visual_direction: `Bold typography, high-energy, ${platform}` },
+          { headline: 'The problem most people miss.',               intent: 'problem'  as const, visual_direction: 'Pain point visual, contrast', subtext: 'Sound familiar?' },
+          { headline: `${angleSlug.replace(/_/g, ' ')} solves it.`, intent: 'solution' as const, visual_direction: 'Product hero, clean composition' },
+          { headline: 'Here is why it works.',                       intent: 'solution' as const, visual_direction: 'Feature highlight, minimal layout' },
+          { headline: cta,                                           intent: 'cta'      as const, visual_direction: 'Strong CTA, brand colors' },
+        ];
+        if (count <= 5) return base.slice(0, count);
+        // Pad with value slides, keeping CTA always last
+        const extras = Array.from({ length: count - 5 }, (_, i) => ({
+          headline: `Why it matters — point ${i + 2}`,
+          intent:   'solution' as const,
+          visual_direction: 'Value highlight, clean layout',
+        }));
+        return [...base.slice(0, 4), ...extras, base[4]];
+      })(),
     },
     banner: {
       headline:           hook.slice(0, 50),
