@@ -96,7 +96,7 @@ function AutonomousLoopTab() {
   useEffect(() => {
     Promise.all([
       getAutonomousLoopState().then(setState).catch(() => {}),
-      getAllAutonomousLoopStates().then(setStates).catch(() => {}),
+      getAllAutonomousLoopStates().then(d => setStates(Array.isArray(d) ? d : [])).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
 
@@ -142,7 +142,7 @@ function OrchestratorTab() {
 
   useEffect(() => {
     Promise.all([
-      getOrchestratorRules().then(setRules).catch(() => {}),
+      getOrchestratorRules().then(d => setRules(Array.isArray(d) ? d : [])).catch(() => {}),
       fetch('/api/orchestrator/status').then(r => r.json()).then(setStatus).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
@@ -195,7 +195,7 @@ function MemoryEngineTab() {
     Promise.all([
       getMemoryBestAngles().then(setBest).catch(() => {}),
       getMemoryFormatStats().then(setFormats).catch(() => {}),
-      getMemoryWinRates().then(setWins).catch(() => {}),
+      getMemoryWinRates().then(d => setWins(Array.isArray(d) ? d : [])).catch(() => {}),
       getMemoryWeights().then(setWeights).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
@@ -327,7 +327,7 @@ function AngleInsightsTab() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getAngleInsightsSummary().then(setSummary).catch(() => {}).finally(() => setLoading(false));
+    getAngleInsightsSummary().then(d => setSummary(Array.isArray(d) ? d : [])).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   if (loading) return <EmptyState msg="Loading angle insights…" />;
@@ -368,7 +368,7 @@ function AdminAnalyticsTab() {
     Promise.all([
       getAdminOverview().then(setOverview).catch(() => {}),
       getAdminLearningState().then(setLearning).catch(() => {}),
-      getAdminRealtimeFeed(30).then(setFeed).catch(() => {}),
+      getAdminRealtimeFeed(30).then(d => setFeed(Array.isArray(d) ? d : [])).catch(() => {}),
       getAdminSystemHealth().then(setHealth).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
