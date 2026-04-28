@@ -412,6 +412,7 @@ export default function CompetitorIntelligencePage() {
 
           {/* ─── TAB: ANALYZE ──────────────────────────────────────────────── */}
           {tab === 'analyze' && (
+            <>
             <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: 20 }}>
               {/* Input panel */}
               <div>
@@ -685,6 +686,7 @@ export default function CompetitorIntelligencePage() {
                 </div>
               )}
             </div>
+            </>
           )}
 
           {/* ─── TAB: RESULTS ──────────────────────────────────────────────── */}
