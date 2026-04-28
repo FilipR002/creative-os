@@ -11,6 +11,7 @@ import axios                           from 'axios';
 import { InsightPatternService }       from '../angle-insights/insight-pattern.service';
 import { AutonomousLoopService }       from '../autonomous-loop/autonomous-loop.service';
 import { CreativeDNAService }          from '../creative-dna/creative-dna.service';
+import { buildAngleBlock }             from '../creative-os/lib/angle-definitions';
 import type {
   GenerateAdCopyDto,   AdCopyResult,
   GenerateHooksDto,    HooksResult,
@@ -228,16 +229,20 @@ Return JSON:
 
     const instruction = instructionMap[dto.instruction] ?? dto.instruction;
 
-    const system = `You are a direct-response copywriter specialising in micro-edits.
-You refine individual ad copy blocks for maximum impact without losing the core message.
-Return ONLY valid JSON. No markdown, no explanation.`;
+    const angleBlock = buildAngleBlock(dto.angleSlug);
+
+    const system = [
+      `You are a direct-response copywriter specialising in micro-edits.`,
+      `You refine individual ad copy blocks for maximum impact without losing the core message.`,
+      `Return ONLY valid JSON. No markdown, no explanation.`,
+      angleBlock,
+    ].filter(Boolean).join('\n\n');
 
     const user = `Refine this ${dto.blockType}:
 
 Current: "${dto.currentValue}"
 Instruction: ${instruction}
-${dto.brief       ? `Brief: "${dto.brief}"` : ''}
-${dto.angleSlug   ? `Angle: ${dto.angleSlug.replace(/_/g, ' ')}` : ''}
+${dto.brief ? `Brief: "${dto.brief}"` : ''}
 
 Return JSON exactly:
 {

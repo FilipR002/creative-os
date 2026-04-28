@@ -7,6 +7,8 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import axios from 'axios';
+import { buildGoalBlock }  from '../creative-os/lib/goal-definitions';
+import { buildAngleBlock } from '../creative-os/lib/angle-definitions';
 import type {
   CreateGenerationDto,
   UpdateBlockDto,
@@ -44,14 +46,20 @@ export class GenerationsService {
 
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
 
+    const goalBlock  = buildGoalBlock(intent.goal);
+    const angleBlock = buildAngleBlock(intent.angle);
+
     const hintLines: string[] = [];
-    if (intent.angle)   hintLines.push(`Angle: ${intent.angle}`);
     if (intent.tone)    hintLines.push(`Tone: ${intent.tone}`);
     if (intent.persona) hintLines.push(`Target persona: ${intent.persona}`);
-    const hintBlock = hintLines.length ? `\nStrategy hints:\n${hintLines.join('\n')}` : '';
+    const hintBlock = hintLines.length ? `\nAdditional hints:\n${hintLines.join('\n')}` : '';
 
-    const systemPrompt = `You are a world-class advertising copywriter.
-Return ONLY valid JSON. No markdown, no backticks, no explanation.`;
+    const systemPrompt = [
+      `You are a world-class advertising copywriter.`,
+      `Return ONLY valid JSON. No markdown, no backticks, no explanation.`,
+      goalBlock,
+      angleBlock,
+    ].filter(Boolean).join('\n\n');
 
     const userPrompt = `Create an advertising creative for this brief.
 
@@ -185,18 +193,22 @@ Return a JSON object with EXACTLY these fields:
     const intent = gen.intentSnapshot as any;
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
 
-    const contextLines: string[] = [];
-    if (intent?.goal)    contextLines.push(`Goal: ${intent.goal}`);
-    if (intent?.angle)   contextLines.push(`Angle: ${intent.angle}`);
-    if (intent?.tone)    contextLines.push(`Tone: ${intent.tone}`);
+    const goalBlock  = buildGoalBlock(intent?.goal);
+    const angleBlock = buildAngleBlock(intent?.angle);
 
-    const systemPrompt = `You are an expert advertising copywriter.
-Return ONLY the improved text. No explanation, no quotes, no markdown.`;
+    const contextLines: string[] = [];
+    if (intent?.tone) contextLines.push(`Tone: ${intent.tone}`);
+
+    const systemPrompt = [
+      `You are an expert advertising copywriter.`,
+      `Return ONLY the improved text. No explanation, no quotes, no markdown.`,
+      goalBlock,
+      angleBlock,
+    ].filter(Boolean).join('\n\n');
 
     const userPrompt = `Current ${dto.block}: "${currentText}"
-${contextLines.length ? `\nContext:\n${contextLines.join('\n')}` : ''}
 Brief: "${gen.inputBrief}"
-
+${contextLines.length ? `\nContext:\n${contextLines.join('\n')}` : ''}
 Instruction: ${dto.instruction}
 
 Return ONLY the improved ${dto.block} text.`;
