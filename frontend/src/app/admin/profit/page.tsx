@@ -261,8 +261,8 @@ export default function AdminProfitPage() {
         fetchJson<TrendPoint[]>('/api/admin/profit/api-trend?days=14').catch(() => [] as TrendPoint[]),
       ]);
       setData(d);
-      setLogs(l);
-      setTrend(t);
+      setLogs(Array.isArray(l) ? l : []);
+      setTrend(Array.isArray(t) ? t : []);
       setLastRefresh(new Date());
     } catch (e) {
       setError(String(e));
@@ -467,7 +467,7 @@ export default function AdminProfitPage() {
           {/* ── Daily snapshots ──────────────────────────────────────────── */}
           <div style={{ background: '#0d0f16', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 22px', marginBottom: 24 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: '#556', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Daily Profit Snapshots</div>
-            <SnapshotTable rows={data.snapshots} />
+            <SnapshotTable rows={Array.isArray(data.snapshots) ? data.snapshots : []} />
           </div>
 
           {/* ── Stripe setup guide (only when empty) ────────────────────── */}
