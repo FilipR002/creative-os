@@ -26,7 +26,7 @@ const INTELLIGENCE_NAV = [
   { label: 'AI Brain Stream',   href: '/ai-stream'               },
   { label: 'Pro Diagnostics',   href: '/pro-mode'                },
   { label: 'System Audit',      href: '/system-audit'            },
-  { label: 'Competitor Intel',  href: '/competitor-intelligence' },
+  { label: 'Competitor Intel',  href: '/resources?tab=competitors' },
   { label: 'Trend Prediction',  href: '/trends'                  },
   { label: 'Ad Intelligence',   href: '/ad-intelligence'         },
 ];

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 import {
   getResource,
@@ -431,8 +432,13 @@ function NewPersonaForm({ onCreated }: { onCreated: (p: Persona) => void }) {
 
 type Tab = 'product' | 'brand' | 'personas' | 'competitors';
 
-export default function ResourcesPage() {
-  const [tab,      setTab]      = useState<Tab>('product');
+function ResourcesPageInner() {
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState<Tab>(() => {
+    const t = searchParams.get('tab');
+    if (t === 'competitors' || t === 'brand' || t === 'personas') return t;
+    return 'product';
+  });
   const [resource, setResource] = useState<Resource | null>(null);
   const [loading,  setLoading]  = useState(true);
   const [saving,   setSaving]   = useState(false);
@@ -874,5 +880,13 @@ export default function ResourcesPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ResourcesPage() {
+  return (
+    <Suspense fallback={null}>
+      <ResourcesPageInner />
+    </Suspense>
   );
 }
