@@ -73,6 +73,7 @@ import { BillingModule }          from './billing/billing.module';
 import { HealthModule }           from './health/health.module';
 import { VideoQueueModule }       from './video-queue/video-queue.module';
 import { ResourcesModule }        from './resources/resources.module';
+import { CompositorModule }       from './compositor/compositor.module';
 
 @Module({
   imports: [
@@ -148,6 +149,7 @@ import { ResourcesModule }        from './resources/resources.module';
     HealthModule,
     VideoQueueModule,   // async video-render queue + GET /api/jobs/:jobId
     ResourcesModule,    // product / brand knowledge base + personas
+    CompositorModule,   // ad compositor: HTML/CSS templates → PNG via Puppeteer
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).
