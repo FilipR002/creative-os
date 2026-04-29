@@ -122,12 +122,28 @@ function CreatePageInner() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ── Persist / restore preview result across navigations ──────────────────
-  // When the user navigates to /result/:id and comes back, React state is
-  // gone. We save to sessionStorage on every result update and restore on mount.
-  const STORAGE_KEY = 'cos_preview_result';
+  // When the user navigates away and comes back, React state is gone.
+  // We save to sessionStorage on every result update and restore on mount.
+  const STORAGE_KEY     = 'cos_preview_result';
+  const ACTIVE_JOB_KEY  = 'cos_active_job';
 
+  // Restore completed result OR resume an active video job on mount
   useEffect(() => {
     try {
+      // 1. Check for an in-progress video job first
+      const activeJob = sessionStorage.getItem(ACTIVE_JOB_KEY);
+      if (activeJob) {
+        const { jobId, fmt, savedBrief } = JSON.parse(activeJob) as {
+          jobId: string; fmt: AdFormat; savedBrief: string;
+        };
+        setPreviewStatus('processing');
+        setPreviewProgress(5);
+        if (savedBrief) setBrief(savedBrief);
+        startVideoPolling(jobId, fmt, savedBrief);
+        return; // don't also restore a stale result
+      }
+
+      // 2. Restore a completed/done result
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as { result: PreviewResult; status: PreviewStatus };
@@ -148,7 +164,53 @@ function CreatePageInner() {
     } catch { /* ignore */ }
   }
 
-  // Clean up polling on unmount
+  function saveActiveJob(jobId: string, fmt: AdFormat, savedBrief: string) {
+    try {
+      sessionStorage.setItem(ACTIVE_JOB_KEY, JSON.stringify({ jobId, fmt, savedBrief }));
+      window.dispatchEvent(new CustomEvent('cos:generation:start'));
+    } catch { /* ignore */ }
+  }
+
+  function clearActiveJob() {
+    try {
+      sessionStorage.removeItem(ACTIVE_JOB_KEY);
+      window.dispatchEvent(new CustomEvent('cos:generation:end'));
+    } catch { /* ignore */ }
+  }
+
+  // Reusable video polling — called both on first generate AND on remount resume
+  function startVideoPolling(jobId: string, fmt: AdFormat, savedBrief: string) {
+    stopPolling();
+    pollRef.current = setInterval(async () => {
+      try {
+        const job = await getJobStatus(jobId);
+        setPreviewProgress(job.progress ?? 0);
+
+        if (job.status === 'completed' && job.result) {
+          stopPolling();
+          clearActiveJob();
+          saveRunResult(job.result, savedBrief, 'video');
+          setLastRunResult(job.result);
+          const pr = await fetchPreviewResult(job.result, fmt);
+          setPreviewResult(pr);
+          setPreviewStatus('done');
+          persistPreviewResult(pr, 'done');
+        } else if (job.status === 'failed') {
+          stopPolling();
+          clearActiveJob();
+          setPreviewError(job.error ?? 'Video rendering failed. Check Railway logs.');
+          setPreviewStatus('error');
+        }
+      } catch (pollErr) {
+        stopPolling();
+        clearActiveJob();
+        setPreviewError(pollErr instanceof Error ? pollErr.message : 'Polling error');
+        setPreviewStatus('error');
+      }
+    }, 3_000);
+  }
+
+  // Clean up polling on unmount (don't clear sessionStorage — job still running)
   useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   function stopPolling() {
@@ -277,6 +339,7 @@ function CreatePageInner() {
     if (previewStatus === 'generating' || previewStatus === 'processing') return;
 
     stopPolling();
+    clearActiveJob();
     setPreviewStatus('generating');
     setPreviewProgress(0);
     setPreviewResult(null);
@@ -302,31 +365,9 @@ function CreatePageInner() {
         setPreviewStatus('processing');
         setPreviewProgress(5);
         const { jobId } = response;
-
-        pollRef.current = setInterval(async () => {
-          try {
-            const job = await getJobStatus(jobId);
-            setPreviewProgress(job.progress ?? 0);
-
-            if (job.status === 'completed' && job.result) {
-              stopPolling();
-              saveRunResult(job.result, brief.trim(), 'video');
-              setLastRunResult(job.result);
-              const pr = await fetchPreviewResult(job.result, format);
-              setPreviewResult(pr);
-              setPreviewStatus('done');
-              persistPreviewResult(pr, 'done');
-            } else if (job.status === 'failed') {
-              stopPolling();
-              setPreviewError(job.error ?? 'Video rendering failed. Check Railway logs.');
-              setPreviewStatus('error');
-            }
-          } catch (pollErr) {
-            stopPolling();
-            setPreviewError(pollErr instanceof Error ? pollErr.message : 'Polling error');
-            setPreviewStatus('error');
-          }
-        }, 3_000);
+        // Persist job so navigation away and back resumes polling
+        saveActiveJob(jobId, format, brief.trim());
+        startVideoPolling(jobId, format, brief.trim());
 
       } else {
         // ── Sync path (carousel / image) ─────────────────────────────────

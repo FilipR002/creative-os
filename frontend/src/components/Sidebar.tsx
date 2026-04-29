@@ -126,7 +126,21 @@ function isAdminUser(userId: string): boolean {
 export function Sidebar() {
   useRequireAuth();
   const pathname = usePathname();
-  const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string; id: string } | null>(null);
+  const [userInfo,    setUserInfo]    = useState<{ name: string; email: string; initial: string; id: string } | null>(null);
+  const [generating,  setGenerating]  = useState(false);
+
+  // ── Generation indicator — listen for cross-page events + restore on mount ──
+  useEffect(() => {
+    try { setGenerating(!!sessionStorage.getItem('cos_active_job')); } catch {}
+    const onStart = () => setGenerating(true);
+    const onEnd   = () => setGenerating(false);
+    window.addEventListener('cos:generation:start', onStart);
+    window.addEventListener('cos:generation:end',   onEnd);
+    return () => {
+      window.removeEventListener('cos:generation:start', onStart);
+      window.removeEventListener('cos:generation:end',   onEnd);
+    };
+  }, []);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -192,6 +206,21 @@ export function Sidebar() {
             >
               <span className="sidebar-nav-icon">{item.icon}</span>
               <span className="sidebar-nav-text">{item.label}</span>
+              {item.href === '/create' && generating && (
+                <span style={{
+                  marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4,
+                  fontSize: 9, fontWeight: 700, color: 'var(--indigo-l)',
+                  background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
+                  borderRadius: 99, padding: '2px 7px', whiteSpace: 'nowrap',
+                }}>
+                  <span style={{
+                    width: 5, height: 5, borderRadius: '50%', background: 'var(--indigo-l)',
+                    display: 'inline-block',
+                    animation: 'pulse-dot 1.2s ease-in-out infinite',
+                  }} />
+                  Generating
+                </span>
+              )}
             </Link>
           ))}
         </nav>
