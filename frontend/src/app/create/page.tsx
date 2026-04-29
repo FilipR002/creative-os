@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams }            from 'next/navigation';
 import { Sidebar }                               from '@/components/Sidebar';
 import { PreviewStage }                          from '@/components/PreviewStage';
+import { TemplateGallery, type GalleryFormat }  from '@/components/TemplateGallery';
 import type { PreviewStatus, PreviewFormat, PreviewResult } from '@/components/PreviewStage';
 import {
   runCampaign,
@@ -106,6 +107,9 @@ function CreatePageInner() {
     getResource().then(r => setPersonas(r.personas ?? [])).catch(() => {});
   }, []);
 
+  // ── Gallery step — 'gallery' = template picker, 'brief' = form ──────────
+  const [step, setStep] = useState<'gallery' | 'brief'>('gallery');
+
   // ── Quick-mode controls ───────────────────────────────────────────────────
   const [format,       setFormat]       = useState<AdFormat>('carousel');
   const [platform,     setPlatform]     = useState<AdPlatform>('meta');
@@ -130,13 +134,13 @@ function CreatePageInner() {
   // ── Phase 6: Template picker ──────────────────────────────────────────────
   const [templateId,       setTemplateId]       = useState('');
   const [templates,        setTemplates]         = useState<TemplateMetadata[]>([]);
-  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
-  // Fetch template catalog once when carousel/image is selected
+  // Fetch template catalog immediately on mount (needed for gallery)
   useEffect(() => {
-    if (format === 'video' || templates.length > 0) return;
+    if (templates.length > 0) return;
     getTemplateCatalog().then(r => setTemplates(r.templates)).catch(() => {});
-  }, [format, templates.length]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Preview state machine ─────────────────────────────────────────────────
   const [previewStatus,   setPreviewStatus]   = useState<PreviewStatus>('idle');
@@ -162,6 +166,7 @@ function CreatePageInner() {
         const { jobId, fmt, savedBrief } = JSON.parse(activeJob) as {
           jobId: string; fmt: AdFormat; savedBrief: string;
         };
+        setStep('brief'); // skip gallery — resume in-flight job
         setPreviewStatus('processing');
         setPreviewProgress(5);
         if (savedBrief) setBrief(savedBrief);
@@ -173,6 +178,7 @@ function CreatePageInner() {
       const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved) as { result: PreviewResult; status: PreviewStatus };
+        setStep('brief'); // skip gallery — already have a result
         setPreviewResult(parsed.result);
         setPreviewStatus(parsed.status ?? 'done');
       }
@@ -482,7 +488,28 @@ function CreatePageInner() {
     }
   }
 
+  // ─── Gallery handler — called when user picks (or skips) a template ──────
+  function handleGallerySelect(pickedTemplateId: string, pickedFormat: GalleryFormat) {
+    setTemplateId(pickedTemplateId);
+    setFormat(pickedFormat as AdFormat);
+    setStep('brief');
+    // Pre-fetch templates list for the brief form (already loaded in gallery)
+    if ((pickedFormat === 'carousel' || pickedFormat === 'image') && templates.length === 0) {
+      getTemplateCatalog().then(r => setTemplates(r.templates)).catch(() => {});
+    }
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
+  if (step === 'gallery') {
+    return (
+      <TemplateGallery
+        templates={templates.length > 0 ? templates : []}
+        onSelect={handleGallerySelect}
+        defaultFormat={format as GalleryFormat}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       <Sidebar />
@@ -490,6 +517,15 @@ function CreatePageInner() {
 
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button
+            onClick={() => setStep('gallery')}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--muted)', fontFamily: 'inherit', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, padding: '4px 0' }}
+          >
+            ← Templates
+          </button>
+
+          <div style={{ width: 1, height: 16, background: 'var(--border)' }} />
+
           <span style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>✦ Create</span>
 
           <div style={{ display: 'flex', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden', padding: 3, gap: 2 }}>
@@ -727,92 +763,49 @@ function CreatePageInner() {
                   </div>
                 )}
 
-                {/* Template picker — carousel + image only */}
+                {/* Template chip — shows selected template, click to go back to gallery */}
                 {(format === 'carousel' || format === 'image') && (
                   <div style={{ marginBottom: 20 }}>
-                    <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span>🎨 Template</span>
-                      <button
-                        onClick={() => setTemplatePickerOpen(v => !v)}
-                        disabled={generating}
-                        style={{ fontSize: 11, color: 'var(--indigo-l)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
-                      >
-                        {templatePickerOpen ? '▲ Hide' : `▼ Browse ${templates.length || 30} templates`}
-                      </button>
-                    </div>
-
-                    {/* Selected template badge */}
+                    <div className="form-label">🎨 Template</div>
                     <div
-                      onClick={() => !generating && setTemplatePickerOpen(v => !v)}
+                      onClick={() => !generating && setStep('gallery')}
                       style={{
-                        padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+                        padding: '10px 12px', borderRadius: 8, cursor: generating ? 'default' : 'pointer',
                         background: templateId ? 'rgba(79,70,229,0.1)' : 'var(--surface-2)',
                         border: `1.5px solid ${templateId ? 'var(--indigo)' : 'var(--border)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        transition: 'all 0.15s',
                       }}
                     >
-                      <span style={{ fontSize: 13, fontWeight: 600, color: templateId ? 'var(--indigo-l)' : 'var(--muted)' }}>
-                        {templateId
-                          ? (templates.find(t => t.id === templateId)?.name ?? templateId)
-                          : '— Auto (AI picks best for each slide) —'}
-                      </span>
-                      {templateId && (
-                        <button
-                          onClick={e => { e.stopPropagation(); setTemplateId(''); }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, lineHeight: 1 }}
-                        >✕</button>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {/* Thumbnail preview */}
+                        {templateId && (
+                          <img
+                            src={`/templates/${templateId}.png`}
+                            alt=""
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            style={{ width: 36, height: 36, borderRadius: 5, objectFit: 'cover', border: '1px solid rgba(79,70,229,0.3)' }}
+                          />
+                        )}
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: templateId ? 'var(--indigo-l)' : 'var(--muted)' }}>
+                            {templateId
+                              ? (templates.find(t => t.id === templateId)?.name ?? templateId)
+                              : 'AI Auto-Select'}
+                          </div>
+                          <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 1 }}>
+                            {templateId
+                              ? templates.find(t => t.id === templateId)?.description
+                              : 'Best template picked per slide by AI'}
+                          </div>
+                        </div>
+                      </div>
+                      {!generating && (
+                        <span style={{ fontSize: 11, color: 'var(--indigo-l)', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          Change →
+                        </span>
                       )}
                     </div>
-
-                    {/* Template grid */}
-                    {templatePickerOpen && templates.length > 0 && (
-                      <div style={{ marginTop: 10, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {[
-                          { label: '⚡ Bold & High-Impact', ids: ['bold-headline','gradient-pop','story-hook','neon-dark','retro-bold','countdown-urgency','headline-badge'] },
-                          { label: '✦ Clean & Minimal',     ids: ['minimal','bright-minimal','text-only-bold','brand-manifesto','number-list','floating-card'] },
-                          { label: '💎 Premium & Editorial', ids: ['dark-luxury','magazine-editorial','diagonal-split','overlay-card'] },
-                          { label: '⭐ Social & Proof',      ids: ['testimonial','ugc-style','stats-hero','social-proof-grid'] },
-                          { label: '📋 Structured & Feature',ids: ['feature-list','split-panel','side-by-side','color-block','product-center','product-demo'] },
-                          { label: '🖼 Full-Frame',          ids: ['full-bleed','problem-slide','cta-final'] },
-                        ].map(group => {
-                          const groupTemplates = group.ids
-                            .map(id => templates.find(t => t.id === id))
-                            .filter(Boolean) as TemplateMetadata[];
-                          if (!groupTemplates.length) return null;
-                          return (
-                            <div key={group.label}>
-                              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 0 3px' }}>
-                                {group.label}
-                              </div>
-                              {groupTemplates.map(t => (
-                                <div
-                                  key={t.id}
-                                  onClick={() => { setTemplateId(t.id === templateId ? '' : t.id); setTemplatePickerOpen(false); }}
-                                  style={{
-                                    padding: '8px 10px', borderRadius: 6, cursor: 'pointer', marginBottom: 2,
-                                    background: t.id === templateId ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
-                                    border: `1px solid ${t.id === templateId ? 'var(--indigo)' : 'var(--border)'}`,
-                                    display: 'flex', alignItems: 'flex-start', gap: 8,
-                                    transition: 'background 0.1s',
-                                  }}
-                                >
-                                  <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontWeight: 700, fontSize: 12, color: t.id === templateId ? 'var(--indigo-l)' : 'var(--text)', marginBottom: 2 }}>
-                                      {t.name}
-                                      {t.requiresImage && <span style={{ marginLeft: 5, fontSize: 9, color: 'var(--amber)', fontWeight: 600 }}>IMG</span>}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                      {t.description}
-                                    </div>
-                                  </div>
-                                  {t.id === templateId && <span style={{ color: 'var(--indigo)', fontSize: 13, flexShrink: 0 }}>✓</span>}
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
                   </div>
                 )}
 
