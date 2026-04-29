@@ -2793,11 +2793,41 @@ export interface CreativeContent {
   // video
   stitchedVideoUrl?: string;
   sceneVideoUrls?:   string[];
+  /** Phase 4 — SRT subtitle file content (stored as string, converted to WebVTT client-side) */
+  srtContent?:       string | null;
   // carousel
-  slides?:          Array<{ slide_number: number; type: string; hook: string; headline: string; body: string; cta: string; imageUrl?: string }>;
+  slides?:          Array<{ slide_number: number; type: string; hook: string; headline: string; body: string; cta: string; imageUrl?: string; compositorUrl?: string }>;
   // banner
-  banners?:         Array<{ size: string; headline: string; subtext: string; cta: string; visual_direction: string; imageUrl?: string }>;
+  banners?:         Array<{ size: string; headline: string; subtext: string; cta: string; visual_direction: string; imageUrl?: string; compositorUrl?: string }>;
 }
 
 export const getCreativeById = (id: string) =>
   req<CreativeContent>(`/api/creatives/${encodeURIComponent(id)}`);
+
+// ─── Phase 5: ElevenLabs voice catalogue ─────────────────────────────────────
+
+export interface ElevenLabsVoice {
+  voiceId:     string;
+  name:        string;
+  description: string;
+  previewUrl:  string;
+  category:    string;
+}
+
+export const getElevenLabsVoices = (): Promise<ElevenLabsVoice[]> =>
+  req<ElevenLabsVoice[]>('/api/elevenlabs/voices');
+
+// ─── Phase 6: Compositor template catalogue ───────────────────────────────────
+
+export interface TemplateMetadata {
+  id:            string;
+  name:          string;
+  description:   string;
+  bestFor:       string[];
+  tones:         string[];
+  requiresImage: boolean;
+}
+
+export const getTemplateCatalog = (): Promise<{ templates: TemplateMetadata[] }> =>
+  req<{ templates: TemplateMetadata[] }>('/api/compositor/templates');
+

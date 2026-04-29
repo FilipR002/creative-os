@@ -9,7 +9,8 @@ import { StitchRequest }                             from './types';
 const app  = express();
 const PORT = Number(process.env.PORT ?? 3100);
 
-app.use(express.json({ limit: '1mb' }));
+// Increase limit to 10 MB — Phase 5 voiceover sends base64-encoded MP3 (~1–4 MB)
+app.use(express.json({ limit: '10mb' }));
 
 // Serve finished videos (local storage mode)
 app.use('/outputs', express.static(path.join(process.cwd(), 'outputs')));
@@ -36,10 +37,12 @@ app.post('/stitch', (req: Request, res: Response) => {
 
   const jobId = uuidv4();
   const job   = createJob(jobId, {
-    scenes:      body.scenes,
-    transitions: body.transitions ?? 'cut',
-    audio:       body.audio,
-    format:      body.format ?? '9:16',
+    scenes:        body.scenes,
+    transitions:   body.transitions ?? 'cut',
+    audio:         body.audio,
+    audioBase64:   body.audioBase64,
+    format:        body.format ?? '9:16',
+    textOverlays:  body.textOverlays,
   });
 
   // Fire-and-forget — caller polls GET /stitch/:jobId
@@ -94,6 +97,8 @@ async function runJob(jobId: string): Promise<void> {
       job.request.scenes,
       job.request.transitions ?? 'cut',
       job.request.audio,
+      job.request.textOverlays,
+      job.request.audioBase64,
     );
 
     const videoUrl = await storeVideo(jobId, outputPath);

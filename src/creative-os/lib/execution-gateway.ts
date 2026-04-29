@@ -46,8 +46,11 @@ import { BannerService }        from '../../banner/banner.service';
 import { KlingApiService }      from '../../ugc/kling-api.service';
 import { VeoApiService }        from '../../veo/veo-api.service';
 import { StitcherService }      from '../../ugc/stitcher/stitcher.service';
+import type { TextOverlay }    from '../../ugc/stitcher/stitcher.service';
+import { generateSrt }         from '../../ugc/utils/srt-generator';
 import { PrismaService }        from '../../prisma/prisma.service';
 import { SubscriptionService }  from '../../billing/subscription.service';
+import { ElevenLabsService }   from '../../elevenlabs/elevenlabs.service';
 
 import type {
   ExecutionMode,
@@ -108,6 +111,27 @@ export interface GatewayExecutionInput {
   slideCount?:   number;
   platform?:     string;
   sizes?:        string[];
+
+  // ── Phase 5: ElevenLabs voiceover ─────────────────────────────────────────
+  /**
+   * When true, a voiceover is generated from the scene overlay_text scripts
+   * via ElevenLabs TTS and mixed into the final stitched video.
+   * Requires ELEVENLABS_API_KEY in Railway env vars.
+   */
+  voiceoverEnabled?: boolean;
+  /**
+   * ElevenLabs voice ID to use for TTS.
+   * Falls back to the service default (Rachel) if omitted.
+   */
+  voiceId?: string;
+
+  // ── Phase 6: Template override ────────────────────────────────────────────
+  /**
+   * Pin a specific compositor TemplateId for carousel/banner slides.
+   * When set, overrides autoSelectTemplate() for every slide/banner.
+   * Falls back to AI auto-selection if omitted.
+   */
+  templateId?: string;
 
   // ── Variant generation ─────────────────────────────────────────────────────
   /** Respected exactly — brain decision is honoured (safety bound: max 10) */
@@ -217,14 +241,16 @@ export class ExecutionGatewayService {
     @Inject(forwardRef(() => BannerService))
     private readonly banners:   BannerService,
     // FIX 2: Real Kling + Veo engines for scene-by-scene rendering
-    private readonly klingApi:  KlingApiService,
-    private readonly veoApi:    VeoApiService,
+    private readonly klingApi:    KlingApiService,
+    private readonly veoApi:      VeoApiService,
     // FIX 3: Stitcher for multi-scene video assembly
-    private readonly stitcher:  StitcherService,
+    private readonly stitcher:    StitcherService,
     // FIX 3: Prisma to persist Creative records after stitching
-    private readonly prisma:    PrismaService,
+    private readonly prisma:      PrismaService,
     // Phase 7: token-based usage gating
-    private readonly subs:      SubscriptionService,
+    private readonly subs:        SubscriptionService,
+    // Phase 5: ElevenLabs TTS voiceover
+    private readonly elevenLabs:  ElevenLabsService,
   ) {}
 
   /**
@@ -469,6 +495,8 @@ export class ExecutionGatewayService {
             keyObjection:     input.keyObjection,
             valueProposition: input.valueProposition,
             resourceCtx:      input.resourceCtx,
+            // Phase 6: user-selected template override
+            templateId:       input.templateId as any,
           },
           userId,
         );
@@ -499,6 +527,8 @@ export class ExecutionGatewayService {
             keyObjection:     input.keyObjection,
             valueProposition: input.valueProposition,
             resourceCtx:      input.resourceCtx,
+            // Phase 6: user-selected template override
+            templateId:       input.templateId as any,
           },
           userId,
         );
@@ -549,19 +579,40 @@ export class ExecutionGatewayService {
     const VALID_TRANSITIONS = new Set(['cut', 'zoom', 'glitch', 'burst', 'fade']);
     const VALID_PACINGS     = new Set(['aggressive', 'moderate']);
 
-    const klingScenes: KlingScene[] = planScenes.map((s, i) => ({
-      scene_id:     i + 1,
-      kling_prompt: s.kling_prompt,
-      duration:     perScene,
-      // Sanitize enum fields — fall back to safe defaults if CreativePlan value is invalid
-      transition:   (VALID_TRANSITIONS.has(s.transition) ? s.transition : 'cut') as any,
-      pacing:       (VALID_PACINGS.has(s.pacing)         ? s.pacing     : 'moderate') as any,
-      // Map CreativePlan fields to KlingScene required fields
-      visual:       s.overlay_text ?? s.kling_prompt.slice(0, 120),
-      camera:       'front' as const,
-      speech:       s.overlay_text ?? '',
-      emotion:      (s as any).emotion ?? 'confident',
-    }));
+    // ── Phase 3: Strip text from Kling/Veo prompts ──────────────────────────
+    // Diffusion models hallucinate letters — text is burned in via FFmpeg after render.
+    // "IMPORTANT: No on-screen text" is appended to every prompt as a negative instruction.
+    const klingScenes: KlingScene[] = planScenes.map((s, i) => {
+      const cleanPrompt = [
+        s.kling_prompt,
+        'IMPORTANT: No text, no captions, no on-screen words, no letters — clean cinematic video only.',
+      ].join(' ');
+
+      return {
+        scene_id:     i + 1,
+        kling_prompt: cleanPrompt,
+        duration:     perScene,
+        transition:   (VALID_TRANSITIONS.has(s.transition) ? s.transition : 'cut') as any,
+        pacing:       (VALID_PACINGS.has(s.pacing)         ? s.pacing     : 'moderate') as any,
+        visual:       s.kling_prompt.slice(0, 120),   // visual description, no overlay_text
+        camera:       'front' as const,
+        speech:       '',                             // cleared — text burned in post
+        emotion:      (s as any).emotion ?? 'confident',
+      };
+    });
+
+    // ── Phase 3: Build text overlays for FFmpeg drawtext ────────────────────
+    // Each scene's overlay_text is burned into the stitched video at the correct timestamp.
+    let cursor = 0;
+    const textOverlays: TextOverlay[] = planScenes
+      .map((s, i) => {
+        const startTime = cursor;
+        const endTime   = cursor + perScene;
+        cursor          = endTime;
+        const text      = (s.overlay_text ?? '').trim();
+        return text ? { text, startTime, endTime } : null;
+      })
+      .filter((o): o is TextOverlay => o !== null);
 
     this.logger.log(
       `[Gateway] Scene rendering: ${klingScenes.length} scenes via ${overlay.engine} ` +
@@ -576,15 +627,55 @@ export class ExecutionGatewayService {
       sceneResults = await this.klingApi.renderScenes(klingScenes, platform);
     }
 
-    // FIX 3: Stitch scenes into final video
-    const stitchResult = await this.stitcher.stitch(sceneResults);
+    // ── Phase 5: Generate ElevenLabs voiceover ──────────────────────────────
+    // Build a continuous script from overlay_text lines (joined by sentence breaks).
+    // We generate voiceover BEFORE stitching so FFmpeg can mix in a single pass.
+    let voiceoverBase64: string | undefined;
+    if (input.voiceoverEnabled) {
+      const script = planScenes
+        .map(s => (s.overlay_text ?? '').trim())
+        .filter(Boolean)
+        .join('. ');
+
+      if (script) {
+        this.logger.log(
+          `[Gateway] Generating voiceover — voiceId=${input.voiceId ?? 'default'} ` +
+          `script=${script.slice(0, 60)}...`,
+        );
+
+        const mp3Buffer = await this.elevenLabs.generateSpeech(
+          script,
+          input.voiceId,
+        ).catch(err => {
+          this.logger.warn(`[Gateway] Voiceover generation failed (non-fatal): ${err?.message}`);
+          return null;
+        });
+
+        if (mp3Buffer) {
+          voiceoverBase64 = mp3Buffer.toString('base64');
+          this.logger.log(`[Gateway] Voiceover ready — ${mp3Buffer.byteLength} bytes`);
+        }
+      }
+    }
+
+    // FIX 3 + Phase 3: Stitch scenes and burn text overlays via FFmpeg drawtext
+    // Phase 5: Mix voiceover audio if generated
+    const stitchResult = await this.stitcher.stitch(
+      sceneResults,
+      'standard',
+      textOverlays.length > 0 ? textOverlays : undefined,
+      voiceoverBase64,
+    );
 
     this.logger.log(
       `[Gateway] Stitched ${sceneResults.length} scenes → ` +
       `url=${stitchResult.stitchedVideoUrl} duration=${stitchResult.totalDuration}s`,
     );
 
-    // Persist Creative record with full scene metadata
+    // Phase 4: Generate SRT subtitle file from overlay text + timing
+    const srtContent = generateSrt(textOverlays);
+
+    // Persist Creative record with full scene metadata + SRT + voiceover metadata
     const creative = await this.prisma.creative.create({
       data: {
         campaignId: input.campaignId,
@@ -600,6 +691,11 @@ export class ExecutionGatewayService {
           sceneCount:       sceneResults.length,
           totalDuration:    stitchResult.totalDuration,
           styleContext,
+          // Phase 4 — subtitle file (stored as SRT string, served to frontend for client-side rendering)
+          srtContent:       srtContent || null,
+          // Phase 5 — voiceover metadata (audio is mixed into video, not stored separately)
+          voiceoverEnabled: !!voiceoverBase64,
+          voiceId:          input.voiceId ?? null,
         },
       },
     });

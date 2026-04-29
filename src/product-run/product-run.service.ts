@@ -71,16 +71,18 @@ function buildSceneTemplates(
   count:     number,
 ): Array<{ kling_prompt: string; overlay_text: string; transition: any; pacing: string }> {
   const slug = angleSlug.replace(/_/g, ' ');
+  // Phase 3: kling_prompt no longer asks the model to render text in the frame.
+  // overlay_text is preserved for FFmpeg drawtext burn-in after stitching.
   const pool = [
-    { kling_prompt: `${hook} | authentic UGC | platform:${platform}`,          overlay_text: hook.slice(0, 60),           transition: 'cut'  as const, pacing: 'aggressive' as any },
-    { kling_prompt: `Problem | tension | close-up | ${platform}`,               overlay_text: 'Does this feel familiar?',  transition: 'zoom' as any, pacing: 'moderate'   as any },
-    { kling_prompt: `Solution reveal | confident | ${platform}`,                overlay_text: `${slug} works.`,            transition: 'cut'  as any, pacing: 'moderate'   as any },
-    { kling_prompt: `Social proof | testimonial style | ${platform}`,           overlay_text: 'Others are seeing it too.', transition: 'zoom' as any, pacing: 'moderate'   as any },
-    { kling_prompt: `Before vs after | transformation | ${platform}`,           overlay_text: 'See the difference.',       transition: 'cut'  as any, pacing: 'aggressive' as any },
-    { kling_prompt: `Feature highlight | close-up detail | ${platform}`,        overlay_text: `Why ${slug} works.`,        transition: 'cut'  as any, pacing: 'moderate'   as any },
-    { kling_prompt: `Emotional peak | aspirational moment | ${platform}`,       overlay_text: 'This could be you.',        transition: 'zoom' as any, pacing: 'moderate'   as any },
-    { kling_prompt: `Objection handling | reassurance | ${platform}`,           overlay_text: 'No catch. Just results.',   transition: 'cut'  as any, pacing: 'moderate'   as any },
-    { kling_prompt: `CTA: ${cta} | direct to camera | ${platform}`,            overlay_text: cta,                         transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Hook scene | authentic UGC energy | ${platform} | no on-screen text`,                     overlay_text: hook.slice(0, 60),           transition: 'cut'  as const, pacing: 'aggressive' as any },
+    { kling_prompt: `Problem moment | relatable tension | close-up | ${platform} | no on-screen text`,         overlay_text: 'Does this feel familiar?',  transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Solution reveal | confident body language | ${platform} | no on-screen text`,             overlay_text: `${slug} works.`,            transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Social proof moment | testimonial energy | ${platform} | no on-screen text`,              overlay_text: 'Others are seeing it too.', transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Before vs after transformation | lifestyle visual | ${platform} | no on-screen text`,     overlay_text: 'See the difference.',       transition: 'cut'  as any, pacing: 'aggressive' as any },
+    { kling_prompt: `Feature highlight | detailed close-up shot | ${platform} | no on-screen text`,            overlay_text: `Why ${slug} works.`,        transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Emotional aspirational moment | lifestyle peak | ${platform} | no on-screen text`,        overlay_text: 'This could be you.',        transition: 'zoom' as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Objection handling | calm reassurance | direct camera | ${platform} | no on-screen text`, overlay_text: 'No catch. Just results.',   transition: 'cut'  as any, pacing: 'moderate'   as any },
+    { kling_prompt: `Call to action | direct to camera | urgency | ${platform} | no on-screen text`,           overlay_text: cta,                         transition: 'cut'  as any, pacing: 'moderate'   as any },
   ];
 
   // Always end with CTA, fill middle from pool, start with hook
@@ -544,6 +546,11 @@ export class ProductRunService {
         platform:          dto.platform,
         sizes:             dto.sizes        ?? ['1080x1080'],
         variantCount:      routingDecision.variantCount,
+        // Phase 5: ElevenLabs voiceover
+        voiceoverEnabled:  dto.voiceoverEnabled,
+        voiceId:           dto.voiceId,
+        // Phase 6: Template override
+        templateId:        dto.templateId,
       },
       userId,
     );

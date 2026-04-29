@@ -13,7 +13,34 @@ export type TemplateId =
   | 'split-panel'     // image left, copy right
   | 'bold-headline'   // giant typography over dim background image
   | 'minimal'         // clean background, centered content, no clutter
-  | 'ugc-style';      // social-native, casual, phone-screenshot feel
+  | 'ugc-style'       // social-native, casual, phone-screenshot feel
+  // ── Extended (6–15) ──────────────────────────────────────────────────────────
+  | 'testimonial'     // customer quote hero with stars + author row
+  | 'stats-hero'      // big stat/number as visual anchor
+  | 'feature-list'    // icon + feature rows, checklist style
+  | 'cta-final'       // closing slide: large CTA, urgency, offer
+  | 'gradient-pop'    // vivid gradient background, minimal text
+  | 'dark-luxury'     // deep dark tones, gold accents, premium feel
+  | 'bright-minimal'  // pure white + one brand-color accent
+  | 'story-hook'      // story-format hook: big question / pattern interrupt
+  | 'problem-slide'   // pain-point lead: problem statement, agitation
+  | 'text-only-bold'  // typographic only, no image — bold editorial
+  // ── Extended Batch 2 (16–30) ─────────────────────────────────────────────────
+  | 'product-center'      // large product image hero, copy below
+  | 'neon-dark'           // cyberpunk/gaming dark bg with neon glow accents
+  | 'magazine-editorial'  // serif editorial, image bleed column
+  | 'color-block'         // two-tone horizontal color split
+  | 'floating-card'       // raised white card over tinted/image background
+  | 'countdown-urgency'   // deadline/scarcity styling with timer visual
+  | 'social-proof-grid'   // 2×2 grid of mini testimonial cards
+  | 'headline-badge'      // oversized badge chip + giant headline
+  | 'side-by-side'        // two columns comparison / before-after
+  | 'diagonal-split'      // dynamic diagonal divider, image + copy zones
+  | 'overlay-card'        // frosted-glass card over full-bleed image
+  | 'number-list'         // ordered 01/02/03 benefit list, editorial numerals
+  | 'brand-manifesto'     // full-frame centered typographic statement
+  | 'product-demo'        // browser/app screenshot in bezel frame
+  | 'retro-bold';         // chunky vintage typography, halftone dots, retro palette
 
 export type AdSize =
   | '1080x1080'   // square — Instagram, Facebook

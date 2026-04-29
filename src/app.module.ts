@@ -74,6 +74,7 @@ import { HealthModule }           from './health/health.module';
 import { VideoQueueModule }       from './video-queue/video-queue.module';
 import { ResourcesModule }        from './resources/resources.module';
 import { CompositorModule }       from './compositor/compositor.module';
+import { ElevenLabsModule }       from './elevenlabs/elevenlabs.module';
 
 @Module({
   imports: [
@@ -150,6 +151,7 @@ import { CompositorModule }       from './compositor/compositor.module';
     VideoQueueModule,   // async video-render queue + GET /api/jobs/:jobId
     ResourcesModule,    // product / brand knowledge base + personas
     CompositorModule,   // ad compositor: HTML/CSS templates → PNG via Puppeteer
+    ElevenLabsModule,   // Phase 5 — TTS voiceover: GET /api/elevenlabs/voices
   ],
   providers: [
     // UserGuard runs globally — populates req.context (single source of truth for identity).

@@ -23,10 +23,19 @@ import type {
 
 // ─── Stitch service shapes ────────────────────────────────────────────────────
 
+export interface TextOverlay {
+  text:      string;
+  startTime: number;   // seconds from video start
+  endTime:   number;   // seconds from video start
+}
+
 interface StitchJobRequest {
-  scenes:      string[];
-  transitions: 'cut' | 'fade';
-  audio?:      string;
+  scenes:        string[];
+  transitions:   'cut' | 'fade';
+  audio?:        string;
+  /** Phase 5 — ElevenLabs voiceover as base64 MP3. Priority over `audio`. */
+  audioBase64?:  string;
+  textOverlays?: TextOverlay[];
 }
 
 interface StitchJobResponse {
@@ -72,19 +81,27 @@ export class StitcherService implements OnModuleInit {
    * Stitch rendered scenes into a final video via the configured stitch API.
    * Throws if the stitch endpoint is not configured or the API call fails.
    * NEVER falls back to returning a single scene URL — that is not a stitched video.
+   *
+   * @param textOverlays Optional per-scene text to burn via FFmpeg drawtext.
+   *                     Pass undefined to skip text burn (pre-Phase 3 behaviour).
+   * @param audioBase64  Phase 5 — ElevenLabs voiceover as base64-encoded MP3.
+   *                     Mixed into the stitched video by FFmpeg (-shortest flag).
    */
   async stitch(
-    scenes:  SceneRenderResult[],
-    quality: 'standard' | 'high' | 'ultra' = 'standard',
+    scenes:        SceneRenderResult[],
+    quality:       'standard' | 'high' | 'ultra' = 'standard',
+    textOverlays?: TextOverlay[],
+    audioBase64?:  string,
   ): Promise<StitchResult> {
     if (scenes.length === 0) {
       throw new Error('[Stitcher] Cannot stitch zero scenes.');
     }
 
-    // Single-scene shortcut — no stitching needed, return the one scene directly
-    if (scenes.length === 1) {
+    // Single-scene shortcut — no stitching needed, return the one scene directly.
+    // Still go through the API if text overlays or voiceover audio are requested.
+    if (scenes.length === 1 && !textOverlays?.length && !audioBase64) {
       const timeline = buildTimeline(scenes);
-      this.logger.log('[Stitcher] Single scene — skipping stitch API, returning scene directly');
+      this.logger.log('[Stitcher] Single scene, no text, no audio — skipping stitch API');
       return {
         stitchedVideoUrl: scenes[0].videoUrl,
         totalDuration:    scenes[0].duration,
@@ -97,17 +114,21 @@ export class StitcherService implements OnModuleInit {
 
     this.logger.log(
       `[Stitcher] Stitching ${scenes.length} scenes | ` +
-      `totalDuration=${timeline.totalDuration}s quality=${quality}`,
+      `totalDuration=${timeline.totalDuration}s quality=${quality} ` +
+      `textOverlays=${textOverlays?.length ?? 0} ` +
+      `voiceover=${audioBase64 ? `yes (${Math.round(audioBase64.length * 0.75 / 1024)}KB)` : 'no'}`,
     );
 
-    return this.stitchViaApi(timeline, quality);
+    return this.stitchViaApi(timeline, quality, textOverlays, audioBase64);
   }
 
   // ─── Stitch via stitch-service microservice ────────────────────────────────
 
   private async stitchViaApi(
-    timeline: Timeline,
-    _quality: 'standard' | 'high' | 'ultra',
+    timeline:      Timeline,
+    _quality:      'standard' | 'high' | 'ultra',
+    textOverlays?: TextOverlay[],
+    audioBase64?:  string,
   ): Promise<StitchResult> {
     if (!this.stitchUrl) {
       throw new ServiceUnavailableException(
@@ -119,8 +140,10 @@ export class StitcherService implements OnModuleInit {
     const sceneUrls = timeline.segments.map(s => s.videoUrl);
 
     const body: StitchJobRequest = {
-      scenes:      sceneUrls,
-      transitions: 'cut',
+      scenes:       sceneUrls,
+      transitions:  'cut',
+      textOverlays: textOverlays?.length ? textOverlays : undefined,
+      audioBase64:  audioBase64 || undefined,
     };
 
     // ── 1. Submit job ────────────────────────────────────────────────────────

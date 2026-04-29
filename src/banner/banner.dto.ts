@@ -53,4 +53,10 @@ export class GenerateBannerDto {
 
   /** Internal — not exposed via API; injected by ExecutionGateway */
   resourceCtx?: ResourceContext;
+
+  /**
+   * Phase 6 — user-selected template override.
+   * When set, overrides autoSelectTemplate() for ALL banners.
+   */
+  templateId?: string;
 }

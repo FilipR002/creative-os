@@ -17,13 +17,14 @@
 
 import { Module, forwardRef } from '@nestjs/common';
 
-import { VideoModule }    from '../../video/video.module';
-import { CarouselModule } from '../../carousel/carousel.module';
-import { BannerModule }   from '../../banner/banner.module';
-import { VeoModule }      from '../../veo/veo.module';
-import { UGCModule }      from '../../ugc/ugc.module';
-import { PrismaModule }   from '../../prisma/prisma.module';
-import { BillingModule }  from '../../billing/billing.module';
+import { VideoModule }       from '../../video/video.module';
+import { CarouselModule }    from '../../carousel/carousel.module';
+import { BannerModule }      from '../../banner/banner.module';
+import { VeoModule }         from '../../veo/veo.module';
+import { UGCModule }         from '../../ugc/ugc.module';
+import { PrismaModule }      from '../../prisma/prisma.module';
+import { BillingModule }     from '../../billing/billing.module';
+import { ElevenLabsModule }  from '../../elevenlabs/elevenlabs.module';
 
 import { ExecutionGatewayService } from './execution-gateway';
 
@@ -36,6 +37,7 @@ import { ExecutionGatewayService } from './execution-gateway';
     UGCModule,
     PrismaModule,
     BillingModule,
+    ElevenLabsModule,   // Phase 5 — TTS voiceover for video renders
   ],
   providers: [ExecutionGatewayService],
   exports:   [ExecutionGatewayService],

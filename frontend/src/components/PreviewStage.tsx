@@ -11,12 +11,16 @@
  *   error             → error message + retry button
  *
  * Image rendering rules:
- *   - IF imageUrl exists and length > 0  → render <img src={imageUrl} />
- *   - IF imageUrl missing                → render <SkeletonImage /> (pulsing placeholder)
- *   - Gradients and fake visuals are NEVER shown as content fallbacks
+ *   - IF compositorUrl present → render compositor PNG (full design baked in)
+ *   - IF imageUrl present      → render raw image with CSS text overlay
+ *   - IF neither               → render SkeletonImage (pulsing placeholder)
+ *
+ * Subtitle rules (video only):
+ *   - srtContent → WebVTT cues loaded via HTMLMediaElement.addTextTrack()
+ *   - Toggle: Off | CC On (client-side, no re-encode) | ↓ .srt download
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,13 +28,15 @@ export type PreviewStatus = 'idle' | 'generating' | 'processing' | 'done' | 'err
 export type PreviewFormat = 'video' | 'carousel' | 'image';
 
 export interface SlideData {
-  slide_number: number;
-  type:         string;
-  hook:         string;
-  headline:     string;
-  body:         string;
-  cta:          string;
-  imageUrl?:    string;
+  slide_number:   number;
+  type:           string;
+  hook:           string;
+  headline:       string;
+  body:           string;
+  cta:            string;
+  imageUrl?:      string;
+  /** Compositor-rendered PNG — full typography + design baked in. Preferred over imageUrl. */
+  compositorUrl?: string;
 }
 
 export interface BannerData {
@@ -40,12 +46,16 @@ export interface BannerData {
   cta:              string;
   visual_direction: string;
   imageUrl?:        string;
+  /** Compositor-rendered PNG — full typography + design baked in. Preferred over imageUrl. */
+  compositorUrl?:   string;
 }
 
 export interface PreviewResult {
   // Video
   stitchedVideoUrl?: string;
   sceneVideoUrls?:   string[];
+  /** Phase 4 — SRT subtitle content; converted to WebVTT client-side for <track> */
+  srtContent?:       string;
   // Carousel
   slides?:           SlideData[];
   // Banner/image
@@ -176,19 +186,158 @@ function SkeletonImage({ height = 240, label = 'Rendering image…' }: { height?
   );
 }
 
+// ─── SRT helpers ──────────────────────────────────────────────────────────────
+
+function parseSrtTime(ts: string): number {
+  const n = ts.replace(',', '.');
+  const p = n.split(':');
+  if (p.length !== 3) return 0;
+  return Number(p[0]) * 3600 + Number(p[1]) * 60 + Number(p[2]);
+}
+
+function parseSrtCues(srt: string): Array<{ start: number; end: number; text: string }> {
+  const cues: Array<{ start: number; end: number; text: string }> = [];
+  for (const block of srt.trim().split(/\n\n+/)) {
+    const lines   = block.trim().split('\n');
+    const timeIdx = lines.findIndex(l => l.includes(' --> '));
+    if (timeIdx < 0) continue;
+    const [s, e]  = lines[timeIdx].split(' --> ');
+    const text    = lines.slice(timeIdx + 1).join('\n').trim();
+    if (text) cues.push({ start: parseSrtTime(s), end: parseSrtTime(e), text });
+  }
+  return cues;
+}
+
 // ─── Video player ─────────────────────────────────────────────────────────────
 
-function VideoPlayer({ url }: { url: string }) {
+type SubtitleMode = 'off' | 'on';
+
+function VideoPlayer({ url, srtContent }: { url: string; srtContent?: string }) {
+  const [subtitleMode, setSubtitleMode] = useState<SubtitleMode>('off');
+  const videoRef  = useRef<HTMLVideoElement>(null);
+  const trackRef  = useRef<TextTrack | null>(null);
+  const hasSubtitles = !!srtContent;
+
+  // Load subtitle cues into the video element via addTextTrack() — no CORS issues
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !srtContent) return;
+
+    // Disable any previously injected track
+    if (trackRef.current) {
+      trackRef.current.mode = 'disabled';
+    }
+
+    const track = video.addTextTrack('subtitles', 'CC', 'en');
+    track.mode  = 'hidden';   // start hidden until user toggles on
+
+    for (const cue of parseSrtCues(srtContent)) {
+      try {
+        const vtCue  = new VTTCue(cue.start, cue.end, cue.text);
+        vtCue.line   = -3;    // 3 lines from the bottom
+        vtCue.align  = 'center';
+        vtCue.size   = 85;
+        track.addCue(vtCue);
+      } catch { /* skip invalid cue */ }
+    }
+
+    trackRef.current = track;
+  }, [srtContent]);
+
+  // Toggle track visibility when user clicks CC button
+  useEffect(() => {
+    if (!trackRef.current) return;
+    trackRef.current.mode = subtitleMode === 'on' ? 'showing' : 'hidden';
+  }, [subtitleMode]);
+
+  // Download the SRT file
+  const downloadSrt = useCallback(() => {
+    if (!srtContent) return;
+    const blob = new Blob([srtContent], { type: 'text/srt' });
+    const url2 = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url2;
+    a.download = 'subtitles.srt';
+    a.click();
+    URL.revokeObjectURL(url2);
+  }, [srtContent]);
+
   return (
-    <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', background: '#000', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
-      <video
-        controls
-        playsInline
-        style={{ width: '100%', display: 'block', maxHeight: 480 }}
-        src={url}
-      >
-        Your browser does not support the video tag.
-      </video>
+    <div style={{ width: '100%' }}>
+      {/* Video */}
+      <div style={{ borderRadius: 12, overflow: 'hidden', background: '#000', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+        <video
+          ref={videoRef}
+          controls
+          playsInline
+          style={{ width: '100%', display: 'block', maxHeight: 480 }}
+          src={url}
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      {/* Subtitle controls — only shown when SRT data is available */}
+      {hasSubtitles && (
+        <div style={{
+          display:        'flex',
+          alignItems:     'center',
+          gap:            8,
+          marginTop:      10,
+          justifyContent: 'center',
+        }}>
+          {/* Label */}
+          <span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}>CC</span>
+
+          {/* Off / On toggle */}
+          {(['off', 'on'] as SubtitleMode[]).map(mode => (
+            <button
+              key={mode}
+              onClick={() => setSubtitleMode(mode)}
+              style={{
+                padding:    '4px 12px',
+                borderRadius: 6,
+                fontSize:   11,
+                fontWeight: 700,
+                cursor:     'pointer',
+                fontFamily: 'inherit',
+                background: subtitleMode === mode ? 'var(--accent)' : 'var(--surface-2)',
+                border:     `1px solid ${subtitleMode === mode ? 'var(--accent)' : 'var(--border)'}`,
+                color:      subtitleMode === mode ? '#fff' : 'var(--sub)',
+                transition: 'all 0.15s',
+              }}
+            >
+              {mode === 'off' ? 'Off' : 'On'}
+            </button>
+          ))}
+
+          {/* Divider */}
+          <span style={{ color: 'var(--border)', fontSize: 14 }}>|</span>
+
+          {/* Download SRT */}
+          <button
+            onClick={downloadSrt}
+            title="Download .srt subtitle file"
+            style={{
+              display:    'flex',
+              alignItems: 'center',
+              gap:        4,
+              padding:    '4px 12px',
+              borderRadius: 6,
+              fontSize:   11,
+              fontWeight: 700,
+              cursor:     'pointer',
+              fontFamily: 'inherit',
+              background: 'var(--surface-2)',
+              border:     '1px solid var(--border)',
+              color:      'var(--sub)',
+              transition: 'all 0.15s',
+            }}
+          >
+            ↓ .srt
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -201,7 +350,10 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
   const slide = slides[active];
   if (!slide) return null;
 
-  const hasImage = slide.imageUrl && slide.imageUrl.length > 0;
+  // Prefer compositor-rendered PNG (typography baked in) over raw image
+  const displayUrl    = slide.compositorUrl || slide.imageUrl || null;
+  const isComposited  = !!slide.compositorUrl;
+  const hasDisplay    = displayUrl && displayUrl.length > 0;
 
   return (
     <div style={{ width: '100%', maxWidth: 440, margin: '0 auto' }}>
@@ -229,7 +381,7 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
             animation:    'spin 0.8s linear infinite',
             flexShrink:   0,
           }} />
-          Rendering visuals with Imagen 4…
+          Rendering visuals → compositing final ad…
         </div>
       )}
 
@@ -241,38 +393,67 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
         border:       '1px solid var(--border)',
         background:   'var(--surface)',
       }}>
-        {/* Image zone — real image or skeleton */}
-        {hasImage ? (
+        {/* Image zone — compositor PNG fills everything, or fall back to raw image with overlay */}
+        {hasDisplay ? (
           <div
-            onClick={() => setLightbox(slide.imageUrl!)}
-            style={{ height: 240, overflow: 'hidden', position: 'relative', cursor: 'zoom-in' }}
+            onClick={() => setLightbox(displayUrl)}
+            style={{
+              height:   isComposited ? 'auto' : 240,
+              overflow: 'hidden',
+              position: 'relative',
+              cursor:   'zoom-in',
+            }}
           >
             <img
-              src={slide.imageUrl!}
+              src={displayUrl}
               alt={slide.headline}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              style={{
+                width:      '100%',
+                height:     isComposited ? 'auto' : '100%',
+                objectFit:  isComposited ? 'contain' : 'cover',
+                display:    'block',
+                maxHeight:  isComposited ? 400 : undefined,
+              }}
             />
-            {/* Overlay: type badge + hook */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)',
-            }} />
-            <div style={{
-              position: 'absolute', top: 10, right: 10,
-              background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
-              borderRadius: 5, padding: '2px 8px',
-              fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.85)',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>
-              {slide.type}
-            </div>
-            {slide.hook && (
+
+            {/* Raw-image overlay (type badge + hook) — only when NOT composited */}
+            {!isComposited && (
+              <>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)',
+                }} />
+                <div style={{
+                  position: 'absolute', top: 10, right: 10,
+                  background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)',
+                  borderRadius: 5, padding: '2px 8px',
+                  fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.85)',
+                  textTransform: 'uppercase', letterSpacing: '0.06em',
+                }}>
+                  {slide.type}
+                </div>
+                {slide.hook && (
+                  <div style={{
+                    position: 'absolute', bottom: 12, left: 14, right: 14,
+                    fontSize: 13, fontWeight: 700, color: '#fff',
+                    textShadow: '0 1px 6px rgba(0,0,0,0.6)', lineHeight: 1.35,
+                  }}>
+                    {slide.hook}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Composited badge */}
+            {isComposited && (
               <div style={{
-                position: 'absolute', bottom: 12, left: 14, right: 14,
-                fontSize: 13, fontWeight: 700, color: '#fff',
-                textShadow: '0 1px 6px rgba(0,0,0,0.6)', lineHeight: 1.35,
+                position: 'absolute', top: 8, right: 8,
+                background: 'rgba(16,185,129,0.85)', backdropFilter: 'blur(4px)',
+                borderRadius: 5, padding: '2px 8px',
+                fontSize: 9, fontWeight: 700, color: '#fff',
+                letterSpacing: '0.04em',
               }}>
-                {slide.hook}
+                ✦ Compositor
               </div>
             )}
           </div>
@@ -280,7 +461,7 @@ function CarouselPreview({ slides, imagesReady }: { slides: SlideData[]; imagesR
           <SkeletonImage height={240} label={`Rendering slide ${active + 1}…`} />
         )}
 
-        {/* Copy zone */}
+        {/* Copy zone — always visible for copy reference */}
         <div style={{ padding: '14px 18px' }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--text)', marginBottom: 6, lineHeight: 1.3 }}>
             {slide.headline}
@@ -331,7 +512,10 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
   const banner = banners[active];
   if (!banner) return null;
 
-  const hasImage = banner.imageUrl && banner.imageUrl.length > 0;
+  // Prefer compositor-rendered PNG (typography baked in) over raw image
+  const displayUrl   = banner.compositorUrl || banner.imageUrl || null;
+  const isComposited = !!banner.compositorUrl;
+  const hasDisplay   = displayUrl && displayUrl.length > 0;
 
   return (
     <div style={{ width: '100%', maxWidth: 440, margin: '0 auto' }}>
@@ -359,7 +543,7 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
             animation:    'spin 0.8s linear infinite',
             flexShrink:   0,
           }} />
-          Rendering visuals with Imagen 4…
+          Rendering visuals → compositing final ad…
         </div>
       )}
 
@@ -388,38 +572,67 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
         boxShadow:    '0 8px 28px rgba(0,0,0,0.18)',
         background:   'var(--surface)',
       }}>
-        {/* Visual zone — real image or skeleton */}
-        {hasImage ? (
+        {/* Visual zone — compositor PNG fills everything, or fall back to raw image + CSS overlay */}
+        {hasDisplay ? (
           <div
-            onClick={() => setLightbox(banner.imageUrl!)}
-            style={{ height: 220, overflow: 'hidden', position: 'relative', cursor: 'zoom-in' }}
+            onClick={() => setLightbox(displayUrl)}
+            style={{
+              height:   isComposited ? 'auto' : 220,
+              overflow: 'hidden',
+              position: 'relative',
+              cursor:   'zoom-in',
+            }}
           >
             <img
-              src={banner.imageUrl!}
+              src={displayUrl}
               alt={banner.headline}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              style={{
+                width:     '100%',
+                height:    isComposited ? 'auto' : '100%',
+                objectFit: isComposited ? 'contain' : 'cover',
+                display:   'block',
+                maxHeight: isComposited ? 380 : undefined,
+              }}
             />
-            {/* Dark overlay for text legibility */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)',
-            }} />
-            <div style={{ position: 'absolute', bottom: 18, left: 20, right: 20, zIndex: 2 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: 5, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
-                {banner.headline}
-              </div>
-              {banner.subtext && (
-                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
-                  {banner.subtext}
+
+            {/* Raw-image text overlay — only when NOT composited */}
+            {!isComposited && (
+              <>
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)',
+                }} />
+                <div style={{ position: 'absolute', bottom: 18, left: 20, right: 20, zIndex: 2 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.2, marginBottom: 5, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                    {banner.headline}
+                  </div>
+                  {banner.subtext && (
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5 }}>
+                      {banner.subtext}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
+
+            {/* Composited badge */}
+            {isComposited && (
+              <div style={{
+                position: 'absolute', top: 8, right: 8,
+                background: 'rgba(16,185,129,0.85)', backdropFilter: 'blur(4px)',
+                borderRadius: 5, padding: '2px 8px',
+                fontSize: 9, fontWeight: 700, color: '#fff',
+                letterSpacing: '0.04em',
+              }}>
+                ✦ Compositor
+              </div>
+            )}
           </div>
         ) : (
           <SkeletonImage height={220} label={`Rendering ${banner.size}…`} />
         )}
 
-        {/* CTA bar */}
+        {/* Meta bar */}
         <div style={{
           padding: '12px 18px',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -674,7 +887,7 @@ export function PreviewStage({
         {/* Creative content */}
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
           {format === 'video' && hasVideo && (
-            <VideoPlayer url={result.stitchedVideoUrl!} />
+            <VideoPlayer url={result.stitchedVideoUrl!} srtContent={result.srtContent} />
           )}
           {format === 'carousel' && hasSlides && (
             <CarouselPreview slides={result.slides!} imagesReady={result.imagesReady} />

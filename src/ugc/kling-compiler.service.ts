@@ -120,6 +120,8 @@ function buildKlingPrompt(opts: {
     overhead: 'overhead flat-lay, product detail focus',
   };
 
+  // NOTE: Do NOT include speech/overlay_text in the Kling prompt.
+  // Diffusion models hallucinate letters — text is burned in via FFmpeg drawtext after render.
   return [
     `UGC video scene — ${roleDescriptions[role]}`,
     `Persona: ${variant.persona} | Tone: ${variant.tone}`,
@@ -127,8 +129,10 @@ function buildKlingPrompt(opts: {
     `Emotion: ${emotion}`,
     `Pacing: ${pacing}`,
     `Hook strategy: ${variant.hookStrategy}`,
-    speech ? `On-screen speech: "${speech.slice(0, 150)}"` : '',
+    // speech context shapes the scene mood without asking the model to render text
+    speech ? `Scene theme: ${speech.slice(0, 100).replace(/"/g, "'")}` : '',
     'Style: authentic UGC, natural lighting, handheld feel, no heavy production.',
+    'IMPORTANT: No on-screen text, no captions, no lower-thirds — clean video only.',
   ].filter(Boolean).join('\n');
 }
 

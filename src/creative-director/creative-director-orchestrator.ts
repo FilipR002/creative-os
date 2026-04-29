@@ -340,7 +340,7 @@ Value proposition: ${concept.valueProposition ?? 'not specified'}
 
 Generate the complete conversion system for this brief.
 
-For VIDEO: produce exactly ${sceneGuide}. Every scene needs a kling_prompt (cinematic camera + action + mood), overlay_text (punchy, max 8 words), transition, pacing, and SSML voiceover.
+For VIDEO: produce exactly ${sceneGuide}. Every scene needs a kling_prompt (cinematic camera direction + action + mood — NO text/words/captions in the prompt), overlay_text (the text to burn in via FFmpeg post-render — punchy, max 8 words), transition, pacing, and SSML voiceover. CRITICAL: kling_prompt must describe ONLY visuals — never include "text says", "caption reads", "overlay", or any instruction to render text in the frame.
 
 For CAROUSEL: produce 5–7 slides following the hook → problem → solution → CTA arc. Every slide needs headline, optional subtext, visual_direction, and intent.
 

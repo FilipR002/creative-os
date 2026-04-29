@@ -1,7 +1,14 @@
-import { Controller, Get, Param, Post, HttpCode } from '@nestjs/common';
+import { Controller, Get, Param, Post, Body, HttpCode } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CarouselService } from './carousel.service';
 import { UserId } from '../common/decorators/user-id.decorator';
+import type { CompositorInput } from '../compositor/types/compositor.types';
+
+class SlideRerenderDto {
+  copyOverrides?:      Partial<CompositorInput['copy']>;
+  templateOverride?:   CompositorInput['templateId'];
+  fontPairingOverride?: string;
+}
 
 @ApiTags('Carousel')
 @Controller('api/carousel')
@@ -25,6 +32,29 @@ export class CarouselController {
     @UserId() userId: string,
   ) {
     return this.service.generateImages(creativeId, userId);
+  }
+
+  /**
+   * POST /api/carousel/:creativeId/slides/:index/rerender
+   * Re-render one slide with copy/template overrides — no AI call, instant.
+   */
+  @Post(':creativeId/slides/:index/rerender')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Re-render a single carousel slide with overrides' })
+  rerenderSlide(
+    @Param('creativeId') creativeId: string,
+    @Param('index')      index:      string,
+    @Body()              dto:        SlideRerenderDto,
+    @UserId()            userId:     string,
+  ) {
+    return this.service.rerenderSlide(
+      creativeId,
+      parseInt(index, 10),
+      userId,
+      dto.copyOverrides      ?? {},
+      dto.templateOverride,
+      dto.fontPairingOverride,
+    );
   }
 
   @Get('campaign/:campaignId')

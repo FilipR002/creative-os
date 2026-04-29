@@ -271,27 +271,29 @@ export class V2OrchestratorService {
     const now = new Date().toISOString();
 
     // ── Build format-specific sections ───────────────────────────────────────
+    // Phase 3: kling_prompt describes ONLY visuals — no text rendering instructions.
+    // overlay_text is burned in via FFmpeg drawtext after stitching.
     const videoScenes = [
       {
-        kling_prompt: `${hook} | ${emotion} energy | platform:${platform} | ${input.audience} | authentic UGC style`,
+        kling_prompt: `Hook scene | ${emotion} energy | ${platform} | ${input.audience} | authentic UGC style | no on-screen text`,
         overlay_text: hook.slice(0, 60),
         transition:   'cut'  as const,
         pacing:       'aggressive' as const,
       },
       {
-        kling_prompt: `Problem reveal: ${problem} | ${emotion} tone | close-up reaction shot | authentic`,
+        kling_prompt: `Problem reveal | ${emotion} tone | close-up reaction shot | authentic | no on-screen text`,
         overlay_text: problem.slice(0, 60),
         transition:   'zoom' as const,
         pacing:       'moderate' as const,
       },
       {
-        kling_prompt: `Solution: ${solution} | product demo | ${emotion} | confident | platform:${platform}`,
+        kling_prompt: `Solution reveal | product demo | ${emotion} | confident | ${platform} | no on-screen text`,
         overlay_text: solution.slice(0, 60),
         transition:   'cut'  as const,
         pacing:       'moderate' as const,
       },
       {
-        kling_prompt: `CTA: ${cta} | ${emotion} | direct to camera | ${input.audience} | authentic close`,
+        kling_prompt: `Call to action | ${emotion} | direct to camera | ${input.audience} | authentic | no on-screen text`,
         overlay_text: cta,
         transition:   'cut'  as const,
         pacing:       'moderate' as const,

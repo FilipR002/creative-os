@@ -1,12 +1,33 @@
-import { Injectable, BadRequestException, forwardRef, Inject } from '@nestjs/common';
+import { Injectable, BadRequestException, forwardRef, Inject, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { ImageService } from '../image/image.service';
+import { CompositorService } from '../compositor/compositor.service';
 import { buildBannerImagePrompt } from '../image/utils/prompt-builder';
 import { GenerateBannerDto } from './banner.dto';
 import { buildPersonaBlock }  from '../resources/persona-prompt';
+import { autoSelectTemplate }  from '../compositor/templates/template-engine';
+import type { CompositorInput, AdTone, AdSize } from '../compositor/types/compositor.types';
 import axios from 'axios';
+
+// ─── Compositor helpers ───────────────────────────────────────────────────────
+
+const VALID_BANNER_SIZES = new Set(['1080x1080', '1080x1920', '1200x628', '1080x1350', '300x250']);
+
+function toAdSize(size: string): AdSize {
+  return VALID_BANNER_SIZES.has(size) ? (size as AdSize) : '1080x1080';
+}
+
+function angleToTone(angleLabel: string): AdTone {
+  const a = angleLabel.toLowerCase();
+  if (a.includes('urgency') || a.includes('fear') || a.includes('scarcity'))  return 'urgent';
+  if (a.includes('luxury')  || a.includes('premium') || a.includes('elite'))  return 'premium';
+  if (a.includes('minimal') || a.includes('clean')   || a.includes('simple')) return 'minimal';
+  if (a.includes('friend')  || a.includes('warm')    || a.includes('community')) return 'friendly';
+  if (a.includes('energy')  || a.includes('power')   || a.includes('strong')) return 'energetic';
+  return 'bold';
+}
 
 // Map size to layout hints
 function layoutHint(size: string): string {
@@ -22,12 +43,15 @@ function layoutHint(size: string): string {
 
 @Injectable()
 export class BannerService {
+  private readonly logger = new Logger(BannerService.name);
+
   constructor(
-    private readonly prisma:    PrismaService,
-    private readonly config:    ConfigService,
-    private readonly images:    ImageService,
+    private readonly prisma:     PrismaService,
+    private readonly config:     ConfigService,
+    private readonly images:     ImageService,
+    private readonly compositor: CompositorService,
     @Inject(forwardRef(() => CampaignService))
-    private readonly campaigns: CampaignService,
+    private readonly campaigns:  CampaignService,
   ) {}
 
   async generate(dto: GenerateBannerDto, userId: string) {
@@ -132,7 +156,7 @@ Rules:
           angleId: angleRecord?.id || null,
           format: 'BANNER',
           variant: dto.variant || 'A',
-          content: { banners, angle: angleLabel },
+          content: { banners, angle: angleLabel, templateId: dto.templateId ?? null },
         },
       });
 
@@ -165,9 +189,10 @@ Rules:
     if (!banners.length) throw new BadRequestException('No banners found in this creative.');
 
     const metadata = {
-      angle:    content.angle    || 'engaging',
-      format:   'banner',
-      platform: 'display',
+      angle:      content.angle      || 'engaging',
+      format:     'banner',
+      platform:   'display',
+      templateId: content.templateId || null,  // Phase 6
     };
 
     // Generate in parallel — one image per banner size
@@ -195,11 +220,47 @@ Rules:
       }
     }
 
-    // Persist the image URL and prompt back into each banner
+    // ── Step 2: Compositor pass ─────────────────────────────────────────────────
+    const tone = angleToTone(content.angle || 'bold');
+
+    const compositorInputs: CompositorInput[] = banners.map((banner, i) => {
+      const adSize     = toAdSize(banner.size);
+      const platform   = adSize === '1200x628' ? 'display' : 'instagram';
+      // Phase 6: use user-selected templateId override, fallback to AI auto-selection
+      const templateId = (metadata.templateId as CompositorInput['templateId'] | null)
+        ?? autoSelectTemplate(tone, platform, !!results[i]?.imageUrl);
+      return {
+        templateId,
+        size: adSize,
+        copy: {
+          headline: banner.headline || '',
+          body:     banner.subtext  || undefined,
+          cta:      banner.cta      || undefined,
+        },
+        imageUrl: results[i]?.imageUrl || undefined,
+        style: {
+          tone,
+          platform,
+          colorScheme: tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
+        },
+      };
+    });
+
+    let compositorResults: { imageDataUrl: string }[] = [];
+    try {
+      compositorResults = await this.compositor.renderBatch(compositorInputs);
+      this.logger.log(`Compositor rendered ${compositorResults.length} banners for creative ${creativeId}`);
+    } catch (err: any) {
+      this.logger.warn(`Compositor render failed (falling back to raw images): ${err?.message}`);
+    }
+
+    // Persist image URL, prompt, compositor URL, and input for future re-renders
     const updatedBanners = banners.map((banner, i) => ({
       ...banner,
-      imageUrl:    results[i]?.imageUrl ?? null,
-      imagePrompt: results[i]?.promptUsed ?? null,
+      imageUrl:        results[i]?.imageUrl             ?? null,
+      imagePrompt:     results[i]?.promptUsed           ?? null,
+      compositorUrl:   compositorResults[i]?.imageDataUrl ?? null,
+      compositorInput: compositorInputs[i]              ?? null,
     }));
 
     await this.prisma.creative.update({
@@ -207,7 +268,76 @@ Rules:
       data:  { content: { ...content, banners: updatedBanners } },
     });
 
-    return { images: results };
+    return { images: results, compositorBanners: updatedBanners.map((b, i) => ({
+      bannerIndex:   i,
+      size:          b.size,
+      compositorUrl: b.compositorUrl,
+      imageUrl:      b.imageUrl,
+    }))};
+  }
+
+  // ── RERENDER SINGLE BANNER ──────────────────────────────────────────────────
+  /**
+   * Re-render one banner size with copy or template overrides — no AI calls.
+   * POST /api/banner/:id/banners/:index/rerender
+   */
+  async rerenderBanner(
+    creativeId:          string,
+    bannerIndex:         number,
+    userId:              string,
+    copyOverrides:       Partial<CompositorInput['copy']> = {},
+    templateOverride?:   CompositorInput['templateId'],
+    fontPairingOverride?: string,
+  ) {
+    const creative = await this.prisma.creative.findUnique({ where: { id: creativeId } });
+    if (!creative)                    throw new BadRequestException('Creative not found.');
+    if (creative.format !== 'BANNER') throw new BadRequestException('Not a banner creative.');
+    await this.campaigns.assertOwnership(creative.campaignId, userId);
+
+    const content = creative.content as any;
+    const banners: any[] = content.banners || [];
+    const banner  = banners[bannerIndex];
+    if (!banner) throw new BadRequestException(`Banner index ${bannerIndex} not found.`);
+
+    const originalInput: CompositorInput = banner.compositorInput ?? {
+      templateId: 'minimal',
+      size:       toAdSize(banner.size),
+      copy:       { headline: banner.headline || '', body: banner.subtext, cta: banner.cta },
+      imageUrl:   banner.imageUrl || undefined,
+      style:      { tone: angleToTone(content.angle || 'bold'), platform: 'display' },
+    };
+
+    const result = await this.compositor.rerender(
+      originalInput,
+      copyOverrides,
+      templateOverride,
+      fontPairingOverride,
+    );
+
+    banners[bannerIndex] = {
+      ...banner,
+      compositorUrl:  result.imageDataUrl,
+      compositorInput: {
+        ...originalInput,
+        copy:       { ...originalInput.copy, ...copyOverrides },
+        templateId: templateOverride ?? originalInput.templateId,
+        style:      { ...originalInput.style, fontPairingId: fontPairingOverride ?? originalInput.style.fontPairingId },
+      },
+    };
+
+    await this.prisma.creative.update({
+      where: { id: creativeId },
+      data:  { content: { ...content, banners } },
+    });
+
+    return {
+      bannerIndex,
+      size:          banner.size,
+      compositorUrl: result.imageDataUrl,
+      templateId:    result.templateId,
+      fontPairing:   result.fontPairing.id,
+      renderTimeMs:  result.renderTimeMs,
+    };
   }
 
   // ── LIST ────────────────────────────────────────────────────────────────────

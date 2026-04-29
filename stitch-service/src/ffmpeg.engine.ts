@@ -4,10 +4,15 @@ import axios         from 'axios';
 import fs            from 'fs';
 import path          from 'path';
 
+import type { TextOverlay } from './types';
+
 const execAsync = promisify(exec);
 
 const TEMP_DIR    = path.join(process.cwd(), 'temp');
 const OUTPUTS_DIR = path.join(process.cwd(), 'outputs');
+
+// DejaVu Bold — installed in Docker via fonts-dejavu-core
+const FONT_FILE = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf';
 
 // Ensure dirs exist on startup
 fs.mkdirSync(TEMP_DIR,    { recursive: true });
@@ -33,10 +38,12 @@ function cleanup(files: string[]): void {
 }
 
 export async function stitchScenes(
-  jobId:       string,
-  sceneUrls:   string[],
-  transitions: 'cut' | 'fade' = 'cut',
-  audioUrl?:   string,
+  jobId:         string,
+  sceneUrls:     string[],
+  transitions:   'cut' | 'fade' = 'cut',
+  audioUrl?:     string,
+  textOverlays?: TextOverlay[],
+  audioBase64?:  string,
 ): Promise<{ outputPath: string; duration: number }> {
 
   const tempFiles:  string[] = [];
@@ -51,9 +58,16 @@ export async function stitchScenes(
       tempFiles.push(dest);
     }
 
-    // ── 2. Download optional audio ───────────────────────────────────────────
+    // ── 2. Resolve audio — base64 takes priority over URL ───────────────────
     let audioPath: string | null = null;
-    if (audioUrl) {
+    if (audioBase64) {
+      // Phase 5: ElevenLabs voiceover — decode base64 MP3 to temp file
+      audioPath = path.join(TEMP_DIR, `${jobId}_audio.mp3`);
+      const buf = Buffer.from(audioBase64, 'base64');
+      fs.writeFileSync(audioPath, buf);
+      tempFiles.push(audioPath);
+      console.log(`[ffmpeg] audioBase64 decoded → ${buf.byteLength} bytes`);
+    } else if (audioUrl) {
       audioPath = path.join(TEMP_DIR, `${jobId}_audio.mp3`);
       await downloadFile(audioUrl, audioPath);
       tempFiles.push(audioPath);
@@ -67,22 +81,58 @@ export async function stitchScenes(
     );
     tempFiles.push(concatFile);
 
-    // ── 4. Run FFmpeg ────────────────────────────────────────────────────────
-    const outputPath = path.join(OUTPUTS_DIR, `${jobId}.mp4`);
+    // ── 4. Run FFmpeg stitch ─────────────────────────────────────────────────
+    // If text overlays requested: stitch to intermediate, then burn text in a second pass.
+    // Otherwise: stitch directly to final output.
+    const hasOverlays = Array.isArray(textOverlays) && textOverlays.length > 0;
+    const stitchOutput = hasOverlays
+      ? path.join(TEMP_DIR, `${jobId}_stitched.mp4`)
+      : path.join(OUTPUTS_DIR, `${jobId}.mp4`);
 
-    let cmd: string;
+    if (hasOverlays) tempFiles.push(stitchOutput);
+
+    let stitchCmd: string;
 
     if (transitions === 'fade') {
-      // Crossfade via xfade filter — works for 2+ clips, chain dynamically
-      cmd = buildFadeCmd(localFiles, outputPath, audioPath);
+      stitchCmd = buildFadeCmd(localFiles, stitchOutput, audioPath);
     } else {
-      // Simple concat (fast, frame-accurate)
-      cmd = buildCutCmd(concatFile, outputPath, audioPath);
+      stitchCmd = buildCutCmd(concatFile, stitchOutput, audioPath);
     }
 
-    await execAsync(cmd, { timeout: 300_000 }); // 5-min max
+    await execAsync(stitchCmd, { timeout: 300_000 }); // 5-min max
 
-    // ── 5. Get duration via ffprobe ──────────────────────────────────────────
+    // ── 5. Text burn-in pass (Phase 3 — no diffusion text hallucinations) ───
+    const outputPath = path.join(OUTPUTS_DIR, `${jobId}.mp4`);
+
+    if (hasOverlays) {
+      // Write each text to a temp file to avoid FFmpeg escaping issues
+      const textFiles: string[] = [];
+      const validOverlays = textOverlays!.filter(o => o.text.trim().length > 0);
+
+      for (let i = 0; i < validOverlays.length; i++) {
+        const textFile = path.join(TEMP_DIR, `${jobId}_text_${i}.txt`);
+        fs.writeFileSync(textFile, sanitizeText(validOverlays[i].text), 'utf8');
+        textFiles.push(textFile);
+        tempFiles.push(textFile);
+      }
+
+      const drawFilters = validOverlays.map((overlay, i) => buildDrawtextFilter(
+        textFiles[i],
+        overlay.startTime,
+        overlay.endTime,
+      )).join(',');
+
+      const burnCmd = (
+        `ffmpeg -y -i "${stitchOutput}" ` +
+        `-vf "${drawFilters}" ` +
+        `-c:v libx264 -preset fast -crf 23 -movflags +faststart ` +
+        `-c:a copy "${outputPath}"`
+      );
+
+      await execAsync(burnCmd, { timeout: 120_000 }); // 2-min max for text burn
+    }
+
+    // ── 6. Get duration via ffprobe ──────────────────────────────────────────
     let duration = sceneUrls.length * 5; // fallback estimate
     try {
       const probe = await execAsync(
@@ -97,6 +147,54 @@ export async function stitchScenes(
   } finally {
     cleanup(tempFiles);
   }
+}
+
+// ── Text sanitisation (for textfile content) ─────────────────────────────────
+
+/**
+ * Sanitize text written to the drawtext textfile.
+ * FFmpeg textfile content is plain UTF-8; newlines become line breaks.
+ * We strip control characters and trim.
+ */
+function sanitizeText(text: string): string {
+  return text
+    .replace(/\r/g, '')           // remove CR
+    .replace(/\t/g, ' ')          // tabs → spaces
+    .trim()
+    .slice(0, 120);               // hard cap so it fits on screen
+}
+
+// ── drawtext filter builder ───────────────────────────────────────────────────
+
+/**
+ * Build a single FFmpeg drawtext filter segment.
+ *
+ * Design: lower-third placement (y = 78% of height), white text,
+ * semi-transparent black box, DejaVu Bold, 52pt.
+ * `textfile` avoids all escaping issues — the file holds raw UTF-8 text.
+ */
+function buildDrawtextFilter(
+  textFilePath: string,
+  startTime:    number,
+  endTime:      number,
+): string {
+  // FFmpeg filter value escaping: colons and backslashes in VALUES must be escaped.
+  // textfile path uses forward slashes; no special chars in our /tmp paths.
+  const safeFilePath = textFilePath.replace(/\\/g, '/');
+
+  return [
+    `drawtext=textfile='${safeFilePath}'`,
+    `enable='between(t,${startTime.toFixed(2)},${endTime.toFixed(2)})'`,
+    fs.existsSync(FONT_FILE) ? `fontfile='${FONT_FILE}'` : 'font=DejaVu',
+    'fontsize=52',
+    'fontcolor=white',
+    'x=(w-text_w)/2',
+    'y=h*0.78',
+    'box=1',
+    'boxcolor=black@0.55',
+    'boxborderw=18',
+    'line_spacing=6',
+  ].join(':');
 }
 
 // ── FFmpeg command builders ──────────────────────────────────────────────────

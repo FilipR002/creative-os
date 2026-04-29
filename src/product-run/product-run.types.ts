@@ -102,6 +102,24 @@ export class RunDto {
   @IsOptional()
   @IsArray()
   assets?: string[];
+
+  // ── Phase 5: ElevenLabs voiceover ─────────────────────────────────────────
+
+  @ApiPropertyOptional({ description: 'When true, generates an ElevenLabs voiceover from overlay_text and mixes it into the stitched video.' })
+  @IsOptional()
+  voiceoverEnabled?: boolean;
+
+  @ApiPropertyOptional({ description: 'ElevenLabs voice ID for TTS. Falls back to the service default (Rachel) if omitted.' })
+  @IsOptional()
+  @IsString()
+  voiceId?: string;
+
+  // ── Phase 6: Template override ────────────────────────────────────────────
+
+  @ApiPropertyOptional({ description: 'Pin a specific compositor template for carousel/banner slides instead of AI auto-selection.' })
+  @IsOptional()
+  @IsString()
+  templateId?: string;
 }
 
 // ── Outbound ───────────────────────────────────────────────────────────────────

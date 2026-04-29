@@ -17,7 +17,11 @@ import {
 import {
   getMe,
   getCreativeById,
+  getElevenLabsVoices,
+  getTemplateCatalog,
   type CreativeContent,
+  type ElevenLabsVoice,
+  type TemplateMetadata,
 } from '@/lib/api/creator-client';
 import type { SlideData, BannerData } from '@/components/PreviewStage';
 import { getResource, type Persona } from '@/lib/api/resources-client';
@@ -111,6 +115,28 @@ function CreatePageInner() {
   const [slideCount,   setSlideCount]   = useState(5);
   const [brief,        setBrief]        = useState('');
   const [videoMode,    setVideoMode]    = useState<'ugc' | 'classic'>('ugc');
+
+  // ── Phase 5: Voiceover ────────────────────────────────────────────────────
+  const [voiceoverEnabled, setVoiceoverEnabled] = useState(false);
+  const [voiceId,          setVoiceId]          = useState('');
+  const [voices,           setVoices]           = useState<ElevenLabsVoice[]>([]);
+
+  // Fetch voice list once when user enables voiceover or switches to video
+  useEffect(() => {
+    if (format !== 'video' || voices.length > 0) return;
+    getElevenLabsVoices().then(setVoices).catch(() => {});
+  }, [format, voices.length]);
+
+  // ── Phase 6: Template picker ──────────────────────────────────────────────
+  const [templateId,       setTemplateId]       = useState('');
+  const [templates,        setTemplates]         = useState<TemplateMetadata[]>([]);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+
+  // Fetch template catalog once when carousel/image is selected
+  useEffect(() => {
+    if (format === 'video' || templates.length > 0) return;
+    getTemplateCatalog().then(r => setTemplates(r.templates)).catch(() => {});
+  }, [format, templates.length]);
 
   // ── Preview state machine ─────────────────────────────────────────────────
   const [previewStatus,   setPreviewStatus]   = useState<PreviewStatus>('idle');
@@ -258,6 +284,7 @@ function CreatePageInner() {
         ...base,
         stitchedVideoUrl: creative.stitchedVideoUrl,
         sceneVideoUrls:   creative.sceneVideoUrls,
+        srtContent:       creative.srtContent ?? undefined,
         imagesReady:      true,
       };
     }
@@ -356,8 +383,13 @@ function CreatePageInner() {
         ...(angle                            && { styleContext: angle }),
         ...(selectedPersonaId                && { personaId: selectedPersonaId }),
         ...(format === 'video'    && { durationTier, videoMode }),
+        ...(format === 'video' && voiceoverEnabled && {
+          voiceoverEnabled: true,
+          ...(voiceId && { voiceId }),
+        }),
         ...(format === 'carousel' && { slideCount }),
         ...(format === 'image'    && { sizes: ['1200x628', '1080x1080', '1080x1920'] }),
+        ...((format === 'carousel' || format === 'image') && templateId && { templateId }),
       });
 
       if (isQueued(response)) {
@@ -607,6 +639,76 @@ function CreatePageInner() {
                   </div>
                 )}
 
+                {/* Voiceover — video only */}
+                {format === 'video' && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>🎙 AI Voiceover</span>
+                      <span style={{ fontSize: 10, color: 'var(--muted)', fontWeight: 400 }}>
+                        ElevenLabs · mixed into final video
+                      </span>
+                    </div>
+
+                    {/* Toggle */}
+                    <button
+                      onClick={() => setVoiceoverEnabled(v => !v)}
+                      disabled={generating}
+                      style={{
+                        width: '100%', padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
+                        fontFamily: 'inherit', fontWeight: 600, fontSize: 13, textAlign: 'left',
+                        display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+                        background: voiceoverEnabled ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
+                        border: `1.5px solid ${voiceoverEnabled ? 'var(--indigo)' : 'var(--border)'}`,
+                        color: voiceoverEnabled ? 'var(--indigo-l)' : 'var(--sub)',
+                      }}
+                    >
+                      <span style={{ fontSize: 18 }}>{voiceoverEnabled ? '🔊' : '🔇'}</span>
+                      <div>
+                        <div>{voiceoverEnabled ? 'Voiceover ON' : 'Voiceover OFF'}</div>
+                        <div style={{ fontSize: 10, fontWeight: 400, color: 'var(--muted)', marginTop: 1 }}>
+                          {voiceoverEnabled
+                            ? 'Scene text → TTS → mixed into video audio track'
+                            : 'Click to enable — generates speech from your ad script'}
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Voice picker — shown when voiceover is on */}
+                    {voiceoverEnabled && (
+                      <div style={{ marginTop: 10 }}>
+                        <select
+                          value={voiceId}
+                          onChange={e => setVoiceId(e.target.value)}
+                          disabled={generating}
+                          style={dropdownStyle}
+                        >
+                          <option value="">— Default voice (Rachel) —</option>
+                          {voices.map(v => (
+                            <option key={v.voiceId} value={v.voiceId}>
+                              {v.name}{v.category ? ` · ${v.category}` : ''}
+                            </option>
+                          ))}
+                        </select>
+                        {voices.length === 0 && (
+                          <div style={{ marginTop: 4, fontSize: 11, color: 'var(--muted)' }}>
+                            Voice list unavailable — check ELEVENLABS_API_KEY in Railway env vars.
+                            Default voice (Rachel) will be used.
+                          </div>
+                        )}
+                        {voiceId && voices.length > 0 && (() => {
+                          const v = voices.find(x => x.voiceId === voiceId);
+                          return v?.previewUrl ? (
+                            <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <audio controls src={v.previewUrl} style={{ height: 28, flex: 1, opacity: 0.8 }} />
+                              <span style={{ fontSize: 10, color: 'var(--muted)' }}>Preview</span>
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Slides — carousel only */}
                 {format === 'carousel' && (
                   <div style={{ marginBottom: 20 }}>
@@ -622,6 +724,95 @@ function CreatePageInner() {
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Template picker — carousel + image only */}
+                {(format === 'carousel' || format === 'image') && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>🎨 Template</span>
+                      <button
+                        onClick={() => setTemplatePickerOpen(v => !v)}
+                        disabled={generating}
+                        style={{ fontSize: 11, color: 'var(--indigo-l)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}
+                      >
+                        {templatePickerOpen ? '▲ Hide' : `▼ Browse ${templates.length || 30} templates`}
+                      </button>
+                    </div>
+
+                    {/* Selected template badge */}
+                    <div
+                      onClick={() => !generating && setTemplatePickerOpen(v => !v)}
+                      style={{
+                        padding: '9px 12px', borderRadius: 8, cursor: 'pointer',
+                        background: templateId ? 'rgba(79,70,229,0.1)' : 'var(--surface-2)',
+                        border: `1.5px solid ${templateId ? 'var(--indigo)' : 'var(--border)'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 600, color: templateId ? 'var(--indigo-l)' : 'var(--muted)' }}>
+                        {templateId
+                          ? (templates.find(t => t.id === templateId)?.name ?? templateId)
+                          : '— Auto (AI picks best for each slide) —'}
+                      </span>
+                      {templateId && (
+                        <button
+                          onClick={e => { e.stopPropagation(); setTemplateId(''); }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 14, lineHeight: 1 }}
+                        >✕</button>
+                      )}
+                    </div>
+
+                    {/* Template grid */}
+                    {templatePickerOpen && templates.length > 0 && (
+                      <div style={{ marginTop: 10, maxHeight: 320, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {[
+                          { label: '⚡ Bold & High-Impact', ids: ['bold-headline','gradient-pop','story-hook','neon-dark','retro-bold','countdown-urgency','headline-badge'] },
+                          { label: '✦ Clean & Minimal',     ids: ['minimal','bright-minimal','text-only-bold','brand-manifesto','number-list','floating-card'] },
+                          { label: '💎 Premium & Editorial', ids: ['dark-luxury','magazine-editorial','diagonal-split','overlay-card'] },
+                          { label: '⭐ Social & Proof',      ids: ['testimonial','ugc-style','stats-hero','social-proof-grid'] },
+                          { label: '📋 Structured & Feature',ids: ['feature-list','split-panel','side-by-side','color-block','product-center','product-demo'] },
+                          { label: '🖼 Full-Frame',          ids: ['full-bleed','problem-slide','cta-final'] },
+                        ].map(group => {
+                          const groupTemplates = group.ids
+                            .map(id => templates.find(t => t.id === id))
+                            .filter(Boolean) as TemplateMetadata[];
+                          if (!groupTemplates.length) return null;
+                          return (
+                            <div key={group.label}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '5px 0 3px' }}>
+                                {group.label}
+                              </div>
+                              {groupTemplates.map(t => (
+                                <div
+                                  key={t.id}
+                                  onClick={() => { setTemplateId(t.id === templateId ? '' : t.id); setTemplatePickerOpen(false); }}
+                                  style={{
+                                    padding: '8px 10px', borderRadius: 6, cursor: 'pointer', marginBottom: 2,
+                                    background: t.id === templateId ? 'rgba(79,70,229,0.12)' : 'var(--surface-2)',
+                                    border: `1px solid ${t.id === templateId ? 'var(--indigo)' : 'var(--border)'}`,
+                                    display: 'flex', alignItems: 'flex-start', gap: 8,
+                                    transition: 'background 0.1s',
+                                  }}
+                                >
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 12, color: t.id === templateId ? 'var(--indigo-l)' : 'var(--text)', marginBottom: 2 }}>
+                                      {t.name}
+                                      {t.requiresImage && <span style={{ marginLeft: 5, fontSize: 9, color: 'var(--amber)', fontWeight: 600 }}>IMG</span>}
+                                    </div>
+                                    <div style={{ fontSize: 10, color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      {t.description}
+                                    </div>
+                                  </div>
+                                  {t.id === templateId && <span style={{ color: 'var(--indigo)', fontSize: 13, flexShrink: 0 }}>✓</span>}
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
 

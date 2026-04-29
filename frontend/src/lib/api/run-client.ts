@@ -39,6 +39,11 @@ export interface RunRequest {
   // Unified creation system
   mode?:   'quick' | 'campaign';
   assets?: string[];
+  // Phase 5: ElevenLabs voiceover
+  voiceoverEnabled?: boolean;
+  voiceId?:          string;
+  // Phase 6: Template override
+  templateId?: string;
 }
 
 export interface RunAngle {
