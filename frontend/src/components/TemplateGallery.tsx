@@ -59,12 +59,12 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'full-bleed') return (
-    <div style={{ ...s, background: 'linear-gradient(160deg, #1e1b4b 0%, #312e81 60%, #4f46e5 100%)', justifyContent: 'flex-end', alignItems: 'flex-start', padding: 18 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 55%)' }} />
+    <div style={{ ...s, background: 'linear-gradient(160deg, #78350f 0%, #b45309 50%, #d97706 100%)', justifyContent: 'flex-end', alignItems: 'flex-start', padding: 18 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 55%)' }} />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <div style={{ height: 9, background: '#fff', borderRadius: 2, width: 140, marginBottom: 6 }} />
         <div style={{ height: 6, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: 110, marginBottom: 12 }} />
-        <div style={{ height: 22, background: '#4f46e5', borderRadius: 5, width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 22, background: '#f59e0b', borderRadius: 5, width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ height: 5, background: '#fff', borderRadius: 2, width: 50 }} />
         </div>
       </div>
@@ -72,11 +72,11 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'bold-headline') return (
-    <div style={{ ...s, background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)' }}>
-      <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textAlign: 'center', lineHeight: 1.1, letterSpacing: '-0.03em', textShadow: '0 2px 12px rgba(79,70,229,0.5)' }}>
+    <div style={{ ...s, background: '#000' }}>
+      <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textAlign: 'center', lineHeight: 1.1, letterSpacing: '-0.03em' }}>
         Transform<br />Your Brand
       </div>
-      <div style={{ height: 5, background: accent, borderRadius: 2, width: 60, marginTop: 4 }} />
+      <div style={{ height: 5, background: '#fff', borderRadius: 2, width: 60, marginTop: 4 }} />
     </div>
   );
 
@@ -93,19 +93,20 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'ugc-style') return (
-    <div style={{ ...s, background: '#0f172a', justifyContent: 'flex-start', padding: 14, gap: 6 }}>
+    <div style={{ ...s, background: '#fafafa', justifyContent: 'flex-start', padding: 12, gap: 6 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #a78bfa, #60a5fa)' }} />
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'linear-gradient(135deg, #f97316, #ec4899)' }} />
         <div>
-          <div style={{ height: 5, background: '#fff', borderRadius: 2, width: 60 }} />
-          <div style={{ height: 4, background: 'rgba(255,255,255,0.35)', borderRadius: 2, width: 40, marginTop: 3 }} />
+          <div style={{ height: 5, background: '#1e293b', borderRadius: 2, width: 60 }} />
+          <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: 40, marginTop: 3 }} />
+        </div>
+        <div style={{ marginLeft: 'auto', height: 20, background: '#f97316', borderRadius: 4, width: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 26 }} />
         </div>
       </div>
-      <div style={{ flex: 1, width: '100%', background: 'linear-gradient(160deg, #312e81, #1e40af)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ height: 6, background: 'rgba(255,255,255,0.7)', borderRadius: 2, width: 80 }} />
-      </div>
-      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: '90%' }} />
-      <div style={{ height: 5, background: 'rgba(255,255,255,0.25)', borderRadius: 2, width: '70%' }} />
+      <div style={{ flex: 1, width: '100%', background: 'linear-gradient(160deg, #fed7aa, #fde68a)', borderRadius: 8 }} />
+      <div style={{ height: 5, background: '#334155', borderRadius: 2, width: '90%' }} />
+      <div style={{ height: 5, background: '#94a3b8', borderRadius: 2, width: '70%' }} />
     </div>
   );
 
@@ -126,9 +127,9 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'stats-hero') return (
-    <div style={{ ...s, background: '#0f172a', gap: 6 }}>
+    <div style={{ ...s, background: '#020617', gap: 6 }}>
       <div style={{ fontSize: 52, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.04em' }}>
-        87<span style={{ fontSize: 28, color: accent }}>%</span>
+        87<span style={{ fontSize: 28, color: '#22d3ee' }}>%</span>
       </div>
       <div style={{ height: 5, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: 110, marginTop: 4 }} />
       <div style={{ height: 4, background: 'rgba(255,255,255,0.25)', borderRadius: 2, width: 80 }} />
@@ -150,7 +151,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'cta-final') return (
-    <div style={{ ...s, background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', gap: 8 }}>
+    <div style={{ ...s, background: 'linear-gradient(135deg, #450a0a 0%, #7f1d1d 100%)', gap: 8 }}>
       <div style={{ fontSize: 10, fontWeight: 700, color: accent, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Limited Time</div>
       <div style={{ height: 9, background: '#fff', borderRadius: 2, width: 140 }} />
       <div style={{ height: 6, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: 110 }} />
@@ -161,7 +162,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'gradient-pop') return (
-    <div style={{ ...s, background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 50%, #0891b2 100%)', gap: 8 }}>
+    <div style={{ ...s, background: 'linear-gradient(135deg, #059669 0%, #0891b2 50%, #6366f1 100%)', gap: 8 }}>
       <div style={{ height: 10, background: 'rgba(255,255,255,0.9)', borderRadius: 2, width: 130 }} />
       <div style={{ height: 6, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: 100 }} />
       <div style={{ marginTop: 8, height: 26, background: '#fff', borderRadius: 6, width: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -193,7 +194,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'story-hook') return (
-    <div style={{ ...s, background: 'linear-gradient(160deg, #0f172a 0%, #1e1b4b 100%)', justifyContent: 'flex-start', padding: 18, gap: 6 }}>
+    <div style={{ ...s, background: 'linear-gradient(160deg, #022c22 0%, #064e3b 100%)', justifyContent: 'flex-start', padding: 18, gap: 6 }}>
       <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>Wait—</div>
       <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.02em' }}>Is this<br />you?</div>
       <div style={{ marginTop: 'auto', height: 5, background: 'rgba(255,255,255,0.3)', borderRadius: 2, width: '80%' }} />
@@ -257,7 +258,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 
   if (id === 'color-block') return (
     <div style={{ ...s, gap: 0, padding: 0 }}>
-      <div style={{ height: '50%', width: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ height: '50%', width: '100%', background: '#16a34a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ height: 9, background: '#fff', borderRadius: 2, width: 110 }} />
       </div>
       <div style={{ height: '50%', width: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
@@ -268,7 +269,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'floating-card') return (
-    <div style={{ ...s, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }}>
+    <div style={{ ...s, background: 'linear-gradient(135deg, #052e16 0%, #14532d 100%)' }}>
       <div style={{ background: '#fff', borderRadius: 12, padding: '16px 18px', width: '80%', boxShadow: '0 8px 30px rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', gap: 7 }}>
         <div style={{ height: 7, background: '#1e293b', borderRadius: 2, width: '80%' }} />
         <div style={{ height: 5, background: '#94a3b8', borderRadius: 2, width: '90%' }} />
@@ -308,7 +309,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'headline-badge') return (
-    <div style={{ ...s, background: '#0f172a', gap: 10 }}>
+    <div style={{ ...s, background: '#18181b', gap: 10 }}>
       <div style={{ background: accent, borderRadius: 20, padding: '4px 14px', display: 'inline-flex' }}>
         <div style={{ height: 5, background: '#fff', borderRadius: 1, width: 50 }} />
       </div>
@@ -332,7 +333,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 
   if (id === 'diagonal-split') return (
     <div style={{ ...s, padding: 0, overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: '#1c1917' }} />
       <div style={{ position: 'absolute', right: 0, top: 0, width: '50%', height: '100%', background: 'linear-gradient(160deg, #ea580c, #f97316)', clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)' }} />
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 7, padding: 18, alignSelf: 'flex-start', marginTop: 20 }}>
         <div style={{ height: 9, background: '#fff', borderRadius: 2, width: 100 }} />
@@ -342,8 +343,8 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'overlay-card') return (
-    <div style={{ ...s, background: 'linear-gradient(160deg, #0f172a 0%, #1e3a5f 100%)', padding: 16 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(30,58,95,0.85))' }} />
+    <div style={{ ...s, background: 'linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%)', padding: 16 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(10,10,30,0.6)' }} />
       <div style={{ position: 'relative', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: 16, width: '85%', display: 'flex', flexDirection: 'column', gap: 7 }}>
         <div style={{ height: 8, background: '#fff', borderRadius: 2, width: '80%' }} />
         <div style={{ height: 5, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: '90%' }} />
@@ -364,7 +365,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'brand-manifesto') return (
-    <div style={{ ...s, background: '#0f172a', gap: 6 }}>
+    <div style={{ ...s, background: '#18181b', gap: 6 }}>
       <div style={{ textAlign: 'center', color: '#fff', fontWeight: 900, fontSize: 14, lineHeight: 1.3, letterSpacing: '-0.01em' }}>
         "We believe<br />in brands that<br />actually matter."
       </div>
@@ -410,10 +411,10 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 
   // Default gradient fallback for any unlisted template
   const bgs: Record<string, string> = {
-    bold:      'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 100%)',
+    bold:      'linear-gradient(135deg, #1c1917 0%, #292524 100%)',
     minimal:   'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
     premium:   'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #854d0e 100%)',
-    friendly:  'linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)',
+    friendly:  'linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
     urgent:    'linear-gradient(135deg, #450a0a 0%, #dc2626 100%)',
     energetic: 'linear-gradient(135deg, #431407 0%, #ea580c 100%)',
   };
