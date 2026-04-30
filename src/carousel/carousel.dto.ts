@@ -61,4 +61,7 @@ export class GenerateCarouselDto {
    * Falls back to AI auto-selection if omitted.
    */
   templateId?: string;
+
+  /** Brand primary color hex (e.g. "#4f46e5") — applied to compositor accents, CTAs, highlights. */
+  primaryColor?: string;
 }

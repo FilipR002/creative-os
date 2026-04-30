@@ -44,6 +44,8 @@ export interface RunRequest {
   voiceId?:          string;
   // Phase 6: Template override
   templateId?: string;
+  // Brand color
+  primaryColor?: string;
 }
 
 export interface RunAngle {

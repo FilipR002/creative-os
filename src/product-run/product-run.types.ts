@@ -120,6 +120,13 @@ export class RunDto {
   @IsOptional()
   @IsString()
   templateId?: string;
+
+  // ── Brand color ───────────────────────────────────────────────────────────
+
+  @ApiPropertyOptional({ description: 'Brand primary color as a hex string (e.g. "#4f46e5"). Applied to CTAs, accents, and highlights in the compositor.' })
+  @IsOptional()
+  @IsString()
+  primaryColor?: string;
 }
 
 // ── Outbound ───────────────────────────────────────────────────────────────────

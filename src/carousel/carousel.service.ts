@@ -175,7 +175,9 @@ For the LAST slide (slide ${dto.slideCount}) only:
             platform,
             angle: angleLabel,
             // Phase 6 — store template override so generateImages can apply it
-            templateId: dto.templateId ?? null,
+            templateId:   dto.templateId   ?? null,
+            // Brand color — passed through to compositor
+            primaryColor: dto.primaryColor ?? null,
           },
         },
       });
@@ -213,10 +215,11 @@ For the LAST slide (slide ${dto.slideCount}) only:
     if (!slides.length) throw new BadRequestException('No slides found in this creative.');
 
     const metadata = {
-      angle:      content.angle      || 'engaging',
-      format:     'carousel',
-      platform:   content.platform   || 'instagram',
-      templateId: content.templateId || null,   // Phase 6 — user-selected override
+      angle:        content.angle        || 'engaging',
+      format:       'carousel',
+      platform:     content.platform     || 'instagram',
+      templateId:   content.templateId   || null,   // Phase 6 — user-selected override
+      primaryColor: content.primaryColor || null,   // Brand color
     };
 
     // Build inputs — one per slide
@@ -270,7 +273,8 @@ For the LAST slide (slide ${dto.slideCount}) only:
         style: {
           tone,
           platform,
-          colorScheme: tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
+          colorScheme:  tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
+          primaryColor: metadata.primaryColor || undefined,
         },
       };
     });

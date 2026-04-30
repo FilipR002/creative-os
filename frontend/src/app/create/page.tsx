@@ -131,6 +131,9 @@ function CreatePageInner() {
     getElevenLabsVoices().then(setVoices).catch(() => {});
   }, [format, voices.length]);
 
+  // ── Brand color ───────────────────────────────────────────────────────────
+  const [primaryColor, setPrimaryColor] = useState('');
+
   // ── Phase 6: Template picker ──────────────────────────────────────────────
   const [templateId,       setTemplateId]       = useState('');
   const [templates,        setTemplates]         = useState<TemplateMetadata[]>([]);
@@ -396,6 +399,7 @@ function CreatePageInner() {
         ...(format === 'carousel' && { slideCount }),
         ...(format === 'image'    && { sizes: ['1200x628', '1080x1080', '1080x1920'] }),
         ...((format === 'carousel' || format === 'image') && templateId && { templateId }),
+        ...(primaryColor && { primaryColor }),
       });
 
       if (isQueued(response)) {
@@ -806,6 +810,52 @@ function CreatePageInner() {
                         </span>
                       )}
                     </div>
+                  </div>
+                )}
+
+                {/* Brand Color — carousel + image only */}
+                {(format === 'carousel' || format === 'image') && (
+                  <div style={{ marginBottom: 20 }}>
+                    <div className="form-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span>🎨 Brand Color</span>
+                      {primaryColor && (
+                        <button onClick={() => setPrimaryColor('')} disabled={generating}
+                          style={{ fontSize: 11, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: primaryColor ? 8 : 0 }}>
+                      {([
+                        ['#4f46e5','Indigo'], ['#2563eb','Blue'],    ['#0891b2','Cyan'],
+                        ['#059669','Emerald'],['#16a34a','Green'],   ['#d97706','Amber'],
+                        ['#ea580c','Orange'], ['#dc2626','Red'],     ['#ec4899','Pink'],
+                        ['#9333ea','Purple'], ['#18181b','Black'],   ['#f8fafc','White'],
+                      ] as [string,string][]).map(([color, label]) => (
+                        <button key={color} title={label} disabled={generating}
+                          onClick={() => setPrimaryColor(primaryColor === color ? '' : color)}
+                          style={{
+                            width: 28, height: 28, borderRadius: 6, border: 'none', cursor: 'pointer', background: color, transition: 'transform 0.12s',
+                            transform: primaryColor === color ? 'scale(1.2)' : 'scale(1)',
+                            outline: primaryColor === color ? '2.5px solid var(--indigo)' : '2px solid rgba(255,255,255,0.12)',
+                            outlineOffset: primaryColor === color ? 2 : 0,
+                            boxShadow: color === '#f8fafc' ? 'inset 0 0 0 1px rgba(0,0,0,0.15)' : 'none',
+                          }} />
+                      ))}
+                      <label title="Custom color" style={{ position: 'relative', width: 28, height: 28, borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', outline: '2px solid rgba(255,255,255,0.12)', background: 'var(--surface-2)' }}>
+                        <span style={{ fontSize: 16, color: 'var(--muted)', pointerEvents: 'none', lineHeight: 1 }}>+</span>
+                        <input type="color" disabled={generating} value={primaryColor || '#4f46e5'}
+                          onChange={e => setPrimaryColor(e.target.value)}
+                          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }} />
+                      </label>
+                    </div>
+                    {primaryColor && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', background: 'var(--surface-2)', borderRadius: 6, border: '1px solid var(--border)' }}>
+                        <div style={{ width: 14, height: 14, borderRadius: 3, background: primaryColor, flexShrink: 0, boxShadow: '0 0 0 1px rgba(0,0,0,0.2)' }} />
+                        <span style={{ fontSize: 12, color: 'var(--text)', fontFamily: 'monospace', fontWeight: 600 }}>{primaryColor}</span>
+                        <span style={{ fontSize: 11, color: 'var(--muted)' }}>· buttons, accents &amp; highlights</span>
+                      </div>
+                    )}
                   </div>
                 )}
 

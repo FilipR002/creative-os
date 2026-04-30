@@ -156,7 +156,7 @@ Rules:
           angleId: angleRecord?.id || null,
           format: 'BANNER',
           variant: dto.variant || 'A',
-          content: { banners, angle: angleLabel, templateId: dto.templateId ?? null },
+          content: { banners, angle: angleLabel, templateId: dto.templateId ?? null, primaryColor: dto.primaryColor ?? null },
         },
       });
 
@@ -189,10 +189,11 @@ Rules:
     if (!banners.length) throw new BadRequestException('No banners found in this creative.');
 
     const metadata = {
-      angle:      content.angle      || 'engaging',
-      format:     'banner',
-      platform:   'display',
-      templateId: content.templateId || null,  // Phase 6
+      angle:        content.angle        || 'engaging',
+      format:       'banner',
+      platform:     'display',
+      templateId:   content.templateId   || null,  // Phase 6
+      primaryColor: content.primaryColor || null,  // Brand color
     };
 
     // Generate in parallel — one image per banner size
@@ -241,7 +242,8 @@ Rules:
         style: {
           tone,
           platform,
-          colorScheme: tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
+          colorScheme:  tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
+          primaryColor: metadata.primaryColor || undefined,
         },
       };
     });

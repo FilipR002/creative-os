@@ -59,4 +59,7 @@ export class GenerateBannerDto {
    * When set, overrides autoSelectTemplate() for ALL banners.
    */
   templateId?: string;
+
+  /** Brand primary color hex (e.g. "#4f46e5") — applied to compositor accents, CTAs, highlights. */
+  primaryColor?: string;
 }

@@ -133,6 +133,13 @@ export interface GatewayExecutionInput {
    */
   templateId?: string;
 
+  // ── Brand color ───────────────────────────────────────────────────────────
+  /**
+   * Brand primary color as hex (e.g. "#4f46e5").
+   * Injected into compositor style.primaryColor for CTAs, accents, highlights.
+   */
+  primaryColor?: string;
+
   // ── Variant generation ─────────────────────────────────────────────────────
   /** Respected exactly — brain decision is honoured (safety bound: max 10) */
   variantCount: number;
@@ -497,6 +504,8 @@ export class ExecutionGatewayService {
             resourceCtx:      input.resourceCtx,
             // Phase 6: user-selected template override
             templateId:       input.templateId as any,
+            // Brand color
+            primaryColor:     input.primaryColor,
           },
           userId,
         );
@@ -529,6 +538,8 @@ export class ExecutionGatewayService {
             resourceCtx:      input.resourceCtx,
             // Phase 6: user-selected template override
             templateId:       input.templateId as any,
+            // Brand color
+            primaryColor:     input.primaryColor,
           },
           userId,
         );

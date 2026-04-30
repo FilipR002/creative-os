@@ -551,6 +551,8 @@ export class ProductRunService {
         voiceId:           dto.voiceId,
         // Phase 6: Template override
         templateId:        dto.templateId,
+        // Brand color
+        primaryColor:      dto.primaryColor,
       },
       userId,
     );
