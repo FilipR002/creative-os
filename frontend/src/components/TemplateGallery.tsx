@@ -3,7 +3,7 @@
 // ─── TemplateGallery ──────────────────────────────────────────────────────────
 // Full-page template picker shown as the first screen when creating a new ad.
 
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { TemplateMetadata } from '@/lib/api/creator-client';
 
 export type GalleryFormat = 'carousel' | 'image' | 'video';
@@ -1476,6 +1476,442 @@ function TemplateSlide({ id, slide, txt, muted, accent }: {
   );
 }
 
+// ─── Banner Preview ───────────────────────────────────────────────────────────
+// Single-frame static preview — each of the 30 banner templates has its own
+// archetype-appropriate layout rendered at ~190×190 (square card thumbnail).
+
+function BannerPreview({ id, tone }: { id: string; tone: string }) {
+  const dark  = tone === 'dark'  || tone === 'luxury';
+  const light = tone === 'light' || tone === 'minimal' || tone === 'editorial';
+  const bg    = dark  ? '#0f1117'
+              : light ? '#f8fafc'
+              : '#1e1b4b';
+  const txt   = dark || (!light) ? '#f1f5f9' : '#1e293b';
+  const muted = dark  ? 'rgba(241,245,249,0.4)'
+              : light ? 'rgba(30,41,59,0.4)'
+              : 'rgba(241,245,249,0.45)';
+  const accent = tone === 'dark'    ? '#6366f1'
+               : tone === 'luxury'  ? '#d4af37'
+               : tone === 'light'   ? '#4f46e5'
+               : tone === 'minimal' ? '#0f172a'
+               : tone === 'urgent'  ? '#ef4444'
+               : '#6366f1';
+
+  // Shared inner layout
+  const wrap: React.CSSProperties = {
+    position: 'absolute', inset: 0,
+    display: 'flex', flexDirection: 'column',
+    alignItems: 'center', justifyContent: 'center',
+    padding: 14, gap: 8,
+    background: bg, overflow: 'hidden',
+  };
+
+  // ── full-bleed ──────────────────────────────────────────────────────────────
+  if (id === 'full-bleed') return (
+    <div style={{ ...wrap, background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, gap: 6 }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <T s={7} color="rgba(255,255,255,0.7)" align="center" caps spacing="0.12em">Your Brand</T>
+        <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">Stop Scrolling.</T>
+        <T s={9} color="rgba(255,255,255,0.75)" align="center">This changes everything.</T>
+        <Btn label="Learn More →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.5)" />
+      </div>
+    </div>
+  );
+
+  // ── split-panel ─────────────────────────────────────────────────────────────
+  if (id === 'split-panel') return (
+    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+        <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">THE OFFER</T>
+      </div>
+      <div style={{ flex: 1, height: '100%', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: 10, gap: 6 }}>
+        <T s={8} color={txt} weight={700}>Save 50%</T>
+        <Bar w={60} color={muted} h={2} op={0.5} />
+        <T s={7} color={muted}>Limited time only</T>
+        <Btn label="Claim →" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── bold-headline ───────────────────────────────────────────────────────────
+  if (id === 'bold-headline') return (
+    <div style={{ ...wrap, background: '#0f1117' }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} />
+      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Breaking</T>
+      <T s={18} color="#f1f5f9" weight={900} align="center" spacing="-0.04em">THE TRUTH</T>
+      <T s={8} color="rgba(241,245,249,0.5)" align="center">Most people get this wrong</T>
+      <Btn label="Find Out Why" bg={accent} />
+    </div>
+  );
+
+  // ── minimal ─────────────────────────────────────────────────────────────────
+  if (id === 'minimal') return (
+    <div style={{ ...wrap, background: '#fff', gap: 10 }}>
+      <div style={{ height: 1, background: '#1e293b', width: 80, opacity: 0.15 }} />
+      <T s={14} color="#1e293b" weight={700} align="center" spacing="-0.02em">Less noise.<br/>More signal.</T>
+      <div style={{ height: 1, background: '#1e293b', width: 80, opacity: 0.15 }} />
+      <T s={8} color="rgba(30,41,59,0.45)" align="center">Simple. Effective. Yours.</T>
+      <Btn label="Get Started" bg="#1e293b" color="#fff" />
+    </div>
+  );
+
+  // ── ugc-style ───────────────────────────────────────────────────────────────
+  if (id === 'ugc-style') return (
+    <div style={{ ...wrap, background: '#fff', gap: 7, alignItems: 'flex-start' }}>
+      <Row gap={6}>
+        <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)` }} />
+        <Col gap={1}>
+          <T s={8} color="#1e293b" weight={700}>@realuser</T>
+          <T s={7} color="rgba(30,41,59,0.4)">Sponsored</T>
+        </Col>
+      </Row>
+      <T s={9} color="#1e293b" weight={500}>"I can't believe how much this changed my life in just 30 days."</T>
+      <Stars />
+      <Btn label="Try It Free" bg={accent} />
+    </div>
+  );
+
+  // ── testimonial ─────────────────────────────────────────────────────────────
+  if (id === 'testimonial') return (
+    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
+      <Stars color={accent} />
+      <T s={9} color="#1e293b" weight={600} align="center">"Best decision I ever made for my business."</T>
+      <Row gap={6}>
+        <div style={{ width: 18, height: 18, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)` }} />
+        <T s={7} color="rgba(30,41,59,0.5)">Sarah K. · CEO</T>
+      </Row>
+      <Btn label="Read Reviews →" bg={accent} />
+    </div>
+  );
+
+  // ── stats-hero ──────────────────────────────────────────────────────────────
+  if (id === 'stats-hero') return (
+    <div style={{ ...wrap, background: '#0f1117' }}>
+      <T s={7} color={accent} caps spacing="0.12em" weight={700}>Proven results</T>
+      <T s={36} color="#f1f5f9" weight={900} align="center" spacing="-0.05em">10x</T>
+      <T s={9} color="rgba(241,245,249,0.55)" align="center">faster than the old way</T>
+      <Row gap={12}>
+        {['47%','3x','$12K'].map(s => (
+          <Col key={s} align="center" gap={1}>
+            <T s={10} color={accent} weight={800}>{s}</T>
+            <T s={6} color="rgba(241,245,249,0.3)">avg</T>
+          </Col>
+        ))}
+      </Row>
+    </div>
+  );
+
+  // ── feature-list ────────────────────────────────────────────────────────────
+  if (id === 'feature-list') return (
+    <div style={{ ...wrap, background: '#f8fafc', alignItems: 'flex-start', gap: 7 }}>
+      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">Everything you need</T>
+      {['AI-powered copy','Instant exports','30-day guarantee'].map((t, i) => (
+        <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#475569" weight={500}>{t}</T></Row>
+      ))}
+      <Btn label="Start Free Trial" bg={accent} />
+    </div>
+  );
+
+  // ── cta-final ───────────────────────────────────────────────────────────────
+  if (id === 'cta-final') return (
+    <div style={{ ...wrap, background: accent, gap: 7 }}>
+      <T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.12em">Limited Time Offer</T>
+      <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">50% OFF Today Only</T>
+      <T s={8} color="rgba(255,255,255,0.7)" align="center">Ends at midnight</T>
+      <Btn label="CLAIM DISCOUNT" bg="#fff" color={accent} />
+    </div>
+  );
+
+  // ── gradient-pop ────────────────────────────────────────────────────────────
+  if (id === 'gradient-pop') return (
+    <div style={{ ...wrap, background: 'linear-gradient(135deg, #7c3aed, #db2777)', gap: 8 }}>
+      <T s={8} color="rgba(255,255,255,0.7)" align="center">You won't regret this.</T>
+      <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">Don't scroll past.</T>
+      <div style={{ height: 2, background: 'rgba(255,255,255,0.35)', width: 50 }} />
+      <Btn label="See Why →" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+    </div>
+  );
+
+  // ── dark-luxury ─────────────────────────────────────────────────────────────
+  if (id === 'dark-luxury') return (
+    <div style={{ ...wrap, background: '#090909', gap: 8 }}>
+      <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
+      <T s={7} color="#d4af37" caps spacing="0.2em" weight={600}>Exclusively Yours</T>
+      <T s={14} color="#f1f5f9" weight={300} align="center" spacing="0.05em">Luxury redefined.</T>
+      <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
+      <Btn label="Explore" bg="transparent" color="#d4af37" border="1px solid #d4af3755" />
+    </div>
+  );
+
+  // ── bright-minimal ──────────────────────────────────────────────────────────
+  if (id === 'bright-minimal') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 14, height: 14, borderRadius: '50%', background: accent }} />
+      </div>
+      <T s={13} color="#1e293b" weight={700} align="center" spacing="-0.02em">Simply better.</T>
+      <T s={8} color="rgba(30,41,59,0.4)" align="center">No fluff. Just results.</T>
+      <Btn label="Try Now" bg={accent} />
+    </div>
+  );
+
+  // ── story-hook ──────────────────────────────────────────────────────────────
+  if (id === 'story-hook') return (
+    <div style={{ ...wrap, background: '#0f1117', alignItems: 'flex-start', gap: 8 }}>
+      <T s={8} color={accent} weight={700}>A true story →</T>
+      <T s={13} color="#f1f5f9" weight={800} spacing="-0.02em">"I made $0 for 3 years."</T>
+      <T s={8} color="rgba(241,245,249,0.5)">Then I discovered one thing that changed everything.</T>
+      <Btn label="Read Story" bg={accent} />
+    </div>
+  );
+
+  // ── problem-slide ───────────────────────────────────────────────────────────
+  if (id === 'problem-slide') return (
+    <div style={{ ...wrap, background: '#1e1b4b', alignItems: 'flex-start', gap: 7 }}>
+      <T s={7} color="rgba(239,68,68,0.8)" caps spacing="0.1em" weight={700}>The problem</T>
+      <T s={11} color="#f1f5f9" weight={800} spacing="-0.02em">Sound familiar?</T>
+      {['Wasting hours daily','No clear results','Burning money'].map((t, i) => (
+        <Row key={i} gap={5}><Cross /><T s={7} color="rgba(241,245,249,0.6)">{t}</T></Row>
+      ))}
+      <Btn label="Fix This Now" bg="#ef4444" />
+    </div>
+  );
+
+  // ── text-only-bold ──────────────────────────────────────────────────────────
+  if (id === 'text-only-bold') return (
+    <div style={{ ...wrap, background: accent, gap: 6 }}>
+      <T s={19} color="#fff" weight={900} align="center" spacing="-0.04em">We need to talk.</T>
+      <T s={9} color="rgba(255,255,255,0.7)" align="center">About what you've been missing.</T>
+      <Btn label="Keep Reading" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.3)" />
+    </div>
+  );
+
+  // ── product-center ──────────────────────────────────────────────────────────
+  if (id === 'product-center') return (
+    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⚡</div>
+      <T s={11} color="#1e293b" weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
+      <Row gap={10}>
+        {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => <T key={f} s={7} color="#475569" weight={600}>{f}</T>)}
+      </Row>
+      <Btn label="Try Free" bg={accent} />
+    </div>
+  );
+
+  // ── neon-dark ───────────────────────────────────────────────────────────────
+  if (id === 'neon-dark') return (
+    <div style={{ ...wrap, background: '#030712', gap: 6 }}>
+      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: 100, height: 100, borderRadius: '50%', background: `${accent}20`, filter: 'blur(25px)', pointerEvents: 'none' }} />
+      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Next level</T>
+      <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em" >GLOW UP</T>
+      <T s={8} color="rgba(255,255,255,0.45)" align="center">Your brand, amplified.</T>
+      <Btn label="Get Access" bg={accent} />
+    </div>
+  );
+
+  // ── magazine-editorial ──────────────────────────────────────────────────────
+  if (id === 'magazine-editorial') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
+      <Row gap={8}>
+        <T s={7} color="#94a3b8" caps spacing="0.12em">Issue 12</T>
+        <div style={{ height: 1, background: '#94a3b8', flex: 1, marginTop: 4 }} />
+      </Row>
+      <T s={13} color="#1e293b" weight={800} spacing="-0.02em">The future of content</T>
+      <T s={8} color="#64748b">5 trends reshaping how brands speak.</T>
+      <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />
+      <T s={7} color="#94a3b8">Read the full story →</T>
+    </div>
+  );
+
+  // ── color-block ─────────────────────────────────────────────────────────────
+  if (id === 'color-block') return (
+    <div style={{ ...wrap, padding: 0, flexDirection: 'row', gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <T s={22} color="#fff" weight={900} spacing="-0.04em">BOLD.</T>
+      </div>
+      <div style={{ flex: 1, height: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
+        <T s={9} color="#1e293b" weight={700} align="center">Stand out from the crowd</T>
+        <Btn label="Shop Now" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── floating-card ───────────────────────────────────────────────────────────
+  if (id === 'floating-card') return (
+    <div style={{ ...wrap, background: `linear-gradient(135deg, ${accent}33, #818cf844)` }}>
+      <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
+        <T s={7} color="rgba(255,255,255,0.6)" caps spacing="0.1em">Introducing</T>
+        <T s={12} color="#fff" weight={800} spacing="-0.02em">Something new</T>
+        <T s={8} color="rgba(255,255,255,0.55)">Crafted with care.</T>
+        <Btn label="Discover" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.3)" />
+      </div>
+    </div>
+  );
+
+  // ── countdown-urgency ───────────────────────────────────────────────────────
+  if (id === 'countdown-urgency') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
+      <T s={8} color="rgba(239,68,68,0.9)" caps spacing="0.1em" weight={700}>Sale ends in</T>
+      <Row gap={5}>
+        {['00','12','34'].map((t, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <T s={12} color="rgba(241,245,249,0.4)" weight={700}>:</T>}
+            <div style={{ background: '#1e293b', border: '1px solid rgba(241,245,249,0.1)', borderRadius: 6, padding: '4px 7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <T s={13} color="#f1f5f9" weight={900}>{t}</T>
+            </div>
+          </React.Fragment>
+        ))}
+      </Row>
+      <T s={8} color="rgba(241,245,249,0.4)" align="center">Hours · Minutes · Seconds</T>
+      <Btn label="Shop Before It's Gone" bg="#ef4444" />
+    </div>
+  );
+
+  // ── social-proof-grid ───────────────────────────────────────────────────────
+  if (id === 'social-proof-grid') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, width: '100%' }}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} style={{ height: 18, borderRadius: 4, background: `hsl(${200 + i * 25}, 60%, 80%)`, opacity: 0.7 }} />
+        ))}
+      </div>
+      <T s={12} color="#1e293b" weight={900} align="center" spacing="-0.02em">Join 47,000+ creators</T>
+      <Row gap={12}>
+        {['10K+','4.9★','99%'].map(s => (
+          <Col key={s} align="center" gap={1}><T s={9} color={accent} weight={800}>{s}</T></Col>
+        ))}
+      </Row>
+      <Btn label="Join Now" bg={accent} />
+    </div>
+  );
+
+  // ── headline-badge ──────────────────────────────────────────────────────────
+  if (id === 'headline-badge') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
+      <div style={{ background: `${accent}25`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '3px 10px' }}>
+        <T s={7} color={accent} weight={700}>✦ New Release</T>
+      </div>
+      <T s={14} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">The hook that converts</T>
+      <T s={8} color="rgba(241,245,249,0.45)" align="center">Scroll-stopping every time.</T>
+      <Btn label="See It Live" bg={accent} />
+    </div>
+  );
+
+  // ── side-by-side ────────────────────────────────────────────────────────────
+  if (id === 'side-by-side') return (
+    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
+        <T s={8} color="#ef4444" weight={700} align="center" caps>Before</T>
+        {['Slow','Costly','Stressful'].map((t, i) => (
+          <Row key={i} gap={4}><Cross /><T s={7} color="rgba(30,41,59,0.6)">{t}</T></Row>
+        ))}
+      </div>
+      <div style={{ flex: 1, height: '100%', background: `${accent}10`, border: `1px solid ${accent}25`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
+        <T s={8} color={accent} weight={700} align="center" caps>After</T>
+        {['10x faster','Half the cost','Effortless'].map((t, i) => (
+          <Row key={i} gap={4}><Check color={accent} /><T s={7} color="rgba(30,41,59,0.7)">{t}</T></Row>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── diagonal-split ──────────────────────────────────────────────────────────
+  if (id === 'diagonal-split') return (
+    <div style={{ ...wrap, padding: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, background: '#0f1117' }} />
+      <div style={{ position: 'absolute', inset: 0, background: accent, clipPath: 'polygon(0 0, 55% 0, 45% 100%, 0 100%)' }} />
+      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'row', width: '100%', height: '100%', alignItems: 'center' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <T s={9} color="#fff" weight={900} align="center">BEFORE</T>
+          <T s={7} color="rgba(255,255,255,0.6)" align="center">Struggling</T>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+          <T s={9} color="#f1f5f9" weight={900} align="center">AFTER</T>
+          <T s={7} color="rgba(241,245,249,0.55)" align="center">Thriving</T>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── overlay-card ────────────────────────────────────────────────────────────
+  if (id === 'overlay-card') return (
+    <div style={{ ...wrap, background: `linear-gradient(180deg, ${accent}66, ${accent}dd)`, justifyContent: 'flex-end', padding: 0 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: `${accent}44` }} />
+      <div style={{ width: '100%', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <T s={10} color="#fff" weight={800}>Ready to transform?</T>
+        <T s={7} color="rgba(255,255,255,0.65)">Join thousands already inside.</T>
+        <Btn label="Get Access Now" bg="#fff" color={accent} />
+      </div>
+    </div>
+  );
+
+  // ── number-list ─────────────────────────────────────────────────────────────
+  if (id === 'number-list') return (
+    <div style={{ ...wrap, background: '#f8fafc', alignItems: 'flex-start', gap: 7 }}>
+      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">3 steps to success</T>
+      {['Discover your angle','Build in minutes','Launch & grow'].map((t, i) => (
+        <Row key={i} gap={8}>
+          <div style={{ width: 18, height: 18, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <T s={8} color="#fff" weight={800}>{i + 1}</T>
+          </div>
+          <T s={8} color="#475569" weight={500}>{t}</T>
+        </Row>
+      ))}
+      <Btn label="Start Now" bg={accent} />
+    </div>
+  );
+
+  // ── brand-manifesto ─────────────────────────────────────────────────────────
+  if (id === 'brand-manifesto') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
+      <div style={{ height: 1, background: accent, width: 40, opacity: 0.6 }} />
+      <T s={10} color="rgba(241,245,249,0.4)" align="center" spacing="0.02em">"We believe in building</T>
+      <T s={13} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">something real.</T>
+      <T s={10} color="rgba(241,245,249,0.4)" align="center">Not just another product."</T>
+      <div style={{ height: 1, background: accent, width: 40, opacity: 0.6 }} />
+    </div>
+  );
+
+  // ── product-demo ────────────────────────────────────────────────────────────
+  if (id === 'product-demo') return (
+    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
+      <div style={{ width: '85%', background: '#1e293b', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ background: '#334155', padding: '4px 8px', display: 'flex', gap: 4 }}>
+          {['#ef4444','#fbbf24','#22c55e'].map(c => <div key={c} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
+        </div>
+        <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ height: 4, background: `${accent}44`, borderRadius: 2, width: '80%' }} />
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 2, width: '60%' }} />
+        </div>
+      </div>
+      <T s={9} color="#1e293b" weight={700} align="center">See it in action</T>
+      <Btn label="Watch Demo" bg={accent} />
+    </div>
+  );
+
+  // ── retro-bold ──────────────────────────────────────────────────────────────
+  if (id === 'retro-bold') return (
+    <div style={{ ...wrap, background: '#fef3c7', gap: 8 }}>
+      <div style={{ border: '3px solid #1e293b', borderRadius: 4, padding: '4px 12px', transform: 'rotate(-2deg)', background: '#fff' }}>
+        <T s={8} color="#1e293b" weight={900} caps spacing="0.1em">Est. 2024</T>
+      </div>
+      <T s={15} color="#1e293b" weight={900} align="center" spacing="-0.02em">Old School.<br/>New Results.</T>
+      <div style={{ height: 3, background: '#1e293b', width: 60 }} />
+      <Btn label="Shop Now" bg="#1e293b" color="#fef3c7" />
+    </div>
+  );
+
+  // fallback for any unmapped id
+  return (
+    <div style={{ ...wrap, gap: 8 }}>
+      <T s={12} color={txt} weight={800} align="center" spacing="-0.02em">Ad Template</T>
+      <Bar w={60} color={accent} h={3} />
+      <Btn label="Use Template" bg={accent} />
+    </div>
+  );
+}
+
 function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const [slide,  setSlide]  = useState(0);
   const [fading, setFading] = useState(false);
@@ -1790,6 +2226,9 @@ export function BannerLibrary({ templates, onSelect }: LibraryProps) {
       subtitle="Static display ads — AI generates copy and imagery for every size."
       selected={selected}
       onSelect={handleSelect}
+      renderPreview={t => (
+        <BannerPreview id={t.id} tone={t.tones[0] ?? 'bold'} />
+      )}
     />
   );
 }
