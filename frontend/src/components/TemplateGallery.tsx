@@ -3,11 +3,11 @@
 // ─── TemplateGallery ──────────────────────────────────────────────────────────
 // Full-page template picker shown as the first screen when creating a new ad.
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TemplateMetadata } from '@/lib/api/creator-client';
 
 export type GalleryFormat = 'carousel' | 'image' | 'video';
-type ToneFilter = 'all' | 'bold' | 'minimal' | 'premium' | 'friendly' | 'urgent' | 'energetic';
+type Category = 'all' | 'bold' | 'minimal' | 'story' | 'social' | 'product' | 'urgent';
 
 interface Props {
   templates:     TemplateMetadata[];
@@ -15,14 +15,24 @@ interface Props {
   defaultFormat?: GalleryFormat;
 }
 
-const TONE_LABELS: Record<ToneFilter, string> = {
-  all:       'All',
-  bold:      'Bold',
-  minimal:   'Minimal',
-  premium:   'Premium',
-  friendly:  'Friendly',
-  urgent:    'Urgent',
-  energetic: 'Energetic',
+const CATEGORIES: { id: Category; label: string; icon: string }[] = [
+  { id: 'all',     label: 'All Templates', icon: '⊞' },
+  { id: 'bold',    label: 'Bold',          icon: '⚡' },
+  { id: 'minimal', label: 'Minimal',       icon: '◻' },
+  { id: 'story',   label: 'Story',         icon: '✦' },
+  { id: 'social',  label: 'Social Proof',  icon: '★' },
+  { id: 'product', label: 'Product',       icon: '◈' },
+  { id: 'urgent',  label: 'Urgent',        icon: '◎' },
+];
+
+const CATEGORY_IDS: Record<Category, string[]> = {
+  all:     [],
+  bold:    ['full-bleed','bold-headline','gradient-pop','diagonal-split','neon-dark','retro-bold','color-block','headline-badge'],
+  minimal: ['minimal','bright-minimal','text-only-bold','side-by-side'],
+  story:   ['story-hook','problem-slide','brand-manifesto','ugc-style','magazine-editorial'],
+  social:  ['testimonial','social-proof-grid','stats-hero'],
+  product: ['product-center','product-demo','floating-card','feature-list','number-list','split-panel','overlay-card'],
+  urgent:  ['cta-final','countdown-urgency','dark-luxury'],
 };
 
 // ─── Per-template mini preview fallbacks ─────────────────────────────────────
@@ -428,12 +438,137 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   );
 }
 
+// ─── Carousel slide preview (animated) ───────────────────────────────────────
+
+const TEMPLATE_STYLES: Record<string, { bg: string; light: boolean }> = {
+  'full-bleed':         { bg: 'linear-gradient(160deg,#78350f,#d97706)',           light: false },
+  'bold-headline':      { bg: '#000',                                               light: false },
+  'minimal':            { bg: '#ffffff',                                            light: true  },
+  'ugc-style':          { bg: '#fafafa',                                            light: true  },
+  'testimonial':        { bg: '#ffffff',                                            light: true  },
+  'stats-hero':         { bg: '#020617',                                            light: false },
+  'feature-list':       { bg: '#ffffff',                                            light: true  },
+  'cta-final':          { bg: 'linear-gradient(135deg,#450a0a,#7f1d1d)',            light: false },
+  'gradient-pop':       { bg: 'linear-gradient(135deg,#059669,#0891b2,#6366f1)',    light: false },
+  'dark-luxury':        { bg: 'linear-gradient(160deg,#020617,#0f172a,#1c1917)',    light: false },
+  'bright-minimal':     { bg: '#ffffff',                                            light: true  },
+  'story-hook':         { bg: 'linear-gradient(160deg,#022c22,#064e3b)',            light: false },
+  'problem-slide':      { bg: 'linear-gradient(135deg,#1c0505,#450a0a)',            light: false },
+  'text-only-bold':     { bg: '#f8fafc',                                            light: true  },
+  'product-center':     { bg: '#f8fafc',                                            light: true  },
+  'neon-dark':          { bg: '#020617',                                            light: false },
+  'magazine-editorial': { bg: '#ffffff',                                            light: true  },
+  'color-block':        { bg: '#f8fafc',                                            light: true  },
+  'floating-card':      { bg: 'linear-gradient(135deg,#052e16,#14532d)',            light: false },
+  'countdown-urgency':  { bg: 'linear-gradient(135deg,#1c0505,#7f1d1d)',            light: false },
+  'social-proof-grid':  { bg: '#ffffff',                                            light: true  },
+  'headline-badge':     { bg: '#18181b',                                            light: false },
+  'side-by-side':       { bg: '#ffffff',                                            light: true  },
+  'diagonal-split':     { bg: '#1c1917',                                            light: false },
+  'overlay-card':       { bg: 'linear-gradient(160deg,#1a1a2e,#16213e,#0f3460)',   light: false },
+  'number-list':        { bg: '#ffffff',                                            light: true  },
+  'brand-manifesto':    { bg: '#18181b',                                            light: false },
+  'product-demo':       { bg: '#f8fafc',                                            light: true  },
+  'retro-bold':         { bg: '#fef3c7',                                            light: true  },
+  'split-panel':        { bg: '#f8fafc',                                            light: true  },
+};
+
+const TONE_ACCENTS: Record<string, string> = {
+  bold: '#4f46e5', minimal: '#6366f1', premium: '#d97706',
+  friendly: '#2563eb', urgent: '#dc2626', energetic: '#ea580c',
+};
+
+const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
+
+function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
+  const [slide,  setSlide]  = useState(0);
+  const [fading, setFading] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const style   = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
+  const txt     = style.light ? '#1e293b' : '#ffffff';
+  const muted   = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
+  const accent  = TONE_ACCENTS[tone] ?? '#4f46e5';
+  const dotBase = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
+
+  useEffect(() => {
+    if (paused) return;
+    timerRef.current = setInterval(() => {
+      setFading(true);
+      setTimeout(() => { setSlide(s => (s + 1) % 3); setFading(false); }, 200);
+    }, 2200);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [paused]);
+
+  return (
+    <div
+      style={{ width: '100%', height: '100%', background: style.bg, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 14px' }}
+      onMouseEnter={() => { setPaused(true); if (timerRef.current) clearInterval(timerRef.current); }}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Slide type badge */}
+      <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', padding: '2px 7px', borderRadius: 3, background: style.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)', color: style.light ? '#475569' : 'rgba(255,255,255,0.65)' }}>
+        {SLIDE_LABELS[slide]}
+      </div>
+
+      {/* Slide content — crossfades on change */}
+      <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.2s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%' }}>
+
+        {slide === 0 && (
+          /* COVER — hook + swipe hint */
+          <>
+            <div style={{ fontSize: 18, fontWeight: 900, color: txt, lineHeight: 1.2, letterSpacing: '-0.025em', textAlign: 'center' }}>
+              Stop Scrolling
+            </div>
+            <div style={{ height: 4, background: muted, borderRadius: 2, width: 70 }} />
+            <div style={{ fontSize: 8, color: muted, letterSpacing: '0.07em', marginTop: 4 }}>SWIPE →</div>
+          </>
+        )}
+
+        {slide === 1 && (
+          /* FEATURE — 3 check rows */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%', paddingLeft: 8 }}>
+            {[82, 70, 90].map((w, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div style={{ width: 13, height: 13, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 4, height: 3, borderLeft: '1.5px solid #fff', borderBottom: '1.5px solid #fff', transform: 'rotate(-45deg) translate(0.5px,-0.5px)' }} />
+                </div>
+                <div style={{ height: 4, background: txt, borderRadius: 1, width: `${w}%`, opacity: 0.6 }} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {slide === 2 && (
+          /* CTA — headline + button */
+          <>
+            <div style={{ height: 7, background: txt, borderRadius: 2, width: 100, opacity: 0.85 }} />
+            <div style={{ height: 4, background: muted, borderRadius: 2, width: 70 }} />
+            <div style={{ marginTop: 6, height: 26, background: accent, borderRadius: 7, width: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 3px 12px ${accent}55` }}>
+              <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 55 }} />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Progress dots */}
+      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
+        {[0, 1, 2].map(i => (
+          <div key={i} style={{ height: 3, borderRadius: 2, background: i === slide ? txt : dotBase, width: i === slide ? 14 : 4, opacity: i === slide ? 0.9 : 1, transition: 'all 0.3s ease' }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Template Card ────────────────────────────────────────────────────────────
 
-function TemplateCard({ template, selected, onClick }: {
+function TemplateCard({ template, selected, onClick, preview }: {
   template: TemplateMetadata;
   selected: boolean;
   onClick:  () => void;
+  preview?: React.ReactNode;
 }) {
   const [imgLoaded, setImgLoaded] = useState(false);
   const [imgError, setImgError]   = useState(false);
@@ -447,7 +582,7 @@ function TemplateCard({ template, selected, onClick }: {
       style={{
         borderRadius: 12,
         border:       `2px solid ${selected ? '#4f46e5' : hovered ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}`,
-        cursor:       'pointer', overflow: 'hidden', transition: 'all 0.18s ease',
+        cursor:       'pointer', overflow: 'hidden', transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease',
         transform:    hovered ? 'translateY(-4px) scale(1.02)' : 'none',
         boxShadow:    selected
           ? '0 0 0 3px rgba(79,70,229,0.35), 0 8px 24px rgba(0,0,0,0.5)'
@@ -458,20 +593,26 @@ function TemplateCard({ template, selected, onClick }: {
     >
       {/* Thumbnail */}
       <div style={{ position: 'relative', aspectRatio: '1 / 1', overflow: 'hidden' }}>
-        {/* CSS fallback — always rendered, hidden once real PNG loads */}
-        <div style={{ position: 'absolute', inset: 0, display: imgLoaded ? 'none' : 'flex' }}>
-          <Fallback id={template.id} tone={template.tones[0] ?? 'bold'} />
-        </div>
 
-        {/* Real PNG — hidden until loaded */}
-        {!imgError && (
-          <img
-            src={`/templates/${template.id}.png`}
-            alt={template.name}
-            onLoad={() => setImgLoaded(true)}
-            onError={() => setImgError(true)}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.2s' }}
-          />
+        {preview ? (
+          /* Animated preview (carousel) — no PNG fallback needed */
+          <div style={{ position: 'absolute', inset: 0 }}>{preview}</div>
+        ) : (
+          /* Static fallback + optional PNG */
+          <>
+            <div style={{ position: 'absolute', inset: 0, display: imgLoaded ? 'none' : 'flex' }}>
+              <Fallback id={template.id} tone={template.tones[0] ?? 'bold'} />
+            </div>
+            {!imgError && (
+              <img
+                src={`/templates/${template.id}.png`}
+                alt={template.name}
+                onLoad={() => setImgLoaded(true)}
+                onError={() => setImgError(true)}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.2s' }}
+              />
+            )}
+          </>
         )}
 
         {/* Selected check */}
@@ -483,8 +624,8 @@ function TemplateCard({ template, selected, onClick }: {
           </div>
         )}
 
-        {/* IMG badge */}
-        {template.requiresImage && (
+        {/* IMG badge — only on static cards */}
+        {!preview && template.requiresImage && (
           <div style={{ position: 'absolute', top: 8, left: 8, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', borderRadius: 4, padding: '2px 6px', fontSize: 9, fontWeight: 700, color: '#fbbf24', letterSpacing: '0.06em', zIndex: 2 }}>
             IMG
           </div>
@@ -492,7 +633,7 @@ function TemplateCard({ template, selected, onClick }: {
 
         {/* Hover overlay */}
         {hovered && !selected && (
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)', zIndex: 2 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(2px)', zIndex: 3 }}>
             <div style={{ background: '#4f46e5', color: '#fff', fontSize: 12, fontWeight: 700, padding: '9px 20px', borderRadius: 8, letterSpacing: '0.03em', boxShadow: '0 4px 16px rgba(79,70,229,0.5)' }}>
               Use Template
             </div>
@@ -500,20 +641,10 @@ function TemplateCard({ template, selected, onClick }: {
         )}
       </div>
 
-      {/* Footer */}
-      <div style={{ padding: '10px 12px 12px' }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: selected ? '#a5b4fc' : 'var(--text)', marginBottom: 3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      {/* Footer — name only */}
+      <div style={{ padding: '9px 12px 11px' }}>
+        <div style={{ fontWeight: 700, fontSize: 12, color: selected ? '#a5b4fc' : 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {template.name}
-        </div>
-        <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-          {template.description}
-        </div>
-        <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-          {template.tones.slice(0, 3).map(tone => (
-            <span key={tone} style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-              {tone}
-            </span>
-          ))}
         </div>
       </div>
     </div>
@@ -538,12 +669,8 @@ function SkipCard({ onClick }: { onClick: () => void }) {
           <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>Let AI pick the best template per slide based on your brief</div>
         </div>
       </div>
-      <div style={{ padding: '0 12px 12px' }}>
-        <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--muted)', marginBottom: 3 }}>Skip — Auto</div>
-        <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4 }}>AI optimises per slide</div>
-        <div style={{ marginTop: 8, display: 'flex', gap: 4 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, color: 'var(--muted)', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 3, padding: '1px 5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>auto</span>
-        </div>
+      <div style={{ padding: '9px 12px 11px' }}>
+        <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>AI Auto-Select</div>
       </div>
     </div>
   );
@@ -551,99 +678,224 @@ function SkipCard({ onClick }: { onClick: () => void }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-export function TemplateGallery({ templates, onSelect, defaultFormat = 'carousel' }: Props) {
-  const [format,     setFormat]     = useState<GalleryFormat>(defaultFormat);
-  const [toneFilter, setToneFilter] = useState<ToneFilter>('all');
-  const [selected,   setSelected]   = useState('');
+// ─── Shared library props ─────────────────────────────────────────────────────
 
-  const isVisual = format !== 'video';
+export interface LibraryProps {
+  templates: TemplateMetadata[];
+  onSelect:  (templateId: string) => void;
+}
 
-  const visible = isVisual
-    ? templates.filter(t => toneFilter === 'all' || t.tones.includes(toneFilter as any))
-    : [];
+// ─── Shared sidebar + grid body (used by both library components) ─────────────
+
+function LibraryBody({
+  templates,
+  label,
+  subtitle,
+  selected,
+  onSelect,
+  renderPreview,
+}: {
+  templates:      TemplateMetadata[];
+  label:          string;
+  subtitle:       string;
+  selected:       string;
+  onSelect:       (id: string) => void;
+  renderPreview?: (t: TemplateMetadata) => React.ReactNode;
+}) {
+  const [category, setCategory] = useState<Category>('all');
+
+  const visible = category === 'all'
+    ? templates
+    : templates.filter(t => CATEGORY_IDS[category].includes(t.id));
+
+  function handleCategoryChange(cat: Category) {
+    setCategory(cat);
+  }
+
+  return (
+    <div style={{ flex: 1, display: 'flex', minHeight: 0 }}>
+
+      {/* ── LEFT SIDEBAR ──────────────────────────────────────────────────── */}
+      <aside style={{
+        width: 200, flexShrink: 0,
+        borderRight: '1px solid rgba(255,255,255,0.07)',
+        padding: '28px 16px',
+        display: 'flex', flexDirection: 'column', gap: 2,
+        position: 'sticky', top: 49, alignSelf: 'flex-start',
+        maxHeight: 'calc(100vh - 49px)', overflowY: 'auto',
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.25)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10, paddingLeft: 10 }}>
+          Category
+        </div>
+        {CATEGORIES.map(cat => {
+          const isActive = category === cat.id;
+          const catCount = cat.id === 'all'
+            ? templates.length
+            : CATEGORY_IDS[cat.id].filter(id => templates.some(t => t.id === id)).length;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryChange(cat.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 9,
+                padding: '8px 10px', borderRadius: 8, border: 'none',
+                fontFamily: 'inherit', cursor: 'pointer', transition: 'all 0.13s',
+                background: isActive ? 'rgba(79,70,229,0.18)' : 'transparent',
+                color: isActive ? '#a5b4fc' : 'rgba(255,255,255,0.5)',
+                fontSize: 13, fontWeight: isActive ? 700 : 500,
+                width: '100%', textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: 13, opacity: isActive ? 1 : 0.6 }}>{cat.icon}</span>
+              <span style={{ flex: 1 }}>{cat.label}</span>
+              <span style={{ fontSize: 10, color: isActive ? '#6366f1' : 'rgba(255,255,255,0.2)', fontWeight: 600 }}>{catCount}</span>
+            </button>
+          );
+        })}
+      </aside>
+
+      {/* ── RIGHT GRID ────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, padding: '28px 32px 60px', overflowY: 'auto' }}>
+        <div style={{ marginBottom: 24 }}>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+            {label}
+          </h1>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: 'rgba(255,255,255,0.35)' }}>{subtitle}</p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 16 }}>
+          <SkipCard onClick={() => onSelect('')} />
+          {visible.map(t => (
+            <TemplateCard
+              key={t.id}
+              template={t}
+              selected={selected === t.id}
+              onClick={() => onSelect(t.id)}
+              preview={renderPreview ? renderPreview(t) : undefined}
+            />
+          ))}
+          {visible.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>
+              No templates in this category yet
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Carousel Library ─────────────────────────────────────────────────────────
+
+export function CarouselLibrary({ templates, onSelect }: LibraryProps) {
+  const [selected, setSelected] = useState('');
 
   function handleSelect(id: string) {
     setSelected(id);
-    setTimeout(() => onSelect(id, format), 180);
+    setTimeout(() => onSelect(id), 180);
+  }
+
+  return (
+    <LibraryBody
+      templates={templates}
+      label="Carousel Templates"
+      subtitle="Multi-slide formats — AI fills in copy and images per slide."
+      selected={selected}
+      onSelect={handleSelect}
+      renderPreview={t => (
+        <CarouselSlidePreview id={t.id} tone={t.tones[0] ?? 'bold'} />
+      )}
+    />
+  );
+}
+
+// ─── Banner Library ───────────────────────────────────────────────────────────
+
+export function BannerLibrary({ templates, onSelect }: LibraryProps) {
+  const [selected, setSelected] = useState('');
+
+  function handleSelect(id: string) {
+    setSelected(id);
+    setTimeout(() => onSelect(id), 180);
+  }
+
+  return (
+    <LibraryBody
+      templates={templates}
+      label="Banner Templates"
+      subtitle="Static display ads — AI generates copy and imagery for every size."
+      selected={selected}
+      onSelect={handleSelect}
+    />
+  );
+}
+
+// ─── TemplateGallery (format router) ─────────────────────────────────────────
+// Owns format tabs and delegates to CarouselLibrary / BannerLibrary / Video CTA.
+
+export function TemplateGallery({ templates, onSelect, defaultFormat = 'carousel' }: Props) {
+  const [format, setFormat] = useState<GalleryFormat>(defaultFormat);
+
+  function handleFormatChange(f: GalleryFormat) {
+    setFormat(f);
   }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg, #0f1117)', color: 'var(--text, #f1f5f9)', display: 'flex', flexDirection: 'column' }}>
 
-      {/* Top bar */}
-      <div style={{ padding: '14px 40px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 20, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(12px)', position: 'sticky', top: 0, zIndex: 10, flexWrap: 'wrap' }}>
-        <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: '-0.02em' }}>✦ Creative OS</span>
-        <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.12)' }} />
+      {/* ── Top bar ─────────────────────────────────────────────────────────── */}
+      <div style={{
+        padding: '12px 32px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        display: 'flex', alignItems: 'center', gap: 20,
+        background: 'rgba(10,11,18,0.85)', backdropFilter: 'blur(14px)',
+        position: 'sticky', top: 0, zIndex: 10,
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', flexShrink: 0 }}>✦ Creative OS</span>
+        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
 
         {/* Format tabs */}
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: 3, gap: 2 }}>
+        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 9, padding: 3, gap: 2 }}>
           {(['carousel','image','video'] as GalleryFormat[]).map(f => (
-            <button key={f} onClick={() => { setFormat(f); setSelected(''); }}
-              style={{ padding: '6px 16px', borderRadius: 7, border: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.15s', background: format === f ? '#4f46e5' : 'transparent', color: format === f ? '#fff' : 'rgba(255,255,255,0.45)' }}>
+            <button key={f} onClick={() => handleFormatChange(f)}
+              style={{ padding: '5px 15px', borderRadius: 6, border: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.13s', background: format === f ? '#4f46e5' : 'transparent', color: format === f ? '#fff' : 'rgba(255,255,255,0.4)' }}>
               {f === 'carousel' ? '⊞ Carousel' : f === 'image' ? '⬜ Banner' : '▶ Video'}
             </button>
           ))}
         </div>
-
-        {/* Tone pills */}
-        {isVisual && (
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(Object.keys(TONE_LABELS) as ToneFilter[]).map(t => (
-              <button key={t} onClick={() => setToneFilter(t)}
-                style={{ padding: '4px 12px', borderRadius: 20, border: `1px solid ${toneFilter === t ? '#4f46e5' : 'rgba(255,255,255,0.12)'}`, fontFamily: 'inherit', fontWeight: 600, fontSize: 11, cursor: 'pointer', transition: 'all 0.15s', background: toneFilter === t ? 'rgba(79,70,229,0.25)' : 'transparent', color: toneFilter === t ? '#a5b4fc' : 'rgba(255,255,255,0.45)' }}>
-                {TONE_LABELS[t]}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {isVisual && (
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            {visible.length + 1} options
-          </span>
-        )}
       </div>
 
-      {/* Body */}
-      <div style={{ flex: 1, padding: '36px 40px 60px', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-            {format === 'video' ? 'Create a Video Ad' : `Choose a ${format === 'image' ? 'Banner' : 'Carousel'} Template`}
-          </h1>
-          <p style={{ margin: '8px 0 0', fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>
-            {format === 'video'
-              ? 'Video style is AI-selected per scene — describe your product and the engine decides.'
-              : 'Pick the visual style. AI fills in the copy and images.'}
-          </p>
-        </div>
+      {/* ── Format views ────────────────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
 
-        {/* Video CTA */}
+        {format === 'carousel' && (
+          <CarouselLibrary
+            templates={templates}
+            onSelect={id => onSelect(id, 'carousel')}
+          />
+        )}
+
+        {format === 'image' && (
+          <BannerLibrary
+            templates={templates}
+            onSelect={id => onSelect(id, 'image')}
+          />
+        )}
+
         {format === 'video' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 320, gap: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 20, padding: '60px 32px' }}>
             <div style={{ fontSize: 52 }}>🎬</div>
             <div style={{ textAlign: 'center', maxWidth: 440 }}>
               <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 10 }}>AI-Directed Video</div>
-              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>The engine auto-selects the best visual style, pacing, and text overlays per scene based on your brief, goal, and platform.</div>
+              <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>
+                The engine auto-selects the best visual style, pacing, and text overlays per scene based on your brief, goal, and platform.
+              </div>
             </div>
-            <button onClick={() => onSelect('', 'video')}
-              style={{ padding: '13px 32px', borderRadius: 10, border: 'none', fontFamily: 'inherit', fontWeight: 800, fontSize: 14, cursor: 'pointer', background: '#4f46e5', color: '#fff', boxShadow: '0 4px 20px rgba(79,70,229,0.45)', letterSpacing: '-0.01em' }}>
+            <button
+              onClick={() => onSelect('', 'video')}
+              style={{ padding: '13px 32px', borderRadius: 10, border: 'none', fontFamily: 'inherit', fontWeight: 800, fontSize: 14, cursor: 'pointer', background: '#4f46e5', color: '#fff', boxShadow: '0 4px 20px rgba(79,70,229,0.45)', letterSpacing: '-0.01em' }}
+            >
               Start Creating Video →
             </button>
-          </div>
-        )}
-
-        {/* Template grid */}
-        {isVisual && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: 18 }}>
-            <SkipCard onClick={() => handleSelect('')} />
-            {visible.map(t => (
-              <TemplateCard key={t.id} template={t} selected={selected === t.id} onClick={() => handleSelect(t.id)} />
-            ))}
-            {visible.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '60px 0', color: 'rgba(255,255,255,0.25)' }}>
-                No templates match — try "All"
-              </div>
-            )}
           </div>
         )}
       </div>

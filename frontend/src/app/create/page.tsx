@@ -557,16 +557,32 @@ function CreatePageInner() {
           )}
         </div>
 
-        <div className="page-content">
+        <div className="page-content" style={mode === 'quick' ? { padding: 0, overflow: 'hidden' } : undefined}>
 
           {/* ═══════════════════════════════════════════════════════════════
               QUICK MODE — 2-column: control panel | live preview
               ══════════════════════════════════════════════════════════════ */}
           {mode === 'quick' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: 32, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 0, alignItems: 'start' }}>
 
-              {/* ── LEFT: control panel ──────────────────────────────────── */}
-              <div>
+              {/* ── LEFT: live preview stage ─────────────────────────────── */}
+              <div style={{ minHeight: 'calc(100vh - 112px)', background: 'var(--bg)', borderRight: '1px solid var(--border)', display: 'flex', alignItems: 'stretch' }}>
+                <PreviewStage
+                  status={previewStatus}
+                  format={format as PreviewFormat}
+                  progress={previewProgress}
+                  result={previewResult}
+                  error={previewError}
+                  videoMode={format === 'video' ? videoMode : undefined}
+                  onRetry={handleGenerate}
+                  onDownload={handleDownload}
+                  onRegenerate={handleGenerate}
+                  onNewAngle={handleGenerate}
+                />
+              </div>
+
+              {/* ── RIGHT: control panel ─────────────────────────────────── */}
+              <div style={{ position: 'sticky', top: 49, height: 'calc(100vh - 49px)', overflowY: 'auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
                 {/* Format */}
                 <div style={{ marginBottom: 20 }}>
@@ -936,21 +952,8 @@ function CreatePageInner() {
                     </a>
                   </div>
                 )}
-              </div>
 
-              {/* ── RIGHT: live preview stage ─────────────────────────────── */}
-              <PreviewStage
-                status={previewStatus}
-                format={format as PreviewFormat}
-                progress={previewProgress}
-                result={previewResult}
-                error={previewError}
-                videoMode={format === 'video' ? videoMode : undefined}
-                onRetry={handleGenerate}
-                onDownload={handleDownload}
-                onRegenerate={handleGenerate}
-                onNewAngle={handleGenerate}
-              />
+              </div>{/* /controls panel */}
             </div>
           )}
 

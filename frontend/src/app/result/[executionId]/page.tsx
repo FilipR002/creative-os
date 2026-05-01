@@ -211,9 +211,15 @@ export default function ResultPage() {
   const [metricsRetention,  setMetricsRetention]  = useState('');
   const [metricsSubmitted,  setMetricsSubmitted]  = useState(false);
 
-  // ── Advanced tools accordion ──────────────────────────────────────────────
-  const [advancedOpen,       setAdvancedOpen]       = useState(false);
-  const [advancedTool,       setAdvancedTool]       = useState<'hooks' | 'rewriter' | 'winner' | null>(null);
+  // ── Right panel tabs (replaces accordion) ────────────────────────────────
+  const [rightTab, setRightTab] = useState<'edit' | 'hooks' | 'rewriter' | 'winner' | 'context'>('edit');
+
+  // ── AI chat editor ────────────────────────────────────────────────────────
+  interface ChatMessage { role: 'user' | 'ai'; text: string; }
+  const [chatInput,   setChatInput]   = useState('');
+  const [chatLoading, setChatLoading] = useState(false);
+  const [chatTarget,  setChatTarget]  = useState<'hook' | 'copy' | 'cta' | 'all'>('hook');
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
   // ── Phase 1 — Ghost system state ─────────────────────────────────────────
   const [hookBoosterV1,      setHookBoosterV1]      = useState<HookBoosterOutput | null>(null);
@@ -698,6 +704,42 @@ export default function ResultPage() {
     finally { setRunningAutoWinner(false); }
   }
 
+  // ── AI chat editor — refines selected blocks via natural language ─────────
+
+  async function handleChatRefine() {
+    if (!chatInput.trim() || chatLoading || !editor) return;
+    const instruction = chatInput.trim();
+    setChatInput('');
+    setChatLoading(true);
+    setChatHistory(h => [...h, { role: 'user', text: instruction }]);
+    try {
+      const targets = chatTarget === 'all' ? ['hook', 'copy', 'cta'] : [chatTarget];
+      const updates: Record<string, string> = {};
+      await Promise.all(targets.map(async blockType => {
+        const current = editor.blocks[blockType] ?? '';
+        if (!current) return;
+        const refined = await apiRefineBlock({
+          blockType,
+          currentValue: current,
+          instruction,
+          brief:      result?.concept.brief,
+          angleSlug:  result?.winner?.angleSlug,
+        });
+        updates[blockType] = refined;
+      }));
+      for (const [blockId, value] of Object.entries(updates)) {
+        handleBlockChange(blockId, value);
+      }
+      const changed = Object.keys(updates).join(', ');
+      const preview = Object.values(updates)[0]?.slice(0, 55) ?? '';
+      setChatHistory(h => [...h, { role: 'ai', text: `✓ Updated ${changed} — "${preview}${preview.length >= 55 ? '…' : ''}"` }]);
+    } catch {
+      setChatHistory(h => [...h, { role: 'ai', text: '⚠ Refinement failed — try again.' }]);
+    } finally {
+      setChatLoading(false);
+    }
+  }
+
   // ── Regenerate ────────────────────────────────────────────────────────────
 
   async function handleRerun(modifier?: 'alt') {
@@ -816,7 +858,7 @@ export default function ResultPage() {
                 </button>
               </div>
             </div>
-            <h2 className="result-page-title">Your campaign is ready</h2>
+            <h2 className="result-page-title">Creative Studio</h2>
             <p className="result-page-sub">
               {formatIcon(format)} {format.charAt(0).toUpperCase() + format.slice(1)} · {copy.angleLabel} strategy
               <span className="result-edit-hint-inline"> · Hover any block → ✦ to refine with AI</span>
@@ -1239,11 +1281,246 @@ export default function ResultPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: Context panel ────────────────────────────────────── */}
-            <aside className="result-col-right">
+            {/* ── RIGHT: Tools + Context panel ────────────────────────────── */}
+            <aside className="result-col-right" style={{ padding: 0, display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
 
-              {/* Active campaign summary */}
-              {campaign && (
+              {/* ── Tab bar ──────────────────────────────────────────────── */}
+              <div style={{ display: 'flex', borderBottom: '1px solid #1e2330', background: '#080910', position: 'sticky', top: 0, zIndex: 2, flexShrink: 0 }}>
+                {([
+                  ['edit',     '✦', 'Edit'],
+                  ['hooks',    '⚡', 'Hooks'],
+                  ['rewriter', '✏', 'Rewrite'],
+                  ['winner',   '🏆', 'Compare'],
+                  ['context',  '◎', 'Context'],
+                ] as ['edit'|'hooks'|'rewriter'|'winner'|'context', string, string][]).map(([id, icon, label]) => (
+                  <button
+                    key={id}
+                    onClick={() => setRightTab(id)}
+                    style={{
+                      flex: 1, padding: '10px 4px', border: 'none', cursor: 'pointer',
+                      fontFamily: 'inherit', fontSize: 10, fontWeight: 700,
+                      background: rightTab === id ? 'rgba(99,102,241,0.08)' : 'transparent',
+                      borderBottom: `2px solid ${rightTab === id ? '#6366f1' : 'transparent'}`,
+                      color: rightTab === id ? '#a5b4fc' : '#444',
+                      transition: 'all 0.13s', lineHeight: 1.4,
+                    }}
+                  >
+                    <div>{icon}</div>
+                    <div>{label}</div>
+                  </button>
+                ))}
+              </div>
+
+              {/* ── Tab content ──────────────────────────────────────────── */}
+              <div style={{ padding: '16px', flex: 1 }}>
+
+                {/* ✦ EDIT — natural language chat editor */}
+                {rightTab === 'edit' && (
+                  <div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>✦ AI Copy Editor</div>
+                    <div style={{ fontSize: 11, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
+                      Describe any change in plain language — AI rewrites the selected block instantly.
+                    </div>
+
+                    {/* Block selector */}
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.09em', marginBottom: 7 }}>Target block</div>
+                      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                        {([['hook','Hook'],['copy','Body'],['cta','CTA'],['all','All']] as ['hook'|'copy'|'cta'|'all', string][]).map(([id, label]) => (
+                          <button key={id} onClick={() => setChatTarget(id)} style={{ padding: '4px 10px', borderRadius: 6, border: `1px solid ${chatTarget === id ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.07)'}`, fontFamily: 'inherit', fontSize: 11, fontWeight: chatTarget === id ? 700 : 500, cursor: 'pointer', transition: 'all 0.12s', background: chatTarget === id ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.03)', color: chatTarget === id ? '#a5b4fc' : '#555' }}>
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Chat history */}
+                    {chatHistory.length > 0 && (
+                      <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 7, maxHeight: 220, overflowY: 'auto' }}>
+                        {chatHistory.map((msg, i) => (
+                          <div key={i} style={{ padding: '8px 11px', borderRadius: 8, fontSize: 11, lineHeight: 1.55, background: msg.role === 'user' ? 'rgba(99,102,241,0.1)' : 'rgba(255,255,255,0.025)', border: `1px solid ${msg.role === 'user' ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.05)'}`, color: msg.role === 'user' ? '#a5b4fc' : '#777' }}>
+                            {msg.text}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Input + send */}
+                    <div style={{ position: 'relative' }}>
+                      <textarea
+                        value={chatInput}
+                        onChange={e => setChatInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleChatRefine(); } }}
+                        placeholder={`e.g. "make it more urgent" · "add social proof" · "cut to 5 words"…`}
+                        disabled={chatLoading}
+                        rows={3}
+                        style={{ width: '100%', padding: '10px 12px', paddingBottom: 38, borderRadius: 10, background: '#0d0e14', border: '1px solid #1e2330', color: '#e0e0e0', fontSize: 12, lineHeight: 1.5, resize: 'none', boxSizing: 'border-box' as const, fontFamily: 'inherit', outline: 'none' }}
+                      />
+                      <button
+                        onClick={handleChatRefine}
+                        disabled={!chatInput.trim() || chatLoading}
+                        style={{ position: 'absolute', bottom: 8, right: 8, padding: '5px 14px', borderRadius: 7, border: 'none', background: chatInput.trim() && !chatLoading ? '#6366f1' : '#1a1b24', color: chatInput.trim() && !chatLoading ? '#fff' : '#333', fontSize: 11, fontWeight: 700, cursor: chatInput.trim() && !chatLoading ? 'pointer' : 'default', fontFamily: 'inherit', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: 5 }}
+                      >
+                        {chatLoading
+                          ? <><span style={{ width: 10, height: 10, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Refining…</>
+                          : 'Refine →'}
+                      </button>
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 10, color: '#333' }}>Enter to send · Shift+Enter for new line</div>
+                  </div>
+                )}
+
+                {/* ⚡ HOOKS — Hook Booster v1 + v2 */}
+                {rightTab === 'hooks' && (
+                  <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>⚡ Hook Booster</div>
+                    <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
+                      Generate 3 hook variants, then boost with memory + fatigue signals — EXPLOIT / HYBRID / EXPLORE optimized.
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
+                      <button onClick={handleGenerateHooks} disabled={generatingHooks} style={{ padding: '8px 18px', background: generatingHooks ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, color: generatingHooks ? '#444' : '#fbbf24', fontSize: 12, fontWeight: 700, cursor: generatingHooks ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {generatingHooks ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fbbf24', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Generating…</> : '⚡ Generate Hooks (v1)'}
+                      </button>
+                      {hookBoosterV1 && (
+                        <button onClick={handleBoostHooksV2} disabled={boostingHooks} style={{ padding: '8px 18px', background: boostingHooks ? 'rgba(99,102,241,0.05)' : 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, color: boostingHooks ? '#444' : '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: boostingHooks ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          {boostingHooks ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#a5b4fc', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Boosting…</> : '🚀 Boost to v2'}
+                        </button>
+                      )}
+                    </div>
+                    {hookBoosterV1 && (
+                      <div style={{ marginBottom: hookBoosterV2 ? 16 : 0 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>v1 — {hookBoosterV1.format}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {hookBoosterV1.hooks.map((h, i) => (
+                            <div key={i} style={{ padding: '10px 14px', background: i === hookBoosterV1.best_hook_index ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.025)', border: `1px solid ${i === hookBoosterV1.best_hook_index ? 'rgba(245,158,11,0.25)' : '#1a1b24'}`, borderRadius: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 13, color: '#e0e0e0', lineHeight: 1.5, marginBottom: 4 }}>{h.hook}</div>
+                                  <div style={{ display: 'flex', gap: 8 }}>
+                                    <span style={{ fontSize: 9, color: '#555', textTransform: 'uppercase', fontWeight: 700, background: '#111', padding: '1px 6px', borderRadius: 99 }}>{h.strategy}</span>
+                                    <span style={{ fontSize: 9, color: '#444' }}>strength: <span style={{ color: '#888', fontWeight: 700 }}>{Math.round(h.strength_score * 100)}</span></span>
+                                  </div>
+                                </div>
+                                {i === hookBoosterV1.best_hook_index && <span style={{ fontSize: 9, color: '#fbbf24', fontWeight: 700, background: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: 99, flexShrink: 0 }}>BEST</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {hookBoosterV1.reasoning && <div style={{ fontSize: 11, color: '#444', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{hookBoosterV1.reasoning}</div>}
+                      </div>
+                    )}
+                    {hookBoosterV2 && (
+                      <div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>v2 — Memory + Fatigue Optimized</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {hookBoosterV2.hooks.map((h, i) => {
+                            const sc = h.strategy === 'EXPLOIT' ? '#22c55e' : h.strategy === 'EXPLORE' ? '#f59e0b' : '#8b5cf6';
+                            return (
+                              <div key={i} style={{ padding: '10px 14px', background: `${sc}07`, border: `1px solid ${sc}22`, borderRadius: 8 }}>
+                                <div style={{ display: 'flex', gap: 6, marginBottom: 6, alignItems: 'center' }}>
+                                  <span style={{ fontSize: 9, fontWeight: 700, color: sc, background: `${sc}18`, padding: '2px 8px', borderRadius: 99 }}>{h.strategy}</span>
+                                  <span style={{ fontSize: 9, color: '#444' }}>score: <span style={{ color: sc, fontWeight: 700 }}>{Math.round(h.strength_score * 100)}</span></span>
+                                </div>
+                                <div style={{ fontSize: 13, color: '#e0e0e0', lineHeight: 1.5, marginBottom: 6 }}>{h.hook}</div>
+                                <button onClick={() => handleBlockChange('hook', h.hook)} style={{ fontSize: 10, fontWeight: 700, color: sc, background: `${sc}12`, border: `1px solid ${sc}30`, borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Use this hook</button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {hookBoosterV2.reasoning && <div style={{ fontSize: 11, color: '#444', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{hookBoosterV2.reasoning}</div>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ✏️ REWRITE — Scene Rewriter */}
+                {rightTab === 'rewriter' && (
+                  <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>✏️ Scene Rewriter</div>
+                    <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
+                      Rewrites your hook 3 ways — Clarity, Emotional, Performance — based on this creative's performance signals.
+                    </div>
+                    <button onClick={handleRewriteScene} disabled={rewritingScene || !editor?.blocks['hook']} style={{ padding: '8px 18px', background: rewritingScene ? 'rgba(16,185,129,0.05)' : 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8, color: rewritingScene ? '#444' : '#34d399', fontSize: 12, fontWeight: 700, cursor: rewritingScene ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                      {rewritingScene ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#34d399', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Rewriting…</> : '✏️ Rewrite Scene (3 Variants)'}
+                    </button>
+                    {sceneRewriteResult && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {sceneRewriteResult.rewrites.map((r, i) => {
+                          const tc = r.improvement_type === 'CLARITY' ? '#6366f1' : r.improvement_type === 'EMOTIONAL' ? '#f59e0b' : '#22c55e';
+                          return (
+                            <div key={i} style={{ padding: '12px 14px', background: i === sceneRewriteResult.best_rewrite_index ? `${tc}08` : 'rgba(255,255,255,0.025)', border: `1px solid ${i === sceneRewriteResult.best_rewrite_index ? `${tc}30` : '#1a1b24'}`, borderRadius: 9 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                                <span style={{ fontSize: 9, fontWeight: 700, color: tc, background: `${tc}18`, padding: '2px 8px', borderRadius: 99 }}>{r.improvement_type}</span>
+                                <span style={{ fontSize: 10, color: '#444' }}>impact: <span style={{ color: tc, fontWeight: 700 }}>{Math.round(r.impact_score * 100)}</span></span>
+                                {i === sceneRewriteResult.best_rewrite_index && <span style={{ marginLeft: 'auto', fontSize: 9, color: tc, fontWeight: 700, background: `${tc}15`, padding: '1px 8px', borderRadius: 99 }}>BEST</span>}
+                              </div>
+                              <div style={{ fontSize: 13, color: '#ddd', lineHeight: 1.55, marginBottom: 6 }}>{r.rewritten_segment}</div>
+                              <div style={{ display: 'flex', gap: 7 }}>
+                                <div style={{ fontSize: 11, color: '#444', lineHeight: 1.5, fontStyle: 'italic', flex: 1 }}>{r.reason}</div>
+                                <button onClick={() => handleBlockChange('hook', r.rewritten_segment)} style={{ fontSize: 10, fontWeight: 700, color: tc, background: `${tc}12`, border: `1px solid ${tc}30`, borderRadius: 5, padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>Use</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        {sceneRewriteResult.reasoning && <div style={{ fontSize: 11, color: '#333', padding: '6px 12px', borderTop: '1px solid #1a1b24', lineHeight: 1.5 }}>{sceneRewriteResult.reasoning}</div>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* 🏆 COMPARE — Auto-Winner */}
+                {rightTab === 'winner' && (
+                  <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>🏆 Auto-Winner</div>
+                    <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
+                      Compares all variations — CTR 30% · Retention 30% · Conversion 25% · Clarity 15%.
+                    </div>
+                    {(!generation || generation.variations.length === 0) && (
+                      <div style={{ fontSize: 12, color: '#444', fontStyle: 'italic' }}>Generate variations first to compare them.</div>
+                    )}
+                    {generation && generation.variations.length > 0 && (
+                      <>
+                        <button onClick={handleAutoWinner} disabled={runningAutoWinner} style={{ padding: '8px 18px', background: runningAutoWinner ? 'rgba(99,102,241,0.05)' : 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8, color: runningAutoWinner ? '#444' : '#a5b4fc', fontSize: 12, fontWeight: 700, cursor: runningAutoWinner ? 'not-allowed' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
+                          {runningAutoWinner ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#a5b4fc', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Evaluating…</> : '🏆 Evaluate All Variations'}
+                        </button>
+                        {autoWinnerResult && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {autoWinnerResult.variants.map((v, i) => {
+                              const isWinner = v.id === autoWinnerResult.winner.id;
+                              return (
+                                <div key={v.id} style={{ padding: '12px 14px', background: isWinner ? 'rgba(99,102,241,0.07)' : 'rgba(255,255,255,0.02)', border: `1px solid ${isWinner ? 'rgba(99,102,241,0.25)' : '#1a1b24'}`, borderRadius: 9 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                    <span style={{ fontSize: 12, fontWeight: 700, color: isWinner ? '#a5b4fc' : '#666' }}>{isWinner && '🏆 '}{v.id === 'main' ? 'Main' : `Variation ${i}`}</span>
+                                    <span style={{ marginLeft: 'auto', fontSize: 16, fontWeight: 800, color: v.final_score >= 65 ? '#22c55e' : v.final_score >= 45 ? '#f59e0b' : '#ef4444' }}>{Math.round(v.final_score)}</span>
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 6 }}>
+                                    {([['CTR', v.breakdown.ctr,'#6366f1'],['Ret.', v.breakdown.retention,'#8b5cf6'],['Conv.', v.breakdown.conversion,'#10b981'],['Clarity', v.breakdown.clarity,'#f59e0b']] as [string,number,string][]).map(([dim, val, color]) => (
+                                      <div key={dim}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                                          <span style={{ fontSize: 8, color: '#444', textTransform: 'uppercase' }}>{dim}</span>
+                                          <span style={{ fontSize: 8, color, fontWeight: 700 }}>{Math.round(val)}</span>
+                                        </div>
+                                        <div style={{ height: 3, background: '#1e2330', borderRadius: 99, overflow: 'hidden' }}><div style={{ width: `${Math.round(val)}%`, height: '100%', background: color, borderRadius: 99 }} /></div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {autoWinnerResult.reasoning && <div style={{ fontSize: 11, color: '#444', padding: '8px 12px', borderTop: '1px solid #1a1b24', lineHeight: 1.5 }}>{autoWinnerResult.reasoning}</div>}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* ◎ CONTEXT — campaign info, strategy override, tracking */}
+                {rightTab === 'context' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                    {/* Active campaign summary */}
+                    {campaign && (
                 <div className="result-ctx-card">
                   <div className="result-ctx-title">Active Campaign</div>
                   <div className="result-ctx-name">{campaign.name ?? `Campaign ${campaign.id.slice(0, 6)}`}</div>
@@ -1421,6 +1698,11 @@ export default function ResultPage() {
                 );
               })()}
 
+                  </div>
+                )}
+
+              </div>
+
             </aside>
           </div>
         {/* Improvement result panel */}
@@ -1544,319 +1826,6 @@ export default function ResultPage() {
           />
         )}
 
-        {/* ── Advanced Tools (collapsed by default) ────────────────────────── */}
-        {result && (
-          <div style={{ marginTop: 32 }}>
-
-            {/* Accordion header */}
-            <button
-              onClick={() => setAdvancedOpen(o => !o)}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                background: '#0d0e14', border: '1px solid #1e2330', borderRadius: advancedOpen ? '12px 12px 0 0' : 12,
-                padding: '14px 20px', cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#888' }}>⚙ Advanced Tools</span>
-                <span style={{ fontSize: 11, color: '#444' }}>Hook Booster · Scene Rewriter · Auto-Winner</span>
-              </div>
-              <span style={{ fontSize: 16, color: '#444', transform: advancedOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
-            </button>
-
-            {advancedOpen && (
-              <div style={{ border: '1px solid #1e2330', borderTop: 'none', borderRadius: '0 0 12px 12px', background: '#0a0b10', padding: '0' }}>
-
-                {/* Tool selector tabs */}
-                <div style={{ display: 'flex', borderBottom: '1px solid #1e2330' }}>
-                  {([
-                    ['hooks',   '⚡', 'Hook Booster'],
-                    ['rewriter','✏️', 'Scene Rewriter'],
-                    ['winner',  '🏆', 'Auto-Winner'],
-                  ] as ['hooks'|'rewriter'|'winner', string, string][]).map(([id, icon, label]) => (
-                    <button
-                      key={id}
-                      onClick={() => setAdvancedTool(t => t === id ? null : id)}
-                      style={{
-                        flex: 1, padding: '12px 8px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                        background: advancedTool === id ? 'rgba(99,102,241,0.08)' : 'transparent',
-                        borderBottom: advancedTool === id ? '2px solid #6366f1' : '2px solid transparent',
-                        color: advancedTool === id ? '#a5b4fc' : '#555', fontSize: 12, fontWeight: 700,
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      {icon} {label}
-                    </button>
-                  ))}
-                </div>
-
-                <div style={{ padding: '20px' }}>
-
-            {/* ⚡ Hook Booster v1 + v2 */}
-            {advancedTool === 'hooks' && <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>⚡ Hook Booster</div>
-              <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                Generate 3 hook variants, then boost them with memory + fatigue signals to get EXPLOIT / HYBRID / EXPLORE optimized versions.
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 }}>
-                <button
-                  onClick={handleGenerateHooks}
-                  disabled={generatingHooks}
-                  style={{
-                    padding: '8px 18px',
-                    background: generatingHooks ? 'rgba(245,158,11,0.05)' : 'rgba(245,158,11,0.12)',
-                    border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8,
-                    color: generatingHooks ? '#444' : '#fbbf24', fontSize: 12, fontWeight: 700,
-                    cursor: generatingHooks ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}
-                >
-                  {generatingHooks
-                    ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fbbf24', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Generating…</>
-                    : '⚡ Generate Hooks (v1)'}
-                </button>
-                {hookBoosterV1 && (
-                  <button
-                    onClick={handleBoostHooksV2}
-                    disabled={boostingHooks}
-                    style={{
-                      padding: '8px 18px',
-                      background: boostingHooks ? 'rgba(99,102,241,0.05)' : 'rgba(99,102,241,0.15)',
-                      border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8,
-                      color: boostingHooks ? '#444' : '#a5b4fc', fontSize: 12, fontWeight: 700,
-                      cursor: boostingHooks ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                      display: 'flex', alignItems: 'center', gap: 6,
-                    }}
-                  >
-                    {boostingHooks
-                      ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#a5b4fc', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Boosting…</>
-                      : '🚀 Boost to v2 (Memory + Fatigue)'}
-                  </button>
-                )}
-              </div>
-
-              {/* v1 results */}
-              {hookBoosterV1 && (
-                <div style={{ marginBottom: hookBoosterV2 ? 16 : 0 }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#444', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-                    v1 Hooks — {hookBoosterV1.format}
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {hookBoosterV1.hooks.map((h, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          padding: '10px 14px',
-                          background: i === hookBoosterV1.best_hook_index ? 'rgba(245,158,11,0.07)' : 'rgba(255,255,255,0.025)',
-                          border: `1px solid ${i === hookBoosterV1.best_hook_index ? 'rgba(245,158,11,0.25)' : '#1a1b24'}`,
-                          borderRadius: 8,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, color: '#e0e0e0', lineHeight: 1.5, marginBottom: 4 }}>{h.hook}</div>
-                            <div style={{ display: 'flex', gap: 8 }}>
-                              <span style={{ fontSize: 9, color: '#555', textTransform: 'uppercase', fontWeight: 700, background: '#111', padding: '1px 6px', borderRadius: 99 }}>{h.strategy}</span>
-                              <span style={{ fontSize: 9, color: '#444' }}>strength: <span style={{ color: '#888', fontWeight: 700 }}>{Math.round(h.strength_score * 100)}</span></span>
-                            </div>
-                          </div>
-                          {i === hookBoosterV1.best_hook_index && (
-                            <span style={{ fontSize: 9, color: '#fbbf24', fontWeight: 700, background: 'rgba(245,158,11,0.15)', padding: '2px 8px', borderRadius: 99, flexShrink: 0 }}>BEST</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {hookBoosterV1.reasoning && (
-                    <div style={{ fontSize: 11, color: '#444', marginTop: 10, lineHeight: 1.5, fontStyle: 'italic' }}>{hookBoosterV1.reasoning}</div>
-                  )}
-                </div>
-              )}
-
-              {/* v2 results */}
-              {hookBoosterV2 && (
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#a5b4fc', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
-                    v2 Optimized Hooks (Memory + Fatigue + Exploration)
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    {hookBoosterV2.hooks.map((h, i) => {
-                      const stratColor = h.strategy === 'EXPLOIT' ? '#22c55e' : h.strategy === 'EXPLORE' ? '#f59e0b' : '#8b5cf6';
-                      return (
-                        <div
-                          key={i}
-                          style={{
-                            padding: '10px 14px',
-                            background: i === hookBoosterV2.best_hook_index ? 'rgba(99,102,241,0.07)' : 'rgba(255,255,255,0.02)',
-                            border: `1px solid ${i === hookBoosterV2.best_hook_index ? 'rgba(99,102,241,0.25)' : '#1a1b24'}`,
-                            borderRadius: 8,
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 13, color: '#e0e0e0', lineHeight: 1.5, marginBottom: 5 }}>{h.hook}</div>
-                              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                                <span style={{ fontSize: 9, color: stratColor, fontWeight: 700, background: `${stratColor}18`, padding: '1px 7px', borderRadius: 99 }}>{h.strategy}</span>
-                                {h.memory_bias_applied && <span style={{ fontSize: 9, color: '#6366f1', background: 'rgba(99,102,241,0.12)', padding: '1px 6px', borderRadius: 99 }}>memory</span>}
-                                {h.fatigue_adjusted && <span style={{ fontSize: 9, color: '#f59e0b', background: 'rgba(245,158,11,0.1)', padding: '1px 6px', borderRadius: 99 }}>fatigue adj</span>}
-                                <span style={{ fontSize: 9, color: '#444' }}>strength: <span style={{ color: '#888', fontWeight: 700 }}>{Math.round(h.strength_score * 100)}</span></span>
-                              </div>
-                            </div>
-                            {i === hookBoosterV2.best_hook_index && (
-                              <span style={{ fontSize: 9, color: '#a5b4fc', fontWeight: 700, background: 'rgba(99,102,241,0.15)', padding: '2px 8px', borderRadius: 99, flexShrink: 0 }}>BEST v2</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            }
-
-            {/* ✏️ Scene Rewriter */}
-            {advancedTool === 'rewriter' && <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>✏️ Scene Rewriter</div>
-              <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                Rewrites your current hook 3 ways — Clarity, Emotional, Performance — based on this creative's performance signals.
-              </div>
-              <button
-                onClick={handleRewriteScene}
-                disabled={rewritingScene || !editor?.blocks['hook']}
-                style={{
-                  padding: '8px 18px',
-                  background: rewritingScene ? 'rgba(16,185,129,0.05)' : 'rgba(16,185,129,0.12)',
-                  border: '1px solid rgba(16,185,129,0.3)', borderRadius: 8,
-                  color: rewritingScene ? '#444' : '#34d399', fontSize: 12, fontWeight: 700,
-                  cursor: rewritingScene ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                  display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14,
-                }}
-              >
-                {rewritingScene
-                  ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#34d399', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Rewriting…</>
-                  : '✏️ Rewrite Scene (3 Variants)'}
-              </button>
-              {sceneRewriteResult && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {sceneRewriteResult.rewrites.map((r, i) => {
-                    const typeColor = r.improvement_type === 'CLARITY' ? '#6366f1' : r.improvement_type === 'EMOTIONAL' ? '#f59e0b' : '#22c55e';
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          padding: '12px 14px',
-                          background: i === sceneRewriteResult.best_rewrite_index ? `${typeColor}08` : 'rgba(255,255,255,0.025)',
-                          border: `1px solid ${i === sceneRewriteResult.best_rewrite_index ? `${typeColor}30` : '#1a1b24'}`,
-                          borderRadius: 9,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: typeColor, background: `${typeColor}18`, padding: '2px 8px', borderRadius: 99 }}>{r.improvement_type}</span>
-                          <span style={{ fontSize: 10, color: '#444' }}>impact: <span style={{ color: typeColor, fontWeight: 700 }}>{Math.round(r.impact_score * 100)}</span></span>
-                          {i === sceneRewriteResult.best_rewrite_index && (
-                            <span style={{ marginLeft: 'auto', fontSize: 9, color: typeColor, fontWeight: 700, background: `${typeColor}15`, padding: '1px 8px', borderRadius: 99 }}>BEST</span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: 13, color: '#ddd', lineHeight: 1.55, marginBottom: 6 }}>{r.rewritten_segment}</div>
-                        <div style={{ fontSize: 11, color: '#444', lineHeight: 1.5, fontStyle: 'italic' }}>{r.reason}</div>
-                      </div>
-                    );
-                  })}
-                  {sceneRewriteResult.reasoning && (
-                    <div style={{ fontSize: 11, color: '#333', padding: '6px 12px', borderTop: '1px solid #1a1b24', lineHeight: 1.5 }}>{sceneRewriteResult.reasoning}</div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            }
-
-            {/* 🏆 Auto-Winner — Variation Comparison */}
-            {advancedTool === 'winner' && generation && generation.variations.length > 0 && (
-              <div style={{ background: '#0d0e14', border: '1px solid #1e2330', borderRadius: 12, padding: '18px 20px' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', marginBottom: 4 }}>🏆 Auto-Winner</div>
-                <div style={{ fontSize: 12, color: '#555', marginBottom: 14, lineHeight: 1.5 }}>
-                  Compares all your variations using weighted scoring: CTR 30% · Retention 30% · Conversion 25% · Clarity 15%.
-                </div>
-                <button
-                  onClick={handleAutoWinner}
-                  disabled={runningAutoWinner}
-                  style={{
-                    padding: '8px 18px',
-                    background: runningAutoWinner ? 'rgba(99,102,241,0.05)' : 'rgba(99,102,241,0.15)',
-                    border: '1px solid rgba(99,102,241,0.3)', borderRadius: 8,
-                    color: runningAutoWinner ? '#444' : '#a5b4fc', fontSize: 12, fontWeight: 700,
-                    cursor: runningAutoWinner ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
-                    display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14,
-                  }}
-                >
-                  {runningAutoWinner
-                    ? <><span style={{ width: 12, height: 12, border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#a5b4fc', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} />Evaluating…</>
-                    : '🏆 Evaluate All Variations'}
-                </button>
-                {autoWinnerResult && (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {autoWinnerResult.variants.map((v, i) => {
-                      const isWinner = v.id === autoWinnerResult.winner.id;
-                      return (
-                        <div
-                          key={v.id}
-                          style={{
-                            padding: '12px 14px',
-                            background: isWinner ? 'rgba(99,102,241,0.07)' : 'rgba(255,255,255,0.02)',
-                            border: `1px solid ${isWinner ? 'rgba(99,102,241,0.25)' : '#1a1b24'}`,
-                            borderRadius: 9,
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: isWinner ? '#a5b4fc' : '#666' }}>
-                              {isWinner && '🏆 '}{v.id === 'main' ? 'Main' : `Variation ${i}`}
-                            </span>
-                            <span style={{
-                              marginLeft: 'auto',
-                              fontSize: 16, fontWeight: 800,
-                              color: v.final_score >= 65 ? '#22c55e' : v.final_score >= 45 ? '#f59e0b' : '#ef4444',
-                            }}>
-                              {Math.round(v.final_score)}
-                            </span>
-                          </div>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                            {([
-                              ['CTR',        v.breakdown.ctr,        '#6366f1'],
-                              ['Retention',  v.breakdown.retention,  '#8b5cf6'],
-                              ['Conversion', v.breakdown.conversion, '#10b981'],
-                              ['Clarity',    v.breakdown.clarity,    '#f59e0b'],
-                            ] as [string, number, string][]).map(([dim, val, color]) => (
-                              <div key={dim}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
-                                  <span style={{ fontSize: 8, color: '#444', textTransform: 'uppercase' }}>{dim}</span>
-                                  <span style={{ fontSize: 8, color, fontWeight: 700 }}>{Math.round(val)}</span>
-                                </div>
-                                <div style={{ height: 3, background: '#1e2330', borderRadius: 99, overflow: 'hidden' }}>
-                                  <div style={{ width: `${Math.round(val)}%`, height: '100%', background: color, borderRadius: 99 }} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                    {autoWinnerResult.reasoning && (
-                      <div style={{ fontSize: 11, color: '#444', padding: '8px 12px', borderTop: '1px solid #1a1b24', lineHeight: 1.5 }}>{autoWinnerResult.reasoning}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-                </div>{/* /padding */}
-              </div>
-            )}{/* /advancedOpen */}
-
-          </div>
-        )}
 
       </main>
     </div>
