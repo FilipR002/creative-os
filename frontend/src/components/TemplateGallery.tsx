@@ -511,6 +511,49 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
 
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
 
+// ── Real-photo backgrounds ────────────────────────────────────────────────────
+// Eight templates get an Unsplash photo as their background layer.
+// The photo is fetched once per session from /api/unsplash?id=<template-id>.
+// Falls back gracefully to CSS backgrounds if the API key isn't configured.
+
+const PHOTO_TEMPLATE_IDS = new Set([
+  'full-bleed','dark-luxury','overlay-card','ugc-style',
+  'magazine-editorial','story-hook','product-center','neon-dark',
+]);
+
+const PHOTO_OVERLAYS: Record<string, string> = {
+  'full-bleed':         'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%)',
+  'dark-luxury':        'linear-gradient(135deg, rgba(0,0,0,0.68) 0%, rgba(0,0,0,0.48) 100%)',
+  'overlay-card':       'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.78) 100%)',
+  'ugc-style':          'linear-gradient(to bottom, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.55) 100%)',
+  'magazine-editorial': 'linear-gradient(to bottom, rgba(255,255,255,0.58) 0%, rgba(255,255,255,0.82) 100%)',
+  'story-hook':         'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.82) 100%)',
+  'product-center':     'linear-gradient(to bottom, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.48) 100%)',
+  'neon-dark':          'linear-gradient(135deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 100%)',
+};
+
+function useTemplatePhoto(id: string): string | null {
+  const [url, setUrl] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!PHOTO_TEMPLATE_IDS.has(id)) return;
+    const key = `__tmpl_photo_${id}`;
+    try {
+      const cached = sessionStorage.getItem(key);
+      if (cached) { setUrl(cached); return; }
+    } catch {}
+    fetch(`/api/unsplash?id=${id}`)
+      .then(r => r.ok ? r.json() : null)
+      .then((data: { url?: string } | null) => {
+        if (data?.url) {
+          try { sessionStorage.setItem(key, data.url); } catch {}
+          setUrl(data.url);
+        }
+      })
+      .catch(() => {});
+  }, [id]);
+  return url;
+}
+
 // ── Shared mini helpers ───────────────────────────────────────────────────────
 const T = ({ s, children, color, weight, align, spacing, caps }: {
   s: number; children: React.ReactNode; color: string; weight?: number;
@@ -554,13 +597,25 @@ const Col = ({ children, gap = 5, align = 'flex-start' }: { children: React.Reac
 
 const NOISE_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`;
 
-function SlideBg({ id, slide, accent }: { id: string; slide: 0|1|2; accent: string }) {
+function SlideBg({ id, slide, accent, photoUrl }: { id: string; slide: 0|1|2; accent: string; photoUrl?: string | null }) {
   const s: React.CSSProperties = { position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 };
   const blob = (l: string, t: string, sz: number, col: string, op = 0.32) => (
     <div key={`${l}${t}`} style={{ position: 'absolute', left: l, top: t, width: sz, height: sz, borderRadius: '50%', background: col, filter: `blur(${Math.round(sz * 0.55)}px)`, opacity: op, pointerEvents: 'none' }} />
   );
   const dotGrid = `radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px)`;
   const lineGrid = `linear-gradient(${accent}0d 1px, transparent 1px), linear-gradient(90deg, ${accent}0d 1px, transparent 1px)`;
+
+  // ── Real photo background (slides 0 + 1 only — CTA keeps accent override) ──
+  if (photoUrl && PHOTO_TEMPLATE_IDS.has(id) && slide !== 2) return (
+    <div style={{ ...s, background: '#000' }}>
+      <img
+        src={photoUrl} alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78 }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.025 }} />
+    </div>
+  );
 
   // CTA slide overrides — accent flood for call-to-action energy
   if (slide === 2 && ['full-bleed','number-list','social-proof-grid','story-hook','side-by-side','problem-slide'].includes(id))
@@ -679,8 +734,8 @@ function SlideBg({ id, slide, accent }: { id: string; slide: 0|1|2; accent: stri
 }
 
 // ── TemplateSlide — orchestrates SlideBg + per-template content ──────────────
-function TemplateSlide({ id, slide, txt, muted, accent }: {
-  id: string; slide: 0|1|2; txt: string; muted: string; accent: string;
+function TemplateSlide({ id, slide, txt, muted, accent, photoUrl }: {
+  id: string; slide: 0|1|2; txt: string; muted: string; accent: string; photoUrl?: string | null;
 }) {
   // Content wrappers — sit above SlideBg at zIndex:1, no background
   const z: React.CSSProperties = { position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' };
@@ -1867,7 +1922,7 @@ function TemplateSlide({ id, slide, txt, muted, accent }: {
 
   return (
     <>
-      <SlideBg id={id} slide={slide} accent={accent} />
+      <SlideBg id={id} slide={slide} accent={accent} photoUrl={photoUrl} />
       {content}
     </>
   );
@@ -1902,11 +1957,29 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
     background: bg, overflow: 'hidden',
   };
 
+  // ── Real-photo support ───────────────────────────────────────────────────────
+  const photo     = useTemplatePhoto(id);
+  const hasPhoto  = Boolean(photo && PHOTO_TEMPLATE_IDS.has(id));
+  // Layer: img + gradient overlay — sits at absolute zIndex 0/1
+  const photoLayer = hasPhoto ? (
+    <>
+      <img
+        src={photo!} alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78, zIndex: 0 }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))', zIndex: 1 }} />
+    </>
+  ) : null;
+  // Content z-index wrapper for photo templates — ensures text is above photo
+  const pz = (extra?: React.CSSProperties): React.CSSProperties =>
+    hasPhoto ? { position: 'relative', zIndex: 2, ...extra } : { ...extra };
+
   // ── full-bleed ──────────────────────────────────────────────────────────────
   if (id === 'full-bleed') return (
-    <div style={{ ...wrap, background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, gap: 6 }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)' }} />
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(135deg, ${accent}, ${accent}cc)`, gap: 6 }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)' }} />}
+      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
         <T s={7} color="rgba(255,255,255,0.7)" align="center" caps spacing="0.12em">Your Brand</T>
         <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">Stop Scrolling.</T>
         <T s={9} color="rgba(255,255,255,0.75)" align="center">This changes everything.</T>
@@ -1954,17 +2027,20 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
 
   // ── ugc-style ───────────────────────────────────────────────────────────────
   if (id === 'ugc-style') return (
-    <div style={{ ...wrap, background: '#fff', gap: 7, alignItems: 'flex-start' }}>
-      <Row gap={6}>
-        <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)` }} />
-        <Col gap={1}>
-          <T s={8} color="#1e293b" weight={700}>@realuser</T>
-          <T s={7} color="rgba(30,41,59,0.4)">Sponsored</T>
-        </Col>
-      </Row>
-      <T s={9} color="#1e293b" weight={500}>"I can't believe how much this changed my life in just 30 days."</T>
-      <Stars />
-      <Btn label="Try It Free" bg={accent} />
+    <div style={{ ...wrap, background: hasPhoto ? '#e8f0f8' : '#fff', gap: 7, alignItems: 'flex-start' }}>
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 7 })}>
+        <Row gap={6}>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)` }} />
+          <Col gap={1}>
+            <T s={8} color="#1e293b" weight={700}>@realuser</T>
+            <T s={7} color="rgba(30,41,59,0.4)">Sponsored</T>
+          </Col>
+        </Row>
+        <T s={9} color="#1e293b" weight={500}>"I can't believe how much this changed my life in just 30 days."</T>
+        <Stars />
+        <Btn label="Try It Free" bg={accent} />
+      </div>
     </div>
   );
 
@@ -2032,11 +2108,14 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   // ── dark-luxury ─────────────────────────────────────────────────────────────
   if (id === 'dark-luxury') return (
     <div style={{ ...wrap, background: '#090909', gap: 8 }}>
-      <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
-      <T s={7} color="#d4af37" caps spacing="0.2em" weight={600}>Exclusively Yours</T>
-      <T s={14} color="#f1f5f9" weight={300} align="center" spacing="0.05em">Luxury redefined.</T>
-      <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
-      <Btn label="Explore" bg="transparent" color="#d4af37" border="1px solid #d4af3755" />
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
+        <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
+        <T s={7} color="#d4af37" caps spacing="0.2em" weight={600}>Exclusively Yours</T>
+        <T s={14} color="#f1f5f9" weight={300} align="center" spacing="0.05em">Luxury redefined.</T>
+        <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
+        <Btn label="Explore" bg="transparent" color="#d4af37" border="1px solid #d4af3755" />
+      </div>
     </div>
   );
 
@@ -2055,10 +2134,13 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   // ── story-hook ──────────────────────────────────────────────────────────────
   if (id === 'story-hook') return (
     <div style={{ ...wrap, background: '#0f1117', alignItems: 'flex-start', gap: 8 }}>
-      <T s={8} color={accent} weight={700}>A true story →</T>
-      <T s={13} color="#f1f5f9" weight={800} spacing="-0.02em">"I made $0 for 3 years."</T>
-      <T s={8} color="rgba(241,245,249,0.5)">Then I discovered one thing that changed everything.</T>
-      <Btn label="Read Story" bg={accent} />
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 })}>
+        <T s={8} color={accent} weight={700}>A true story →</T>
+        <T s={13} color="#f1f5f9" weight={800} spacing="-0.02em">"I made $0 for 3 years."</T>
+        <T s={8} color="rgba(241,245,249,0.5)">Then I discovered one thing that changed everything.</T>
+        <Btn label="Read Story" bg={accent} />
+      </div>
     </div>
   );
 
@@ -2085,38 +2167,47 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
 
   // ── product-center ──────────────────────────────────────────────────────────
   if (id === 'product-center') return (
-    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⚡</div>
-      <T s={11} color="#1e293b" weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
-      <Row gap={10}>
-        {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => <T key={f} s={7} color="#475569" weight={600}>{f}</T>)}
-      </Row>
-      <Btn label="Try Free" bg={accent} />
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#f8fafc', gap: 8 }}>
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⚡</div>
+        <T s={11} color={hasPhoto ? '#fff' : '#1e293b'} weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
+        <Row gap={10}>
+          {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => <T key={f} s={7} color={hasPhoto ? 'rgba(255,255,255,0.7)' : '#475569'} weight={600}>{f}</T>)}
+        </Row>
+        <Btn label="Try Free" bg={accent} />
+      </div>
     </div>
   );
 
   // ── neon-dark ───────────────────────────────────────────────────────────────
   if (id === 'neon-dark') return (
     <div style={{ ...wrap, background: '#030712', gap: 6 }}>
-      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: 100, height: 100, borderRadius: '50%', background: `${accent}20`, filter: 'blur(25px)', pointerEvents: 'none' }} />
-      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Next level</T>
-      <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em" >GLOW UP</T>
-      <T s={8} color="rgba(255,255,255,0.45)" align="center">Your brand, amplified.</T>
-      <Btn label="Get Access" bg={accent} />
+      {photoLayer}
+      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: 100, height: 100, borderRadius: '50%', background: `${accent}20`, filter: 'blur(25px)', pointerEvents: 'none', zIndex: hasPhoto ? 2 : 0 }} />
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 })}>
+        <T s={7} color={accent} caps spacing="0.15em" weight={700}>Next level</T>
+        <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">GLOW UP</T>
+        <T s={8} color="rgba(255,255,255,0.45)" align="center">Your brand, amplified.</T>
+        <Btn label="Get Access" bg={accent} />
+      </div>
     </div>
   );
 
   // ── magazine-editorial ──────────────────────────────────────────────────────
   if (id === 'magazine-editorial') return (
     <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      <Row gap={8}>
-        <T s={7} color="#94a3b8" caps spacing="0.12em">Issue 12</T>
-        <div style={{ height: 1, background: '#94a3b8', flex: 1, marginTop: 4 }} />
-      </Row>
-      <T s={13} color="#1e293b" weight={800} spacing="-0.02em">The future of content</T>
-      <T s={8} color="#64748b">5 trends reshaping how brands speak.</T>
-      <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />
-      <T s={7} color="#94a3b8">Read the full story →</T>
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 7 })}>
+        <Row gap={8}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Issue 12</T>
+          <div style={{ height: 1, background: '#94a3b8', flex: 1, marginTop: 4 }} />
+        </Row>
+        <T s={13} color="#1e293b" weight={800} spacing="-0.02em">The future of content</T>
+        <T s={8} color="#64748b">5 trends reshaping how brands speak.</T>
+        <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />
+        <T s={7} color="#94a3b8">Read the full story →</T>
+      </div>
     </div>
   );
 
@@ -2232,9 +2323,10 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
 
   // ── overlay-card ────────────────────────────────────────────────────────────
   if (id === 'overlay-card') return (
-    <div style={{ ...wrap, background: `linear-gradient(180deg, ${accent}66, ${accent}dd)`, justifyContent: 'flex-end', padding: 0 }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: `${accent}44` }} />
-      <div style={{ width: '100%', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(180deg, ${accent}66, ${accent}dd)`, justifyContent: 'flex-end', padding: 0 }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: `${accent}44` }} />}
+      <div style={{ width: '100%', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5, position: 'relative', zIndex: 2 }}>
         <T s={10} color="#fff" weight={800}>Ready to transform?</T>
         <T s={7} color="rgba(255,255,255,0.65)">Join thousands already inside.</T>
         <Btn label="Get Access Now" bg="#fff" color={accent} />
@@ -2314,11 +2406,12 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const [paused, setPaused] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const style   = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
-  const txt     = style.light ? '#1e293b' : '#ffffff';
-  const muted   = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
-  const accent  = TEMPLATE_ACCENTS[id] ?? TONE_ACCENTS[tone] ?? '#4f46e5';
-  const dotBase = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
+  const style    = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
+  const txt      = style.light ? '#1e293b' : '#ffffff';
+  const muted    = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
+  const accent   = TEMPLATE_ACCENTS[id] ?? TONE_ACCENTS[tone] ?? '#4f46e5';
+  const dotBase  = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
+  const photoUrl = useTemplatePhoto(id);
 
   useEffect(() => {
     if (paused) return;
@@ -2337,9 +2430,9 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
     >
       {/* Full-bleed slide — crossfades */}
       <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.25s ease', position: 'absolute', inset: 0 }}>
-        {slide === 0 && <TemplateSlide id={id} slide={0} txt={txt} muted={muted} accent={accent} />}
-        {slide === 1 && <TemplateSlide id={id} slide={1} txt={txt} muted={muted} accent={accent} />}
-        {slide === 2 && <TemplateSlide id={id} slide={2} txt={txt} muted={muted} accent={accent} />}
+        {slide === 0 && <TemplateSlide id={id} slide={0} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
+        {slide === 1 && <TemplateSlide id={id} slide={1} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
+        {slide === 2 && <TemplateSlide id={id} slide={2} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
       </div>
 
       {/* Instagram-native progress dots */}

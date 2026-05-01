@@ -148,6 +148,31 @@ export interface ImagePromptResult {
   }[];
 }
 
+// ── Background Image Generation ──────────────────────────────────────────────
+
+export class GenerateBackgroundDto {
+  @IsString()
+  templateId!: string;   // e.g. 'full-bleed', 'dark-luxury'
+
+  @IsOptional() @IsString()
+  product?: string;      // "wireless noise-cancelling headphones"
+
+  @IsOptional() @IsString()
+  brand?: string;        // "SoundWave"
+
+  @IsOptional() @IsString()
+  style?: string;        // "cinematic", "editorial", "lifestyle", "product"
+
+  @IsOptional() @IsString()
+  mood?: string;         // "dark and moody", "bright and airy", "vibrant"
+}
+
+export interface BackgroundResult {
+  imageUrl:   string;   // base64 data URL ready for <img src>
+  prompt:     string;   // the prompt used to generate it
+  templateId: string;
+}
+
 // ── Block Refinement ──────────────────────────────────────────────────────────
 
 export class RefineBlockDto {

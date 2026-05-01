@@ -515,6 +515,26 @@ export function generateBannerImages(creativeId: string): Promise<{ images: Bann
   return req(`/api/banner/${creativeId}/images`, { method: 'POST' });
 }
 
+// ── AI Background Generation ─────────────────────────────────────────────────
+// Generates a photographic background for a template using Imagen 4.
+// Returns a base64 data URL ready for <img src>.
+
+export interface BackgroundResult {
+  imageUrl:   string;
+  prompt:     string;
+  templateId: string;
+}
+
+export function generateTemplateBackground(opts: {
+  templateId: string;
+  product?:   string;
+  brand?:     string;
+  style?:     string;
+  mood?:      string;
+}): Promise<BackgroundResult> {
+  return req('/api/creative-ai/background', { method: 'POST', body: JSON.stringify(opts) });
+}
+
 // ── Generation Versions ───────────────────────────────────────────────────────
 
 export interface GenerationVersion {

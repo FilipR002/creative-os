@@ -11,6 +11,7 @@ import {
   GenerateVideoScriptDto,
   GenerateImagePromptsDto,
   RefineBlockDto,
+  GenerateBackgroundDto,
 } from './creative-ai.types';
 
 @ApiTags('Creative AI')
@@ -62,5 +63,18 @@ export class CreativeAiController {
   @ApiOperation({ summary: 'Refine a single copy block with a targeted instruction' })
   refineBlock(@Body() dto: RefineBlockDto) {
     return this.service.refineBlock(dto);
+  }
+
+  /**
+   * Generate an AI photographic background for a template using Imagen 4.
+   * Returns a base64 data URL — ready to render as <img src> in the builder.
+   *
+   * POST /api/creative-ai/background
+   * Body: { templateId, product?, brand?, style?, mood? }
+   */
+  @Post('background')
+  @ApiOperation({ summary: 'Generate a photographic AI background for a template (Imagen 4)' })
+  generateBackground(@Body() dto: GenerateBackgroundDto) {
+    return this.service.generateBackground(dto);
   }
 }

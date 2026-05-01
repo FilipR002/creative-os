@@ -13,12 +13,14 @@ import { AutonomousLoopService }       from '../autonomous-loop/autonomous-loop.
 import { CreativeDNAService }          from '../creative-dna/creative-dna.service';
 import { buildAngleBlock }             from '../creative-os/lib/angle-definitions';
 import { ApiLogService, estimateCost } from '../billing/api-log.service';
+import { ImageService }                from '../image/image.service';
 import type {
   GenerateAdCopyDto,   AdCopyResult,
   GenerateHooksDto,    HooksResult,
   GenerateVideoScriptDto, VideoScriptResult,
   GenerateImagePromptsDto, ImagePromptResult,
   RefineBlockDto, RefinedBlockResult,
+  GenerateBackgroundDto, BackgroundResult,
 } from './creative-ai.types';
 
 const MODEL   = 'claude-opus-4-5';
@@ -46,7 +48,8 @@ export class CreativeAiService {
   private readonly logger = new Logger(CreativeAiService.name);
 
   constructor(
-    private readonly config: ConfigService,
+    private readonly config:  ConfigService,
+    private readonly images:  ImageService,
     @Optional() private readonly insightPatterns:  InsightPatternService,
     @Optional() private readonly autonomousLoop:   AutonomousLoopService,
     @Optional() private readonly creativeDna:      CreativeDNAService,
@@ -355,6 +358,48 @@ Return JSON exactly:
     }
 
     throw lastErr; // unreachable, satisfies TS
+  }
+
+  // ── AI Background Generation ─────────────────────────────────────────────────
+  // Uses Imagen 4 to generate a photographic background for a specific template.
+  // Prompt is auto-derived from templateId + optional brand/product/mood hints.
+
+  /** Template → Imagen 4 prompt keywords */
+  private readonly BG_PROMPT_MAP: Record<string, string> = {
+    'full-bleed':         'cinematic lifestyle scene, dramatic lighting, wide angle, atmospheric depth, editorial photography',
+    'dark-luxury':        'dark marble texture, luxury product photography, dramatic shadows, rich black background, moody studio',
+    'overlay-card':       'blurred city bokeh, urban night lights, depth of field, cinematic frame, editorial',
+    'ugc-style':          'authentic lifestyle, natural light, candid outdoor scene, warm tones, real person environment',
+    'magazine-editorial': 'clean editorial flat lay, soft natural light, white minimal surface, high fashion aesthetic',
+    'story-hook':         'dramatic wide-angle landscape, moody atmosphere, golden hour, cinematic composition',
+    'product-center':     'professional product photography, studio lighting, clean minimal background, sharp focus',
+    'neon-dark':          'neon lights, dark urban scene, cyberpunk aesthetic, vibrant glow, night photography',
+  };
+
+  async generateBackground(dto: GenerateBackgroundDto): Promise<BackgroundResult> {
+    const baseKeywords = this.BG_PROMPT_MAP[dto.templateId]
+      ?? 'professional advertising background, clean composition, high quality photography';
+
+    const parts: string[] = [baseKeywords];
+    if (dto.product) parts.push(`featuring ${dto.product}`);
+    if (dto.brand)   parts.push(`${dto.brand} brand aesthetic`);
+    if (dto.style)   parts.push(dto.style);
+    if (dto.mood)    parts.push(dto.mood);
+    parts.push('ultra high quality, 8k resolution, photorealistic, advertising quality');
+
+    const prompt = parts.join(', ');
+
+    const result = await this.images.generateFromPrompt(prompt, {
+      angle:    dto.templateId,
+      platform: 'instagram',
+      format:   'carousel',
+    });
+
+    return {
+      imageUrl:   result.imageUrl,
+      prompt:     result.promptUsed,
+      templateId: dto.templateId,
+    };
   }
 
   // ── Safe JSON parser — never crashes the server ───────────────────────────────
