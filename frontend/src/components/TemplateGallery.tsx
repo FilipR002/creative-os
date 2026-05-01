@@ -517,962 +517,1189 @@ const Col = ({ children, gap = 5, align = 'flex-start' }: { children: React.Reac
 );
 
 // ── All 3 slides per template ─────────────────────────────────────────────────
-function TemplateSlide({ id, slide, txt, muted, accent }: {
+// Each slide fills the card absolutely — real ad aesthetic, no chrome labels.
+// Slides: 0 = hook/cover, 1 = body/feature, 2 = CTA/close
+
+function TemplateSlide({ id, slide, accent }: {
   id: string; slide: 0|1|2; txt: string; muted: string; accent: string;
 }) {
-  const gold = 'rgba(212,175,55,0.75)';
+  const abs: React.CSSProperties = { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' };
+  const center: React.CSSProperties = { ...abs, alignItems: 'center', justifyContent: 'center' };
 
-  // ─ FULL BLEED ────────────────────────────────────────────────────────────
+  // ─ full-bleed ──────────────────────────────────────────────────────────────
   if (id === 'full-bleed') {
+    const bg = 'linear-gradient(160deg,#1a1035 0%,#2d1b69 50%,#0f0a1e 100%)';
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14 }}>
-        <T s={7} color="rgba(255,255,255,0.6)" weight={700} caps spacing="0.1em">THIS CHANGES EVERYTHING</T>
-        <T s={11} color="#fff" weight={900} spacing="-0.02em">Stop Scrolling.</T>
-        <div style={{ marginTop: 8 }}><Btn label="See Why →" bg={accent} /></div>
+      <div style={{ ...abs, background: bg }}>
+        <div style={{ position: 'absolute', top: '15%', left: '50%', transform: 'translateX(-50%)', width: 120, height: 120, borderRadius: '50%', background: `radial-gradient(circle, ${accent}55 0%, transparent 70%)` }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top,rgba(0,0,0,0.9) 0%,transparent 100%)', padding: '18px 14px 16px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.12em">New Drop</T>
+          <T s={17} color="#fff" weight={900} spacing="-0.04em">Stop Scrolling.</T>
+          <T s={8} color="rgba(255,255,255,0.6)">This changes your game →</T>
+        </div>
       </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {['Proven by 10,000+ users','Works in under 60 seconds','No experience needed'].map((t, i) => (
-          <Row key={i}><Check color={accent} /><T s={9} color="#fff" weight={600}>{t}</T></Row>
+      <div style={{ ...abs, background: bg, padding: '18px 14px', justifyContent: 'center', gap: 8 }}>
+        {[['⚡','Works in 60 seconds'],['✅','10,000+ happy users'],['🔒','No experience needed']].map(([icon, t], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: '7px 10px' }}>
+            <span style={{ fontSize: 11 }}>{icon}</span>
+            <T s={8} color="#f1f5f9" weight={600}>{t}</T>
+          </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 50%)', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14, gap: 6 }}>
-        <T s={9} color="rgba(255,255,255,0.7)" weight={600}>Limited time offer</T>
-        <Btn label="Get Started Free →" bg={accent} />
+      <div style={{ ...center, background: accent, gap: 10 }}>
+        <T s={9} color="rgba(255,255,255,0.7)" align="center">Start for free today</T>
+        <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">Get Access Now</T>
+        <div style={{ background: '#fff', borderRadius: 30, padding: '8px 20px', marginTop: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
+          <T s={9} color={accent} weight={800}>Claim Free Trial →</T>
+        </div>
       </div>
     );
   }
 
-  // ─ BOLD HEADLINE ─────────────────────────────────────────────────────────
+  // ─ bold-headline ───────────────────────────────────────────────────────────
   if (id === 'bold-headline') {
     if (slide === 0) return (
-      <Col align="center" gap={4}>
-        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em', lineHeight: 0.9, textAlign: 'center', textTransform: 'uppercase' as const }}>THE<br/><span style={{ color: accent }}>TRUTH</span></div>
-        <div style={{ height: 2, background: accent, width: 36, borderRadius: 1, marginTop: 4 }} />
-        <T s={8} color="rgba(255,255,255,0.5)" weight={600} align="center">Swipe to find out</T>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={6}>
-        {['FAST.', 'PROVEN.', 'POWERFUL.'].map((w, i) => (
-          <div key={i} style={{ fontSize: 16, fontWeight: 900, color: i === 1 ? accent : '#fff', letterSpacing: '-0.04em', textTransform: 'uppercase' as const, lineHeight: 1 }}>{w}</div>
-        ))}
-        <div style={{ height: 2, background: 'rgba(255,255,255,0.15)', width: '100%', marginTop: 2 }} />
-      </Col>
-    );
-    return (
-      <Col align="center" gap={8}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', textAlign: 'center', textTransform: 'uppercase' as const }}>Ready?</div>
-        <Btn label="START NOW →" bg={accent} />
-      </Col>
-    );
-  }
-
-  // ─ GRADIENT POP ──────────────────────────────────────────────────────────
-  if (id === 'gradient-pop') {
-    if (slide === 0) return (
-      <Col align="center" gap={6}>
-        <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 99, padding: '3px 10px' }}>
-          <T s={7} color="#fff" weight={800} caps spacing="0.08em">NEW DROP</T>
+      <div style={{ ...abs, background: '#0a0a0a' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} />
+        <div style={{ ...center, gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.15em">The truth about</T>
+          <div style={{ textAlign: 'center', lineHeight: 0.88, letterSpacing: '-0.05em' }}>
+            <div style={{ fontSize: 26, fontWeight: 900, color: '#f1f5f9' }}>THE</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: accent }}>TRUTH</div>
+          </div>
+          <div style={{ height: 2, background: accent, width: 40, borderRadius: 1, marginTop: 4 }} />
+          <T s={7} color="rgba(255,255,255,0.4)" align="center">Swipe →</T>
         </div>
-        <T s={13} color="#fff" weight={900} align="center" spacing="-0.03em">Don't scroll past this</T>
-        <T s={8} color="rgba(255,255,255,0.65)" weight={500} align="center">Swipe to see more →</T>
-      </Col>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {[['⚡','Instant results'],['🎯','Built for growth'],['🔥','Used by 50K+ brands']].map(([ic, t], i) => (
-          <Row key={i} gap={7}>
-            <div style={{ fontSize: 11 }}>{ic}</div>
-            <T s={9} color="#fff" weight={600}>{t}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#0a0a0a', padding: '14px' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} />
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {['FAST.','PROVEN.','POWERFUL.'].map((w, i) => (
+            <div key={i} style={{ fontSize: 20, fontWeight: 900, color: i === 1 ? accent : '#f1f5f9', letterSpacing: '-0.04em', lineHeight: 1 }}>{w}</div>
+          ))}
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.1)', marginTop: 4 }} />
+          <T s={7} color="rgba(255,255,255,0.35)">Results you can measure.</T>
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={8}>
-        <T s={9} color="rgba(255,255,255,0.8)" align="center">Limited spots available</T>
-        <Btn label="Claim Your Spot →" bg="rgba(255,255,255,0.25)" border="1.5px solid rgba(255,255,255,0.5)" color="#fff" />
-      </Col>
+      <div style={{ ...abs, background: '#0a0a0a' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} />
+        <div style={{ ...center, gap: 10 }}>
+          <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">Ready to start?</T>
+          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
+            <T s={9} color="#fff" weight={800}>GET STARTED →</T>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // ─ DIAGONAL SPLIT ────────────────────────────────────────────────────────
+  // ─ gradient-pop ────────────────────────────────────────────────────────────
+  if (id === 'gradient-pop') {
+    const gbg = 'linear-gradient(135deg,#7c3aed 0%,#db2777 60%,#f97316 100%)';
+    if (slide === 0) return (
+      <div style={{ ...center, background: gbg, gap: 8 }}>
+        <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '3px 12px', border: '1px solid rgba(255,255,255,0.3)' }}>
+          <T s={7} color="#fff" weight={700}>✦ New Release</T>
+        </div>
+        <T s={18} color="#fff" weight={900} align="center" spacing="-0.04em">Don't scroll past.</T>
+        <T s={8} color="rgba(255,255,255,0.75)" align="center">You'll wish you didn't.</T>
+        <div style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', borderRadius: 30, padding: '7px 18px', border: '1px solid rgba(255,255,255,0.4)', marginTop: 4 }}>
+          <T s={8} color="#fff" weight={700}>See Why →</T>
+        </div>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: gbg, padding: '16px 14px', justifyContent: 'center', gap: 8 }}>
+        <T s={9} color="rgba(255,255,255,0.7)" weight={600} align="center">What you get:</T>
+        {['Instant results','10x faster workflow','Community support'].map((t, i) => (
+          <div key={i} style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(6px)', borderRadius: 8, padding: '6px 10px', display: 'flex', alignItems: 'center', gap: 6, border: '1px solid rgba(255,255,255,0.2)' }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', flexShrink: 0 }} />
+            <T s={8} color="#fff" weight={600}>{t}</T>
+          </div>
+        ))}
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: gbg, gap: 10 }}>
+        <T s={8} color="rgba(255,255,255,0.7)" align="center">Limited time</T>
+        <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Start Free Today</T>
+        <div style={{ background: '#fff', borderRadius: 30, padding: '8px 22px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          <T s={9} color="#7c3aed" weight={800}>Claim Offer →</T>
+        </div>
+      </div>
+    );
+  }
+
+  // ─ diagonal-split ──────────────────────────────────────────────────────────
   if (id === 'diagonal-split') {
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: '#f8fafc' }} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: '55%', height: '100%', background: accent, clipPath: 'polygon(22% 0, 100% 0, 100% 100%, 0% 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 12px', gap: 3 }}>
-          <T s={8} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">BEFORE vs AFTER</T>
-          <T s={11} color="#1e293b" weight={800} spacing="-0.02em">Old way</T>
-          <T s={8} color="rgba(30,41,59,0.5)" weight={500}>taking forever</T>
+      <div style={{ ...abs, background: '#f8fafc', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: accent, clipPath: 'polygon(0 0, 52% 0, 42% 100%, 0 100%)' }} />
+        <div style={{ position: 'absolute', left: '4%', top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4, width: '40%' }}>
+          <T s={7} color="rgba(255,255,255,0.65)" caps spacing="0.1em">Before</T>
+          <T s={11} color="#fff" weight={900} spacing="-0.02em">Stuck &amp; Slow</T>
+        </div>
+        <div style={{ position: 'absolute', right: '4%', top: '50%', transform: 'translateY(-50%)', display: 'flex', flexDirection: 'column', gap: 4, width: '44%' }}>
+          <T s={7} color={accent} caps spacing="0.1em">After</T>
+          <T s={11} color="#1e293b" weight={900} spacing="-0.02em">Fast &amp; Free</T>
         </div>
       </div>
     );
     if (slide === 1) return (
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: '#f8fafc' }} />
-        <div style={{ position: 'absolute', top: 0, right: 0, width: '55%', height: '100%', background: accent, clipPath: 'polygon(22% 0, 100% 0, 100% 100%, 0% 100%)' }} />
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 12px', gap: 3 }}>
-          <T s={8} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">WITH US</T>
-          <T s={11} color="#1e293b" weight={800} spacing="-0.02em">New way</T>
-          <T s={8} color="rgba(30,41,59,0.5)" weight={500}>done in 60 sec</T>
+      <div style={{ ...abs, background: '#f8fafc', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: accent, clipPath: 'polygon(0 0, 52% 0, 42% 100%, 0 100%)' }} />
+        <div style={{ position: 'absolute', left: '4%', top: '50%', transform: 'translateY(-50%)', width: '38%', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {['Wasted time','High costs','No results'].map((t, i) => (
+            <Row key={i} gap={4}><Cross /><T s={7} color="rgba(255,255,255,0.8)">{t}</T></Row>
+          ))}
+        </div>
+        <div style={{ position: 'absolute', right: '4%', top: '50%', transform: 'translateY(-50%)', width: '44%', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          {['10x faster','Half the cost','Guaranteed'].map((t, i) => (
+            <Row key={i} gap={4}><Check color={accent} /><T s={7} color="#334155">{t}</T></Row>
+          ))}
         </div>
       </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: accent }} />
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-          <T s={10} color="#fff" weight={800} align="center">Ready to switch?</T>
-          <Btn label="Try Free →" bg="rgba(255,255,255,0.25)" color="#fff" border="1.5px solid rgba(255,255,255,0.5)" />
+      <div style={{ ...center, background: accent, gap: 10 }}>
+        <T s={11} color="#fff" weight={900} align="center" spacing="-0.02em">Ready to switch sides?</T>
+        <div style={{ background: '#fff', borderRadius: 30, padding: '8px 20px', boxShadow: '0 6px 18px rgba(0,0,0,0.25)' }}>
+          <T s={9} color={accent} weight={800}>Start Free →</T>
         </div>
       </div>
     );
   }
 
-  // ─ NEON DARK ─────────────────────────────────────────────────────────────
+  // ─ neon-dark ───────────────────────────────────────────────────────────────
   if (id === 'neon-dark') {
+    const glow = `0 0 20px ${accent}88, 0 0 40px ${accent}44`;
     if (slide === 0) return (
-      <Col align="center" gap={6}>
-        <div style={{ fontSize: 20, fontWeight: 900, color: accent, letterSpacing: '0.06em', textTransform: 'uppercase' as const, textShadow: `0 0 14px ${accent}, 0 0 30px ${accent}66` }}>GLOW UP</div>
-        <div style={{ height: 1.5, background: accent, width: 70, boxShadow: `0 0 8px ${accent}` }} />
-        <T s={8} color="rgba(255,255,255,0.55)" align="center" weight={500}>Swipe to see the future →</T>
-      </Col>
+      <div style={{ ...center, background: '#030712', gap: 6 }}>
+        <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 140, height: 140, borderRadius: '50%', background: `radial-gradient(circle, ${accent}30 0%, transparent 70%)`, pointerEvents: 'none' }} />
+        <T s={7} color={accent} weight={700} caps spacing="0.18em">Level up</T>
+        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', textShadow: glow, textAlign: 'center', lineHeight: 1 }}>GLOW<br/>UP</div>
+        <T s={8} color="rgba(255,255,255,0.4)" align="center">Your brand, amplified.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '6px 16px', marginTop: 4, boxShadow: glow }}>
+          <T s={8} color="#fff" weight={700}>Get Access</T>
+        </div>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {['24/7 Performance','Zero learning curve','Neon-fast results'].map((t, i) => (
-          <Row key={i} gap={6}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: accent, boxShadow: `0 0 6px ${accent}`, flexShrink: 0 }} />
-            <T s={9} color="rgba(255,255,255,0.85)" weight={600}>{t}</T>
-          </Row>
+      <div style={{ ...abs, background: '#030712', padding: '16px 14px', justifyContent: 'center', gap: 7 }}>
+        {[['⚡','Instant deploy'],['🎯','Laser targeting'],['💎','Premium results']].map(([icon, t], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', border: `1px solid ${accent}44`, borderRadius: 8, padding: '6px 10px', background: `${accent}0a` }}>
+            <span style={{ fontSize: 11 }}>{icon}</span>
+            <T s={8} color="#f1f5f9" weight={600}>{t as string}</T>
+          </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col align="center" gap={8}>
-        <T s={8} color="rgba(255,255,255,0.5)" align="center">Join the movement</T>
-        <div style={{ height: 26, border: `1.5px solid ${accent}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 16px', boxShadow: `0 0 12px ${accent}44` }}>
-          <T s={8} color={accent} weight={800} caps spacing="0.06em">ENTER NOW →</T>
+      <div style={{ ...center, background: '#030712', gap: 10 }}>
+        <T s={9} color="rgba(255,255,255,0.4)" align="center">Join the future</T>
+        <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">Start Glowing Today</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: glow }}>
+          <T s={9} color="#fff" weight={800}>Join Now →</T>
         </div>
-      </Col>
+      </div>
     );
   }
 
-  // ─ RETRO BOLD ────────────────────────────────────────────────────────────
+  // ─ retro-bold ──────────────────────────────────────────────────────────────
   if (id === 'retro-bold') {
     if (slide === 0) return (
-      <Col align="center" gap={7}>
-        <div style={{ border: '2.5px solid #1e293b', borderRadius: 3, padding: '3px 12px' }}>
-          <T s={12} color="#1e293b" weight={900} caps spacing="0.1em">EST. 2024</T>
+      <div style={{ ...center, background: '#fef3c7', gap: 8 }}>
+        <div style={{ border: '3px solid #1e293b', borderRadius: 4, padding: '2px 10px', transform: 'rotate(-2deg)', background: '#fff', marginBottom: 4 }}>
+          <T s={7} color="#1e293b" weight={900} caps spacing="0.12em">Est. 2024</T>
         </div>
-        <T s={9} color="rgba(30,41,59,0.6)" align="center" weight={600}>The original since day one</T>
-        <div style={{ height: 3, background: accent, width: 50, borderRadius: 1 }} />
-      </Col>
+        <div style={{ textAlign: 'center', lineHeight: 0.9, letterSpacing: '-0.03em' }}>
+          <div style={{ fontSize: 18, fontWeight: 900, color: '#1e293b' }}>OLD SCHOOL.</div>
+          <div style={{ fontSize: 18, fontWeight: 900, color: accent }}>NEW RESULTS.</div>
+        </div>
+        <div style={{ height: 3, background: '#1e293b', width: 50, borderRadius: 1 }} />
+        <T s={7} color="rgba(30,41,59,0.5)" align="center">Since the beginning</T>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={8}>
-        {['Old school quality','New school speed','100% satisfaction'].map((t, i) => (
-          <Row key={i} gap={6}>
-            <div style={{ fontSize: 9, fontWeight: 900, color: accent }}>0{i+1}</div>
-            <T s={9} color="#1e293b" weight={700}>{t}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#fef3c7', padding: '14px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+          <T s={9} color="#1e293b" weight={800} spacing="-0.01em">Why the classics work:</T>
+          <div style={{ height: 2, background: '#1e293b', width: '100%', opacity: 0.15 }} />
+          {['Proven over decades','Built on real results','No gimmicks needed'].map((t, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div style={{ width: 16, height: 16, borderRadius: 3, border: '2px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ width: 6, height: 5, borderLeft: '2px solid #1e293b', borderBottom: '2px solid #1e293b', transform: 'rotate(-45deg) translate(0.5px,-0.5px)' }} />
+              </div>
+              <T s={8} color="#1e293b" weight={600}>{t}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={8}>
-        <div style={{ border: '2px solid #1e293b', borderRadius: 3, padding: '5px 14px' }}>
-          <T s={9} color="#1e293b" weight={900} caps spacing="0.08em">SHOP NOW →</T>
+      <div style={{ ...center, background: '#1e293b', gap: 8 }}>
+        <T s={7} color="rgba(254,243,199,0.6)" caps spacing="0.12em" align="center">Final offer</T>
+        <T s={13} color="#fef3c7" weight={900} align="center" spacing="-0.02em">Join the legacy.</T>
+        <div style={{ background: '#fef3c7', borderRadius: 6, padding: '7px 18px', marginTop: 4 }}>
+          <T s={9} color="#1e293b" weight={800}>Shop Now →</T>
         </div>
-      </Col>
+      </div>
     );
   }
 
-  // ─ COLOR BLOCK ───────────────────────────────────────────────────────────
+  // ─ color-block ─────────────────────────────────────────────────────────────
   if (id === 'color-block') {
-    const half = { display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', gap: 4, padding: 10 };
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ flex: 1, background: accent, ...half }}>
-          <T s={14} color="#fff" weight={900} spacing="-0.03em">BOLD.</T>
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', textAlign: 'center', lineHeight: 0.9 }}>BOLD<br/>.</div>
         </div>
-        <div style={{ flex: 1, background: '#f8fafc', ...half }}>
-          <T s={8} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.06em">CLEAN.</T>
-          <T s={7} color="rgba(30,41,59,0.4)">Swipe to see more</T>
+        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
+          <T s={8} color="#1e293b" weight={700} align="center">Stand out. Every time.</T>
+          <div style={{ height: 2, background: accent, width: 30, borderRadius: 1 }} />
+          <T s={7} color="#64748b" align="center">Swipe →</T>
         </div>
       </div>
     );
     if (slide === 1) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ flex: 1, background: accent, ...half, gap: 6 }}>
-          {['Fast','Proven','Bold'].map((t, i) => <T key={i} s={8} color="#fff" weight={800} caps>{t}</T>)}
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 5, padding: '14px 10px' }}>
+          <T s={8} color="#1e293b" weight={800} spacing="-0.01em">What's inside:</T>
+          {['Bold templates','Pro copywriting','Easy to launch'].map((t, i) => (
+            <Row key={i} gap={5}><Check color={accent} /><T s={7} color="#475569">{t}</T></Row>
+          ))}
         </div>
-        <div style={{ flex: 1, background: '#f8fafc', ...half, gap: 5 }}>
-          {['Slow','Unproven','Boring'].map((t, i) => <T key={i} s={8} color="rgba(30,41,59,0.35)" weight={600}><s>{t}</s></T>)}
+        <div style={{ flex: 1, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
+          <T s={11} color="#fff" weight={900} align="center" spacing="-0.03em">All in one.</T>
         </div>
       </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0, background: accent, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <T s={11} color="#fff" weight={900} align="center" spacing="-0.02em">Choose bold.</T>
-        <Btn label="Get Started →" bg="rgba(255,255,255,0.22)" color="#fff" border="1.5px solid rgba(255,255,255,0.4)" />
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1, background: '#0f172a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <T s={10} color="#f1f5f9" weight={900} align="center">Start today.</T>
+          <div style={{ background: accent, borderRadius: 6, padding: '6px 14px' }}>
+            <T s={8} color="#fff" weight={700}>Get It →</T>
+          </div>
+        </div>
+        <div style={{ flex: 1, background: accent }} />
       </div>
     );
   }
 
-  // ─ HEADLINE BADGE ────────────────────────────────────────────────────────
+  // ─ headline-badge ──────────────────────────────────────────────────────────
   if (id === 'headline-badge') {
     if (slide === 0) return (
-      <Col gap={7}>
-        <div style={{ background: accent, borderRadius: 4, padding: '2px 8px', alignSelf: 'flex-start' }}>
-          <T s={7} color="#fff" weight={800} caps spacing="0.08em">NEW</T>
+      <div style={{ ...center, background: '#0f1117', gap: 8 }}>
+        <div style={{ background: `${accent}20`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '4px 12px' }}>
+          <T s={7} color={accent} weight={700}>✦ Just Launched</T>
         </div>
-        <T s={12} color="#fff" weight={900} spacing="-0.03em">The hook that stops thumbs</T>
-        <T s={8} color="rgba(255,255,255,0.5)" weight={500}>Swipe to learn more →</T>
-      </Col>
+        <T s={16} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">The hook that converts every time.</T>
+        <T s={8} color="rgba(241,245,249,0.4)" align="center">Swipe to see how →</T>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {[['FEATURED','Get 3x more reach'],['PROVEN','10K+ creators use it'],['FREE','No credit card']].map(([badge, text], i) => (
-          <Row key={i} gap={7}>
-            <div style={{ background: `${accent}22`, border: `1px solid ${accent}44`, borderRadius: 3, padding: '1px 5px', flexShrink: 0 }}>
-              <T s={6} color={accent} weight={800} caps spacing="0.06em">{badge}</T>
-            </div>
-            <T s={8} color="rgba(255,255,255,0.8)" weight={600}>{text}</T>
-          </Row>
+      <div style={{ ...abs, background: '#0f1117', padding: '16px 14px', justifyContent: 'center', gap: 7 }}>
+        <div style={{ background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start' }}>
+          <T s={6} color={accent} weight={700}>Why it works</T>
+        </div>
+        {[['🧠','Psychology-backed copy'],['⚡','Instant attention grab'],['📈','Proven to convert']].map(([icon, t], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 12 }}>{icon}</span>
+            <T s={8} color="#e2e8f0" weight={500}>{t as string}</T>
+          </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col gap={7}>
-        <div style={{ background: accent, borderRadius: 4, padding: '2px 8px', alignSelf: 'flex-start' }}>
-          <T s={7} color="#fff" weight={800} caps spacing="0.08em">LIMITED</T>
+      <div style={{ ...center, background: '#0f1117', gap: 10 }}>
+        <div style={{ background: `${accent}20`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '3px 12px' }}>
+          <T s={6} color={accent} weight={700}>Limited spots</T>
         </div>
-        <Btn label="Claim Your Spot →" bg={accent} />
-      </Col>
+        <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Join the winners.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
+          <T s={9} color="#fff" weight={800}>Get Access →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ MINIMAL ───────────────────────────────────────────────────────────────
+  // ─ minimal ─────────────────────────────────────────────────────────────────
   if (id === 'minimal') {
     if (slide === 0) return (
-      <Col align="center" gap={10}>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.15)', width: '80%' }} />
-        <T s={11} color="#1e293b" weight={700} align="center" spacing="-0.01em">Less noise.<br/>More signal.</T>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.15)', width: '80%' }} />
-      </Col>
+      <div style={{ ...center, background: '#ffffff', gap: 10 }}>
+        <div style={{ height: 1, background: '#cbd5e1', width: '70%' }} />
+        <T s={14} color="#0f172a" weight={700} align="center" spacing="-0.02em">Less noise.<br/>More signal.</T>
+        <div style={{ height: 1, background: '#cbd5e1', width: '70%' }} />
+        <T s={7} color="#94a3b8" align="center">The simpler way to grow</T>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={8}>
-        {['Clarity over clutter','Function over flash','Results, not noise'].map((t, i) => (
-          <Row key={i} gap={7}>
-            <div style={{ height: 1, background: accent, width: 14, flexShrink: 0 }} />
-            <T s={9} color="#475569" weight={500}>{t}</T>
-          </Row>
+      <div style={{ ...abs, background: '#ffffff', padding: '20px 18px', justifyContent: 'center', gap: 0 }}>
+        {[['No fluff','Just what works'],['No bloat','Clean and fast'],['No guessing','Data-backed']].map(([a, b], i) => (
+          <div key={i} style={{ borderBottom: '1px solid #f1f5f9', padding: '9px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <T s={8} color="#0f172a" weight={700}>{a}</T>
+            <T s={7} color="#94a3b8">{b}</T>
+          </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col align="center" gap={10}>
-        <T s={9} color="#94a3b8" align="center">Ready for simplicity?</T>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.15)', width: '70%' }} />
-        <T s={9} color={accent} weight={700} align="center">Start free →</T>
-      </Col>
+      <div style={{ ...center, background: '#ffffff', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={700} align="center" spacing="-0.01em">Simple is powerful.</T>
+        <div style={{ background: '#0f172a', borderRadius: 6, padding: '8px 22px' }}>
+          <T s={9} color="#fff" weight={700}>Get Started</T>
+        </div>
+        <T s={7} color="#94a3b8" align="center">Free forever plan available</T>
+      </div>
     );
   }
 
-  // ─ BRIGHT MINIMAL ────────────────────────────────────────────────────────
+  // ─ bright-minimal ──────────────────────────────────────────────────────────
   if (id === 'bright-minimal') {
     if (slide === 0) return (
-      <Col align="center" gap={8}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${accent}15`, border: `2px solid ${accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 14, height: 14, borderRadius: '50%', background: accent }} />
+      <div style={{ ...center, background: '#f8fafc', gap: 10 }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', border: `2.5px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 16, height: 16, borderRadius: '50%', background: accent }} />
         </div>
-        <T s={11} color="#1e293b" weight={700} align="center" spacing="-0.01em">Simply better.</T>
-        <T s={8} color="rgba(30,41,59,0.4)" align="center">Swipe to see how →</T>
-      </Col>
+        <T s={14} color="#0f172a" weight={800} align="center" spacing="-0.02em">Simply better.</T>
+        <T s={8} color="#64748b" align="center">No fluff. Just results.</T>
+        <div style={{ background: accent, borderRadius: 30, padding: '7px 18px', marginTop: 4 }}>
+          <T s={8} color="#fff" weight={700}>Try It Free</T>
+        </div>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={8}>
-        {['Clean by design','Fast by default','Built for focus'].map((t, i) => (
-          <Row key={i} gap={6}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: `${accent}30`, border: `1.5px solid ${accent}60`, flexShrink: 0 }} />
-            <T s={9} color="#334155" weight={600}>{t}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#f8fafc', padding: '18px 16px', justifyContent: 'center', gap: 10 }}>
+        <T s={9} color="#0f172a" weight={800}>Everything included:</T>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, width: '100%' }}>
+          {['✓ Templates','✓ Analytics','✓ Exports','✓ Support'].map((t, i) => (
+            <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '6px 8px', border: '1px solid #e2e8f0' }}>
+              <T s={7} color="#334155" weight={600}>{t}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={8}>
-        <T s={8} color="rgba(30,41,59,0.45)" align="center">No risk. Cancel anytime.</T>
-        <div style={{ height: 24, border: `1.5px solid ${accent}`, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 14px' }}>
-          <T s={8} color={accent} weight={700} caps spacing="0.04em">Get Started →</T>
+      <div style={{ ...center, background: '#f8fafc', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={800} align="center">Start in minutes.</T>
+        <div style={{ background: accent, borderRadius: 30, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800}>Get Started →</T>
         </div>
-      </Col>
+        <T s={7} color="#94a3b8">No credit card required</T>
+      </div>
     );
   }
 
-  // ─ TEXT ONLY BOLD ────────────────────────────────────────────────────────
+  // ─ text-only-bold ──────────────────────────────────────────────────────────
   if (id === 'text-only-bold') {
     if (slide === 0) return (
-      <Col gap={5}>
-        <T s={14} color="#1e293b" weight={900} spacing="-0.03em">We need<br/>to talk.</T>
-        <div style={{ height: 2, background: accent, width: 32, borderRadius: 1, marginTop: 2 }} />
-        <T s={8} color="rgba(30,41,59,0.45)" weight={500}>Swipe to read →</T>
-      </Col>
+      <div style={{ ...center, background: accent, gap: 8 }}>
+        <T s={20} color="#fff" weight={900} align="center" spacing="-0.04em">We need to talk.</T>
+        <T s={8} color="rgba(255,255,255,0.65)" align="center">About what you've been missing.</T>
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.3)', width: 50, marginTop: 4 }} />
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={5}>
-        <T s={8} color="rgba(30,41,59,0.7)" weight={500} spacing="0.01em">{"Here's the truth nobody's telling you. You don't need more tools — you need a better system."}</T>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.1)', width: '100%', marginTop: 2 }} />
-        <T s={7} color="rgba(30,41,59,0.35)" caps spacing="0.08em">Continue reading →</T>
-      </Col>
+      <div style={{ ...center, background: accent, padding: '16px 18px', gap: 8 }}>
+        <T s={10} color="rgba(255,255,255,0.6)" weight={400} align="center">While you were busy, your competition was growing 3x faster.</T>
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.25)', width: '80%' }} />
+        <T s={11} color="#fff" weight={800} align="center" spacing="-0.02em">It doesn't have to be that way.</T>
+      </div>
     );
     return (
-      <Col gap={6}>
-        <T s={13} color="#1e293b" weight={900} spacing="-0.03em">Ready<br/>to start?</T>
-        <T s={8} color={accent} weight={700}>Click the link in bio →</T>
-      </Col>
+      <div style={{ ...center, background: accent, gap: 10 }}>
+        <T s={12} color="#fff" weight={900} align="center" spacing="-0.02em">Change starts now.</T>
+        <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 8, padding: '8px 20px' }}>
+          <T s={9} color="#fff" weight={700}>Take Action →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ SIDE BY SIDE ──────────────────────────────────────────────────────────
+  // ─ side-by-side ────────────────────────────────────────────────────────────
   if (id === 'side-by-side') {
-    const panel = { flex: 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center', gap: 4, padding: 10, height: '100%' };
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ ...panel, background: '#f0f4ff', borderRight: '1px solid #e2e8f0' }}>
-          <T s={7} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">BEFORE</T>
-          <T s={9} color="#1e293b" weight={700}>Hours wasted</T>
-          <T s={7} color="rgba(30,41,59,0.45)">Frustrating</T>
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1, background: '#fef2f2', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, borderRight: '2px solid #fff' }}>
+          <T s={8} color="#ef4444" weight={800} caps>Before</T>
+          <div style={{ fontSize: 22 }}>😰</div>
+          <T s={7} color="#ef4444" align="center">Slow &amp; frustrated</T>
         </div>
-        <div style={{ ...panel, background: '#fff' }}>
-          <T s={7} color={accent} weight={700} caps spacing="0.08em">AFTER</T>
-          <T s={9} color="#1e293b" weight={700}>Done in 60s</T>
-          <T s={7} color="rgba(30,41,59,0.45)">Effortless</T>
+        <div style={{ flex: 1, background: '#f0fdf4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <T s={8} color={accent} weight={800} caps>After</T>
+          <div style={{ fontSize: 22 }}>🚀</div>
+          <T s={7} color={accent} align="center">Fast &amp; winning</T>
         </div>
       </div>
     );
     if (slide === 1) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ ...panel, background: '#f8fafc', borderRight: '1px solid #e2e8f0' }}>
-          {['Slow','Manual','Expensive'].map((t, i) => <Row key={i} gap={4}><Cross /><T s={8} color="rgba(30,41,59,0.5)" weight={600}>{t}</T></Row>)}
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1, background: '#fef2f2', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 5, padding: '12px 8px', borderRight: '2px solid #fff' }}>
+          {['Wasted hours','Costly mistakes','Zero clarity'].map((t, i) => (
+            <Row key={i} gap={4}><Cross /><T s={7} color="#991b1b">{t}</T></Row>
+          ))}
         </div>
-        <div style={{ ...panel, background: '#fff' }}>
-          {['Fast','Automated','Affordable'].map((t, i) => <Row key={i} gap={4}><Check color={accent} /><T s={8} color="#1e293b" weight={600}>{t}</T></Row>)}
+        <div style={{ flex: 1, background: '#f0fdf4', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 5, padding: '12px 8px' }}>
+          {['10x faster','Save $500/mo','Crystal clear'].map((t, i) => (
+            <Row key={i} gap={4}><Check color="#16a34a" /><T s={7} color="#166534">{t}</T></Row>
+          ))}
         </div>
       </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0, background: accent, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <T s={10} color="#fff" weight={800} align="center">Choose the better way.</T>
-        <Btn label="Start Free →" bg="rgba(255,255,255,0.2)" color="#fff" border="1.5px solid rgba(255,255,255,0.4)" />
+      <div style={{ ...center, background: '#fff', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={800} align="center" spacing="-0.01em">Which side are you on?</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800}>Join the winners →</T>
+        </div>
       </div>
     );
   }
 
-  // ─ STORY HOOK ────────────────────────────────────────────────────────────
+  // ─ story-hook ──────────────────────────────────────────────────────────────
   if (id === 'story-hook') {
     if (slide === 0) return (
-      <Col gap={6}>
-        <div style={{ fontSize: 7, color: '#6ee7b7', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>MY STORY</div>
-        <T s={11} color="#fff" weight={800} spacing="-0.02em">{"I made $0 for 3 years. Then this happened."}</T>
-        <T s={8} color="rgba(255,255,255,0.5)">Swipe to read →</T>
-      </Col>
+      <div style={{ ...abs, background: '#0f1117', padding: '18px 16px', justifyContent: 'flex-end', gap: 6 }}>
+        <div style={{ position: 'absolute', top: 14, left: 14 }}>
+          <T s={6} color={accent} weight={700} caps spacing="0.1em">A true story</T>
+        </div>
+        <div style={{ position: 'absolute', top: '18%', left: 14, right: 14 }}>
+          <div style={{ fontSize: 36, color: `${accent}30`, fontWeight: 900, lineHeight: 1 }}>"</div>
+        </div>
+        <T s={13} color="#f1f5f9" weight={800} spacing="-0.02em">"I made $0 for 3 years."</T>
+        <T s={8} color="rgba(241,245,249,0.5)">Then one thing changed everything.</T>
+        <div style={{ height: 1, background: `${accent}44`, width: 40 }} />
+        <T s={7} color={accent} weight={600}>Swipe to read →</T>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        <T s={8} color="rgba(255,255,255,0.6)" weight={600}>{"Here's what changed everything:"}</T>
-        {['I stopped trying harder','I started working smarter','And results followed'].map((t, i) => (
-          <Row key={i} gap={6}><Dot color="rgba(110,231,183,0.7)" /><T s={8} color="rgba(255,255,255,0.85)" weight={600}>{t}</T></Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#0f1117', padding: '16px' }}>
+        <div style={{ height: 2, background: accent, width: 30, marginBottom: 12 }} />
+        <T s={8} color={accent} weight={700} caps spacing="0.08em">Week 8</T>
+        <T s={11} color="#f1f5f9" weight={800} spacing="-0.02em" >$12,400 in sales.</T>
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', width: '100%', margin: '10px 0' }} />
+        <T s={8} color="rgba(241,245,249,0.55)">The only difference? I stopped guessing and started using a proven system.</T>
+      </div>
     );
     return (
-      <Col gap={6}>
-        <T s={9} color="rgba(255,255,255,0.7)" align="center">Want the full story?</T>
-        <T s={8} color="#6ee7b7" weight={700} align="center">Follow for Part 2 →</T>
-      </Col>
+      <div style={{ ...abs, background: '#0f1117', padding: '18px 16px', justifyContent: 'center', gap: 10 }}>
+        <T s={11} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Your story starts here.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
+          <T s={9} color="#fff" weight={800}>Start Free →</T>
+        </div>
+        <T s={7} color="rgba(241,245,249,0.3)" align="center">Join 14,000+ creators</T>
+      </div>
     );
   }
 
-  // ─ PROBLEM SLIDE ─────────────────────────────────────────────────────────
+  // ─ problem-slide ───────────────────────────────────────────────────────────
   if (id === 'problem-slide') {
     if (slide === 0) return (
-      <Col gap={6}>
-        <div style={{ fontSize: 7, color: '#fca5a5', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' as const }}>THE PROBLEM</div>
-        <T s={11} color="#fff" weight={800} spacing="-0.02em">{"You're wasting 3 hours a day on this."}</T>
-        <T s={8} color="rgba(255,255,255,0.45)">Swipe to see why →</T>
-      </Col>
+      <div style={{ ...abs, background: '#0f0a1e', padding: '16px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 8px #ef4444' }} />
+          <T s={7} color="#ef4444" weight={700} caps spacing="0.1em">The problem</T>
+        </div>
+        <T s={12} color="#f1f5f9" weight={800} spacing="-0.02em">Still using yesterday's strategy?</T>
+        <div style={{ height: 1, background: 'rgba(239,68,68,0.3)', width: '100%', margin: '10px 0' }} />
+        {['Posting daily, zero growth','Burning money on bad ads','Copying competitors'].map((t, i) => (
+          <Row key={i} gap={6} ><Cross /><T s={8} color="rgba(241,245,249,0.65)">{t}</T></Row>
+        ))}
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        <T s={8} color="rgba(255,255,255,0.55)" weight={600}>Sound familiar?</T>
-        {['Spending hours with no results','Tools that promise but don\'t deliver','Feeling stuck and overwhelmed'].map((t, i) => (
-          <Row key={i} gap={6}><Cross /><T s={8} color="rgba(255,255,255,0.8)" weight={600}>{t}</T></Row>
+      <div style={{ ...abs, background: '#0f0a1e', padding: '16px 14px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
+          <T s={7} color="#22c55e" weight={700} caps spacing="0.1em">The solution</T>
+        </div>
+        <T s={12} color="#f1f5f9" weight={800} spacing="-0.02em">There's a better way.</T>
+        <div style={{ height: 1, background: 'rgba(34,197,94,0.3)', width: '100%', margin: '10px 0' }} />
+        {['AI-powered content strategy','Ads that actually convert','Grow on autopilot'].map((t, i) => (
+          <Row key={i} gap={6}><Check color="#22c55e" /><T s={8} color="rgba(241,245,249,0.65)">{t}</T></Row>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col gap={7}>
-        <div style={{ fontSize: 7, color: '#86efac', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase' as const }}>THE SOLUTION</div>
-        <T s={9} color="#fff" weight={700}>We fix that. In 60 seconds.</T>
-        <Btn label="Try It Free →" bg="rgba(239,68,68,0.5)" color="#fff" border="1px solid rgba(239,68,68,0.6)" />
-      </Col>
+      <div style={{ ...center, background: '#0f0a1e', gap: 10 }}>
+        <T s={11} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Fix it today.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
+          <T s={9} color="#fff" weight={800}>Get the Fix →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ BRAND MANIFESTO ───────────────────────────────────────────────────────
+  // ─ brand-manifesto ─────────────────────────────────────────────────────────
   if (id === 'brand-manifesto') {
     if (slide === 0) return (
-      <Col gap={6}>
-        <div style={{ height: 2, background: accent, width: 28, borderRadius: 1 }} />
-        <T s={10} color="#fff" weight={800} spacing="-0.02em">{"We believe the old way is broken."}</T>
-        <T s={8} color="rgba(255,255,255,0.45)" weight={500}>Swipe to read our manifesto →</T>
-      </Col>
+      <div style={{ ...center, background: '#0a0a0a', gap: 6 }}>
+        <div style={{ fontSize: 42, color: `${accent}40`, fontWeight: 900, lineHeight: 0.8, alignSelf: 'flex-start', padding: '0 16px' }}>"</div>
+        <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <T s={11} color="#f1f5f9" weight={300} align="center" spacing="0.02em">We don't just sell products.</T>
+          <T s={11} color={accent} weight={800} align="center" spacing="-0.02em">We build movements.</T>
+        </div>
+        <div style={{ height: 1, background: `${accent}50`, width: 50, marginTop: 6 }} />
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {['"Speed is not the enemy of quality."','"Simple beats complex, always."'].map((q, i) => (
-          <div key={i} style={{ borderLeft: `2px solid ${accent}`, paddingLeft: 8 }}>
-            <T s={8} color="rgba(255,255,255,0.8)" weight={500}>{q}</T>
+      <div style={{ ...abs, background: '#0a0a0a', padding: '18px 16px', justifyContent: 'center', gap: 8 }}>
+        <T s={8} color={accent} weight={700} caps spacing="0.1em">We believe in</T>
+        {[['Radical transparency','Always'],['Community first','Every time'],['Long-term thinking','Not shortcuts']].map(([v, t], i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: 7 }}>
+            <T s={8} color="#f1f5f9" weight={600}>{v}</T>
+            <T s={7} color={accent} weight={500}>{t}</T>
           </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col gap={7} align="center">
-        <div style={{ height: 2, background: accent, width: 28, borderRadius: 1 }} />
-        <T s={9} color="#fff" weight={700} align="center">Join the movement.</T>
-        <T s={8} color={accent} weight={700} align="center">Learn our story →</T>
-      </Col>
+      <div style={{ ...center, background: '#0a0a0a', gap: 8 }}>
+        <div style={{ height: 1, background: `${accent}50`, width: 50 }} />
+        <T s={10} color="#f1f5f9" weight={700} align="center" spacing="-0.01em">Be part of something real.</T>
+        <div style={{ background: accent, borderRadius: 6, padding: '7px 18px' }}>
+          <T s={8} color="#fff" weight={700}>Join the Mission</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ UGC STYLE ─────────────────────────────────────────────────────────────
+  // ─ ugc-style ───────────────────────────────────────────────────────────────
   if (id === 'ugc-style') {
     if (slide === 0) return (
-      <Col gap={7}>
-        <Row gap={7}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(30,41,59,0.15)', border: '1.5px solid rgba(30,41,59,0.2)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9 }}>👤</div>
-          <Col gap={2}>
-            <T s={8} color="#1e293b" weight={700}>@yourhandle</T>
-            <T s={7} color="rgba(30,41,59,0.45)">Day 47 of my journey</T>
-          </Col>
+      <div style={{ ...abs, background: '#fff', padding: '14px' }}>
+        <Row gap={8}>
+          <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg,${accent},#f472b6)`, flexShrink: 0 }} />
+          <div>
+            <T s={8} color="#1e293b" weight={700}>@sarahbuilds</T>
+            <T s={7} color="#94a3b8">Sponsored · 2h ago</T>
+          </div>
         </Row>
-        <T s={9} color="#334155" weight={600}>{"Here's what I learned that nobody talks about."}</T>
-        <T s={7} color="rgba(30,41,59,0.4)">Swipe for all 7 tips →</T>
-      </Col>
+        <div style={{ margin: '10px 0', background: '#f8fafc', borderRadius: 8, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 24 }}>📱</span>
+        </div>
+        <T s={8} color="#1e293b" weight={500}>"Day 47 using this and I just crossed $10K/month. Not kidding."</T>
+        <div style={{ marginTop: 8, display: 'flex', gap: 6 }}>
+          <T s={7} color="#94a3b8">❤️ 2.4K  💬 183</T>
+        </div>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={6}>
-        <T s={7} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">TIP #3</T>
-        <T s={9} color="#1e293b" weight={600}>{"Stop optimizing what doesn't matter."}</T>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.1)', width: '100%' }} />
-        <T s={7} color="rgba(30,41,59,0.4)">Keep swiping for more →</T>
-      </Col>
+      <div style={{ ...abs, background: '#fff', padding: '14px' }}>
+        <T s={8} color="#94a3b8" weight={500}>The results after 30 days:</T>
+        <div style={{ margin: '10px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[['Revenue','$10,400/mo','↑ 340%'],['Followers','48.2K','↑ 180%'],['Leads/day','127','↑ 12x']].map(([l, v, c], i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', borderRadius: 6, padding: '6px 8px' }}>
+              <T s={7} color="#64748b">{l}</T>
+              <T s={8} color="#1e293b" weight={800}>{v}</T>
+              <T s={7} color="#16a34a" weight={600}>{c}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col gap={7}>
-        <T s={9} color="#1e293b" weight={700}>{"Drop a 🙌 if this helped!"}</T>
-        <T s={8} color="rgba(30,41,59,0.5)">Save this post · Follow for more</T>
-      </Col>
+      <div style={{ ...abs, background: '#fff', padding: '14px', justifyContent: 'center', gap: 10 }}>
+        <T s={10} color="#1e293b" weight={800} align="center">Want the same results?</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '9px 0', width: '100%', textAlign: 'center', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800} align="center">Start Free Today →</T>
+        </div>
+        <T s={7} color="#94a3b8" align="center">Join 14,000+ people like Sarah</T>
+      </div>
     );
   }
 
-  // ─ MAGAZINE EDITORIAL ────────────────────────────────────────────────────
+  // ─ magazine-editorial ──────────────────────────────────────────────────────
   if (id === 'magazine-editorial') {
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, padding: 10 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 3, height: '100%' }}>
-          <div style={{ gridColumn: '1', gridRow: '1/3', background: '#dde4ee', borderRadius: 5, display: 'flex', alignItems: 'flex-end', padding: 6 }}>
-            <T s={7} color="#475569" weight={700}>COVER</T>
-          </div>
-          <div style={{ background: '#e8edf5', borderRadius: 5 }} />
-          <div style={{ background: '#f1f5fb', borderRadius: 5, display: 'flex', alignItems: 'flex-end', padding: 4 }}>
-            <T s={6} color="#94a3b8">Vol. 12</T>
-          </div>
+      <div style={{ ...abs, background: '#fff', padding: '14px' }}>
+        <Row gap={8}>
+          <T s={6} color="#94a3b8" caps spacing="0.12em">Issue 12</T>
+          <div style={{ flex: 1, height: 1, background: '#e2e8f0', marginTop: 3 }} />
+          <T s={6} color="#94a3b8" caps spacing="0.12em">May 2025</T>
+        </Row>
+        <div style={{ marginTop: 12, marginBottom: 8 }}>
+          <T s={15} color="#0f172a" weight={800} spacing="-0.03em">The future of content is here.</T>
+        </div>
+        <div style={{ height: 2, background: accent, width: 30 }} />
+        <div style={{ marginTop: 8 }}>
+          <T s={7} color="#64748b">5 strategies reshaping how brands speak to audiences in 2025.</T>
         </div>
       </div>
     );
     if (slide === 1) return (
-      <Col gap={6}>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.15)', width: '100%' }} />
-        <T s={10} color="#1e293b" weight={800} spacing="-0.02em">Inside this issue</T>
-        {['The future of content','5 trends to watch','Expert interviews'].map((t, i) => (
-          <Row key={i} gap={6}>
-            <T s={7} color={accent} weight={800}>{`0${i+1}`}</T>
-            <T s={8} color="#475569" weight={500}>{t}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#fff', padding: '14px' }}>
+        <T s={7} color={accent} weight={700} caps spacing="0.1em">In this issue</T>
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {[['01','AI-first content strategy'],['02','The death of generic ads'],['03','What converts in 2025']].map(([n, t], i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1px solid #f1f5f9', padding: '8px 0' }}>
+              <T s={7} color={accent} weight={800}>{n}</T>
+              <T s={8} color="#334155" weight={500}>{t}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col gap={7}>
-        <div style={{ height: 1, background: 'rgba(30,41,59,0.15)', width: '100%' }} />
-        <T s={10} color="#1e293b" weight={800}>Read the full story</T>
-        <T s={8} color={accent} weight={600}>Link in bio →</T>
-      </Col>
+      <div style={{ ...center, background: '#0f172a', gap: 8 }}>
+        <T s={7} color="#94a3b8" caps spacing="0.1em" align="center">Don't miss an issue</T>
+        <T s={12} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">Subscribe free.</T>
+        <div style={{ background: accent, borderRadius: 6, padding: '7px 18px' }}>
+          <T s={8} color="#fff" weight={700}>Subscribe →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ TESTIMONIAL ───────────────────────────────────────────────────────────
+  // ─ testimonial ─────────────────────────────────────────────────────────────
   if (id === 'testimonial') {
     if (slide === 0) return (
-      <Col align="center" gap={7}>
-        <Stars />
-        <T s={9} color="#1e293b" weight={600} align="center" spacing="0.01em">{'"This literally changed my life. I wish I found it sooner."'}</T>
+      <div style={{ ...center, background: '#f8fafc', gap: 6 }}>
+        <Stars color={accent} />
+        <T s={10} color="#0f172a" weight={700} align="center" spacing="-0.01em">"Best decision I made for my business this year."</T>
         <Row gap={6}>
-          <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${accent}25`, border: `1.5px solid ${accent}40`, flexShrink: 0 }} />
-          <T s={7} color="rgba(30,41,59,0.55)">Sarah K. · Verified buyer</T>
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg,${accent},#818cf8)` }} />
+          <div>
+            <T s={7} color="#334155" weight={700}>Sarah K.</T>
+            <T s={6} color="#94a3b8">CEO, Bloom Studio</T>
+          </div>
         </Row>
-      </Col>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        {[
-          ['Emma R.','Game changer for my business'],
-          ['James T.','Results in the first week'],
-          ['Mia L.','Worth every penny'],
-        ].map(([name, quote], i) => (
-          <Row key={i} gap={6}>
-            <div style={{ width: 20, height: 20, borderRadius: '50%', background: `${accent}20`, border: `1px solid ${accent}35`, flexShrink: 0 }} />
-            <Col gap={1}>
-              <T s={8} color="#1e293b" weight={700}>{name}</T>
-              <T s={7} color="rgba(30,41,59,0.5)">{quote}</T>
-            </Col>
-          </Row>
+      <div style={{ ...abs, background: '#f8fafc', padding: '14px', justifyContent: 'center', gap: 7 }}>
+        <T s={8} color="#64748b" weight={500}>More success stories:</T>
+        {['“ROI doubled in 60 days.”','“Saves me 10 hrs a week.”','“Worth every penny.”'].map((q, i) => (
+          <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '7px 10px', border: '1px solid #e2e8f0' }}>
+            <Stars color={accent} />
+            <T s={7} color="#334155" weight={500}>{q}</T>
+          </div>
         ))}
-      </Col>
+      </div>
     );
     return (
-      <Col align="center" gap={7}>
-        <Stars />
-        <T s={8} color="rgba(30,41,59,0.6)" align="center">Join 10,000+ happy customers</T>
-        <Btn label="See All Reviews →" bg={accent} />
-      </Col>
-    );
-  }
-
-  // ─ SOCIAL PROOF GRID ─────────────────────────────────────────────────────
-  if (id === 'social-proof-grid') {
-    if (slide === 0) return (
-      <Col gap={7}>
-        <T s={10} color="#1e293b" weight={800} spacing="-0.02em">Trusted by the best.</T>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-          {['ACME','Startup Co','BigBrand','10K+ more'].map((name, i) => (
-            <div key={i} style={{ height: 24, background: i < 3 ? 'rgba(30,41,59,0.06)' : `${accent}10`, border: `1px solid ${i < 3 ? 'rgba(30,41,59,0.1)' : `${accent}30`}`, borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <T s={7} color={i < 3 ? '#64748b' : accent} weight={700}>{name}</T>
-            </div>
-          ))}
+      <div style={{ ...center, background: '#f8fafc', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={800} align="center" spacing="-0.01em">Join 10,000+ happy customers.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800}>Read All Reviews →</T>
         </div>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={7}>
-        {[['10,000+','Active users'],['4.9★','Average rating'],['99%','Satisfaction rate']].map(([num, label], i) => (
-          <Row key={i} gap={8}>
-            <div style={{ minWidth: 42 }}><T s={12} color={accent} weight={900} spacing="-0.03em">{num}</T></div>
-            <T s={8} color="rgba(30,41,59,0.6)" weight={500}>{label}</T>
-          </Row>
-        ))}
-      </Col>
-    );
-    return (
-      <Col align="center" gap={8}>
-        <T s={9} color="rgba(30,41,59,0.5)" align="center">Why wait? Join them today.</T>
-        <Btn label="Get Started →" bg={accent} />
-      </Col>
+      </div>
     );
   }
 
-  // ─ STATS HERO ────────────────────────────────────────────────────────────
+  // ─ social-proof-grid ───────────────────────────────────────────────────────
+  if (id === 'social-proof-grid') {
+    const avatarColors = ['#6366f1','#ec4899','#f59e0b','#10b981','#3b82f6','#8b5cf6','#ef4444','#06b6d4','#84cc16'];
+    if (slide === 0) return (
+      <div style={{ ...center, background: '#fff', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 3, width: '100%', padding: '0 8px' }}>
+          {avatarColors.slice(0,9).map((c, i) => (
+            <div key={i} style={{ aspectRatio: '1/1', borderRadius: '50%', background: c, opacity: 0.8 }} />
+          ))}
+          <div style={{ aspectRatio: '1/1', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <T s={6} color="#64748b" weight={700}>+47K</T>
+          </div>
+        </div>
+        <T s={13} color="#0f172a" weight={900} align="center" spacing="-0.02em">47,000+ creators trust us.</T>
+        <T s={7} color="#64748b" align="center">Growing every day →</T>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...center, background: '#fff', gap: 10 }}>
+        <T s={8} color="#64748b" weight={500} align="center">By the numbers</T>
+        <Row gap={12}>
+          {[['10x','avg growth'],['4.9★','app rating'],['99%','uptime']].map(([v, l], i) => (
+            <Col key={i} align="center" gap={2}>
+              <T s={14} color={accent} weight={900} spacing="-0.03em">{v}</T>
+              <T s={6} color="#94a3b8" align="center">{l}</T>
+            </Col>
+          ))}
+        </Row>
+        <div style={{ height: 1, background: '#f1f5f9', width: '80%' }} />
+        <T s={7} color="#94a3b8" align="center">Verified by independent audit</T>
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: accent, gap: 10 }}>
+        <T s={9} color="rgba(255,255,255,0.75)" align="center">Don't be left behind</T>
+        <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">Join the community.</T>
+        <div style={{ background: '#fff', borderRadius: 8, padding: '8px 20px', boxShadow: '0 6px 18px rgba(0,0,0,0.2)' }}>
+          <T s={9} color={accent} weight={800}>Join Now →</T>
+        </div>
+      </div>
+    );
+  }
+
+  // ─ stats-hero ──────────────────────────────────────────────────────────────
   if (id === 'stats-hero') {
     if (slide === 0) return (
-      <Col align="center" gap={5}>
-        <div style={{ fontSize: 38, fontWeight: 900, color: accent, letterSpacing: '-0.05em', lineHeight: 1 }}>10x</div>
-        <T s={8} color="rgba(255,255,255,0.7)" align="center">faster than the old way</T>
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.15)', width: 60 }} />
-        <T s={7} color="rgba(255,255,255,0.4)">Swipe for the proof →</T>
-      </Col>
+      <div style={{ ...center, background: '#0f1117', gap: 6 }}>
+        <T s={7} color={accent} weight={700} caps spacing="0.12em">Proven results</T>
+        <div style={{ fontSize: 52, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.06em', lineHeight: 0.9 }}>10x</div>
+        <T s={9} color="rgba(241,245,249,0.5)" align="center">faster than the competition</T>
+        <div style={{ height: 1, background: `${accent}44`, width: 60 }} />
+        <T s={7} color={accent} weight={600}>See the data →</T>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={8}>
-        {[['47%','avg CTR increase'],['3x','more conversions'],['$12K','saved per year']].map(([num, label], i) => (
-          <Row key={i} gap={8}>
-            <div style={{ minWidth: 38 }}><T s={14} color={accent} weight={900} spacing="-0.03em">{num}</T></div>
-            <T s={8} color="rgba(255,255,255,0.6)">{label}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...center, background: '#0f1117', gap: 8 }}>
+        <T s={8} color="rgba(241,245,249,0.4)" weight={500} align="center">Average customer results:</T>
+        <div style={{ display: 'flex', gap: 8, width: '100%', padding: '0 8px' }}>
+          {[['47%','more leads'],['3x','revenue'],['$12K','saved/yr']].map(([v, l], i) => (
+            <div key={i} style={{ flex: 1, background: `${accent}15`, border: `1px solid ${accent}30`, borderRadius: 8, padding: '8px 4px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <T s={12} color={accent} weight={900} align="center" spacing="-0.02em">{v}</T>
+              <T s={6} color="rgba(241,245,249,0.4)" align="center">{l}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={7}>
-        <T s={8} color="rgba(255,255,255,0.5)" align="center">Data from 10K+ campaigns</T>
-        <Btn label="See Full Report →" bg={accent} />
-      </Col>
+      <div style={{ ...center, background: '#0f1117', gap: 10 }}>
+        <T s={11} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Your turn to 10x.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
+          <T s={9} color="#fff" weight={800}>Get Started Free →</T>
+        </div>
+        <T s={7} color="rgba(241,245,249,0.3)" align="center">No credit card required</T>
+      </div>
     );
   }
 
-  // ─ PRODUCT CENTER ────────────────────────────────────────────────────────
+  // ─ product-center ──────────────────────────────────────────────────────────
   if (id === 'product-center') {
     if (slide === 0) return (
-      <Col align="center" gap={7}>
-        <div style={{ width: 54, height: 54, borderRadius: 14, background: `${accent}18`, border: `2px solid ${accent}35`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: accent, opacity: 0.8 }} />
-        </div>
-        <Col gap={3} align="center">
-          <T s={7} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.1em">INTRODUCING</T>
-          <T s={11} color="#1e293b" weight={800} align="center" spacing="-0.02em">Your next favourite tool</T>
-        </Col>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={6}>
-        {[['⚡','Blazing fast setup'],['🎯','Precision targeting'],['💎','Premium quality']].map(([ic, t], i) => (
-          <Row key={i} gap={7}>
-            <div style={{ fontSize: 11 }}>{ic}</div>
-            <T s={9} color="#334155" weight={600}>{t}</T>
-          </Row>
-        ))}
-      </Col>
-    );
-    return (
-      <Col align="center" gap={7}>
-        <T s={8} color="rgba(30,41,59,0.5)" align="center">Free to try. No card needed.</T>
-        <Btn label="Shop Now →" bg={accent} />
-      </Col>
-    );
-  }
-
-  // ─ PRODUCT DEMO ──────────────────────────────────────────────────────────
-  if (id === 'product-demo') {
-    const browser = (
-      <div style={{ width: '88%', height: 52, background: '#e2e8f0', borderRadius: 6, border: '1.5px solid #cbd5e1', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ height: 9, background: '#cbd5e1', display: 'flex', alignItems: 'center', paddingLeft: 6, gap: 3 }}>
-          {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width: 4, height: 4, borderRadius: '50%', background: c }} />)}
-        </div>
-        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 6 }}>
-          <div style={{ height: 4, background: '#94a3b8', borderRadius: 1, width: '75%' }} />
-          <div style={{ height: 4, background: '#cbd5e1', borderRadius: 1, width: '55%' }} />
-        </div>
-      </div>
-    );
-    if (slide === 0) return (
-      <Col align="center" gap={7}>
-        {browser}
-        <T s={8} color="rgba(30,41,59,0.55)" align="center">See how it works in real time</T>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={6}>
-        {['One-click setup','Real-time preview','Export anywhere'].map((t, i) => (
-          <Row key={i}><Check color={accent} /><T s={9} color="#334155" weight={600}>{t}</T></Row>
-        ))}
-      </Col>
-    );
-    return (
-      <Col align="center" gap={7}>
-        {browser}
-        <Btn label="Try Free 14 Days →" bg={accent} />
-      </Col>
-    );
-  }
-
-  // ─ FLOATING CARD ─────────────────────────────────────────────────────────
-  if (id === 'floating-card') {
-    const card = (children: React.ReactNode) => (
-      <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(4px)', borderRadius: 10, padding: '10px 12px', width: '88%', boxShadow: '0 8px 24px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.18)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {children}
-      </div>
-    );
-    if (slide === 0) return (
-      <Col align="center">
-        {card(<>
-          <T s={7} color="rgba(255,255,255,0.55)" weight={700} caps spacing="0.08em">NEW OFFER</T>
-          <T s={10} color="#fff" weight={800} spacing="-0.02em">Floating card design that converts</T>
-          <Btn label="Learn More →" bg={accent} />
-        </>)}
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col align="center">
-        {card(<>
-          {['Glassmorphism effect','Depth and shadow','Mobile-first layout'].map((t, i) => (
-            <Row key={i}><Check color={accent} /><T s={8} color="rgba(255,255,255,0.85)" weight={600}>{t}</T></Row>
+      <div style={{ ...center, background: '#f8fafc', gap: 8 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg,${accent},#818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 24px ${accent}44`, fontSize: 24 }}>⚡</div>
+        <T s={12} color="#0f172a" weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
+        <Row gap={8}>
+          {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => (
+            <div key={f} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 7px' }}>
+              <T s={7} color="#475569" weight={600}>{f}</T>
+            </div>
           ))}
-        </>)}
-      </Col>
+        </Row>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: '#f8fafc', padding: '16px 14px', justifyContent: 'center', gap: 6 }}>
+        <T s={9} color="#0f172a" weight={800} spacing="-0.01em">Everything you need:</T>
+        {[['⚡','Instant results, day one'],['📊','Real-time analytics'],['🤖','AI does the heavy lifting']].map(([icon, t], i) => (
+          <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 12 }}>{icon}</span>
+            <T s={8} color="#334155" weight={500}>{t as string}</T>
+          </div>
+        ))}
+      </div>
     );
     return (
-      <Col align="center">
-        {card(<>
-          <T s={8} color="rgba(255,255,255,0.6)" align="center">Limited availability</T>
-          <Btn label="Claim Offer →" bg={accent} />
-        </>)}
-      </Col>
+      <div style={{ ...center, background: '#f8fafc', gap: 10 }}>
+        <T s={8} color="#64748b" align="center">Start free · Upgrade anytime</T>
+        <T s={11} color="#0f172a" weight={900} align="center" spacing="-0.02em">Try it today.</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800}>Get Free Access →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ FEATURE LIST ──────────────────────────────────────────────────────────
+  // ─ product-demo ────────────────────────────────────────────────────────────
+  if (id === 'product-demo') {
+    if (slide === 0) return (
+      <div style={{ ...center, background: '#f1f5f9', gap: 8 }}>
+        <div style={{ width: '88%', background: '#1e293b', borderRadius: 8, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+          <div style={{ background: '#334155', padding: '5px 8px', display: 'flex', gap: 4, alignItems: 'center' }}>
+            {['#ef4444','#fbbf24','#22c55e'].map(c => <div key={c} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
+            <div style={{ flex: 1, background: '#475569', borderRadius: 3, height: 5, marginLeft: 4 }} />
+          </div>
+          <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ height: 5, background: `${accent}66`, borderRadius: 3, width: '75%' }} />
+            <div style={{ height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 3, width: '55%' }} />
+            <div style={{ height: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 3, width: '65%' }} />
+            <div style={{ marginTop: 4, background: accent, borderRadius: 4, padding: '3px 10px', alignSelf: 'flex-start' }}>
+              <T s={6} color="#fff" weight={700}>Generate →</T>
+            </div>
+          </div>
+        </div>
+        <T s={8} color="#475569" align="center">See it in action</T>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: '#f1f5f9', padding: '14px', justifyContent: 'center', gap: 6 }}>
+        <T s={9} color="#0f172a" weight={800}>How it works:</T>
+        {[['1','Enter your brief','30 seconds'],['2','AI generates ads','Instantly'],['3','Export & launch','One click']].map(([n, t, d], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: '#fff', borderRadius: 8, padding: '6px 10px', border: '1px solid #e2e8f0' }}>
+            <div style={{ width: 18, height: 18, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <T s={7} color="#fff" weight={800}>{n}</T>
+            </div>
+            <T s={8} color="#334155" weight={600}>{t}</T>
+            <T s={6} color="#94a3b8" weight={500}>{d}</T>
+          </div>
+        ))}
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: '#f1f5f9', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={800} align="center" spacing="-0.01em">Ready to see yours?</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800}>Watch Demo →</T>
+        </div>
+      </div>
+    );
+  }
+
+  // ─ floating-card ───────────────────────────────────────────────────────────
+  if (id === 'floating-card') {
+    const fbg = `linear-gradient(135deg,${accent}55,#818cf844)`;
+    const card: React.CSSProperties = { background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 12, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 6, width: '85%' };
+    if (slide === 0) return (
+      <div style={{ ...center, background: fbg }}>
+        <div style={card}>
+          <T s={7} color="rgba(255,255,255,0.6)" caps spacing="0.1em">Introducing</T>
+          <T s={14} color="#fff" weight={900} spacing="-0.03em">Something new.</T>
+          <T s={8} color="rgba(255,255,255,0.6)">Crafted for creators who want more.</T>
+          <div style={{ background: 'rgba(255,255,255,0.2)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '6px 12px', alignSelf: 'flex-start', marginTop: 2 }}>
+            <T s={8} color="#fff" weight={700}>Discover →</T>
+          </div>
+        </div>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...center, background: fbg }}>
+        <div style={card}>
+          <T s={8} color="rgba(255,255,255,0.7)" weight={500}>What's inside:</T>
+          {['Premium templates','AI copy engine','Export to any format'].map((t, i) => (
+            <Row key={i} gap={6}>
+              <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#fff', flexShrink: 0, marginTop: 2 }} />
+              <T s={8} color="#fff" weight={500}>{t}</T>
+            </Row>
+          ))}
+        </div>
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: fbg }}>
+        <div style={card}>
+          <T s={11} color="#fff" weight={900} spacing="-0.02em">Start creating today.</T>
+          <div style={{ background: '#fff', borderRadius: 6, padding: '7px 14px', alignSelf: 'flex-start', boxShadow: '0 4px 14px rgba(0,0,0,0.2)', marginTop: 2 }}>
+            <T s={8} color={accent} weight={800}>Get Access →</T>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─ feature-list ────────────────────────────────────────────────────────────
   if (id === 'feature-list') {
     if (slide === 0) return (
-      <Col gap={6}>
-        <T s={10} color="#1e293b" weight={800} spacing="-0.02em">Everything you need.</T>
-        {['Unlimited projects','Team collaboration','Priority support','Analytics dashboard'].map((t, i) => (
-          <Row key={i} gap={6}>
-            <div style={{ width: 10, height: 10, borderRadius: 2, background: `${accent}20`, border: `1.5px solid ${accent}50`, flexShrink: 0 }}>
-              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ width: 4, height: 4, borderRadius: 1, background: accent }} />
-              </div>
-            </div>
-            <T s={8} color="#475569" weight={500}>{t}</T>
-          </Row>
+      <div style={{ ...abs, background: '#fff', padding: '16px 14px', justifyContent: 'center', gap: 7 }}>
+        <T s={11} color="#0f172a" weight={800} spacing="-0.02em">Everything you need to win.</T>
+        <div style={{ height: 2, background: accent, width: 30, borderRadius: 1 }} />
+        {['AI-powered ad copy','30+ premium templates','One-click export'].map((t, i) => (
+          <Row key={i} gap={8}><Check color={accent} /><T s={8} color="#334155" weight={500}>{t}</T></Row>
         ))}
-      </Col>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={6}>
-        <T s={8} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">MOST POPULAR</T>
-        {['Starter · Free','Pro · $12/mo','Team · $39/mo'].map((t, i) => (
-          <div key={i} style={{ height: 22, background: i === 1 ? `${accent}12` : 'rgba(30,41,59,0.04)', border: `1px solid ${i === 1 ? `${accent}35` : 'rgba(30,41,59,0.1)'}`, borderRadius: 5, display: 'flex', alignItems: 'center', paddingLeft: 8 }}>
-            <T s={8} color={i === 1 ? accent : '#64748b'} weight={i === 1 ? 700 : 500}>{t}</T>
+      <div style={{ ...abs, background: '#fff', padding: '14px' }}>
+        <T s={8} color="#64748b" weight={500}>Us vs. the rest:</T>
+        <div style={{ marginTop: 8 }}>
+          <div style={{ display: 'flex', gap: 6, paddingBottom: 5, borderBottom: '1px solid #f1f5f9', marginBottom: 5 }}>
+            <div style={{ flex: 2 }} />
+            <T s={7} color={accent} weight={700} align="center">Us</T>
+            <T s={7} color="#94a3b8" align="center">Others</T>
           </div>
-        ))}
-      </Col>
+          {[['AI Copy','✓','✗'],['Templates','30+','5'],['Export','Free','$$$']].map(([f, a, b], i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', padding: '5px 0', borderBottom: '1px solid #f8fafc' }}>
+              <T s={7} color="#475569" weight={500}>{f as string}</T>
+              <div style={{ flex: 1 }} />
+              <T s={8} color={accent} weight={700} align="center">{a}</T>
+              <T s={8} color="#94a3b8" align="center">{b}</T>
+            </div>
+          ))}
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={7}>
-        <T s={8} color="rgba(30,41,59,0.5)" align="center">Start with the free plan.</T>
-        <Btn label="Get All Features →" bg={accent} />
-      </Col>
+      <div style={{ ...center, background: '#fff', gap: 10 }}>
+        <T s={10} color="#0f172a" weight={800} align="center">Pick your plan:</T>
+        <div style={{ background: accent, borderRadius: 8, padding: '8px 0', width: '90%', textAlign: 'center', boxShadow: `0 6px 18px ${accent}44` }}>
+          <T s={9} color="#fff" weight={800} align="center">Start Free — Upgrade Later</T>
+        </div>
+        <T s={7} color="#94a3b8" align="center">Cancel anytime</T>
+      </div>
     );
   }
 
-  // ─ NUMBER LIST ───────────────────────────────────────────────────────────
+  // ─ number-list ─────────────────────────────────────────────────────────────
   if (id === 'number-list') {
     if (slide === 0) return (
-      <Col gap={6}>
-        <T s={10} color="#1e293b" weight={800} spacing="-0.02em">3 steps to success.</T>
-        {[['1','Sign up free'],['2','Connect your tools'],['3','Watch it work']].map(([n, t], i) => (
-          <Row key={i} gap={7}>
-            <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${accent}18`, border: `1.5px solid ${accent}45`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <T s={8} color={accent} weight={800}>{n}</T>
-            </div>
-            <T s={9} color="#334155" weight={600}>{t}</T>
-          </Row>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: '#fff', padding: '16px 14px', justifyContent: 'center', gap: 8 }}>
+        <T s={11} color="#0f172a" weight={900} spacing="-0.02em">3 steps to your first $10K</T>
+        <div style={{ height: 2, background: accent, width: 30, borderRadius: 1 }} />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 12px ${accent}55` }}>
+            <T s={9} color="#fff" weight={900}>1</T>
+          </div>
+          <div>
+            <T s={9} color="#0f172a" weight={700}>Discover your angle</T>
+            <T s={7} color="#64748b">Find what makes you different</T>
+          </div>
+        </div>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={6}>
-        <Row gap={7}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <T s={9} color="#fff" weight={900}>2</T>
+      <div style={{ ...abs, background: '#fff', padding: '16px 14px', justifyContent: 'center', gap: 7 }}>
+        {[[2,'Build in minutes','AI does the writing for you'],[3,'Launch & grow','Post, track, scale']].map(([n, t, d], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <div style={{ width: 24, height: 24, borderRadius: '50%', background: i === 0 ? `${accent}33` : `${accent}18`, border: `2px solid ${accent}55`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <T s={9} color={accent} weight={900}>{n as string}</T>
+            </div>
+            <div>
+              <T s={9} color="#0f172a" weight={700}>{t as string}</T>
+              <T s={7} color="#64748b">{d as string}</T>
+            </div>
           </div>
-          <T s={9} color="#1e293b" weight={700}>Connect your tools</T>
-        </Row>
-        <T s={8} color="rgba(30,41,59,0.5)" weight={500}>{"Link your existing stack in one click. No setup, no code, no headaches."}</T>
-      </Col>
+        ))}
+      </div>
     );
     return (
-      <Col align="center" gap={7}>
-        <T s={9} color="rgba(30,41,59,0.55)" align="center">{"You're one step away."}</T>
-        <Btn label="Start Step 1 →" bg={accent} />
-      </Col>
+      <div style={{ ...center, background: accent, gap: 10 }}>
+        <T s={11} color="#fff" weight={900} align="center" spacing="-0.02em">Start step 1 right now.</T>
+        <div style={{ background: '#fff', borderRadius: 8, padding: '8px 22px', boxShadow: '0 6px 18px rgba(0,0,0,0.25)' }}>
+          <T s={9} color={accent} weight={800}>Begin Free →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ SPLIT PANEL ───────────────────────────────────────────────────────────
+  // ─ split-panel ─────────────────────────────────────────────────────────────
   if (id === 'split-panel') {
     if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ flex: 1, background: 'linear-gradient(160deg,#4f46e5,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Col align="center" gap={4}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
-            <T s={7} color="rgba(255,255,255,0.7)" align="center">Visual left</T>
-          </Col>
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1.1, background: `linear-gradient(180deg,${accent},${accent}cc)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <div style={{ fontSize: 26 }}>🎯</div>
+          <T s={8} color="rgba(255,255,255,0.8)" align="center">Built for results</T>
         </div>
-        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 5, padding: 10 }}>
-          <T s={7} color="rgba(30,41,59,0.5)" weight={700} caps spacing="0.08em">HEADLINE</T>
-          <T s={9} color="#1e293b" weight={800} spacing="-0.02em">Copy on the right side</T>
-          <T s={7} color="rgba(30,41,59,0.4)">Subtext below</T>
+        <div style={{ flex: 1, background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: 12, gap: 5 }}>
+          <T s={9} color="#0f172a" weight={800} spacing="-0.01em">Finally, ads that work.</T>
+          <T s={7} color="#64748b">No guesswork. Just growth.</T>
+          <div style={{ background: accent, borderRadius: 6, padding: '5px 10px', marginTop: 4 }}>
+            <T s={7} color="#fff" weight={700}>See How →</T>
+          </div>
         </div>
       </div>
     );
     if (slide === 1) return (
-      <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-        <div style={{ flex: 1, background: 'linear-gradient(160deg,#4f46e5,#7c3aed)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 10 }}>
-          {['Fast','Reliable','Scalable'].map((t, i) => <T key={i} s={8} color="rgba(255,255,255,0.85)" weight={700}>{t}</T>)}
-        </div>
-        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 5, padding: 10 }}>
-          {['Setup in 60s','99.9% uptime','Grows with you'].map((t, i) => <T key={i} s={7} color="#475569" weight={500}>{t}</T>)}
-        </div>
-      </div>
-    );
-    return (
-      <div style={{ position: 'absolute', inset: 0, background: '#4f46e5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        <T s={10} color="#fff" weight={800} align="center">The best of both worlds.</T>
-        <Btn label="Start Free →" bg="rgba(255,255,255,0.2)" color="#fff" border="1.5px solid rgba(255,255,255,0.4)" />
-      </div>
-    );
-  }
-
-  // ─ OVERLAY CARD ──────────────────────────────────────────────────────────
-  if (id === 'overlay-card') {
-    const overlayCard = (children: React.ReactNode) => (
-      <div style={{ position: 'absolute', bottom: 10, left: 10, right: 10, background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.22)', borderRadius: 9, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
-        {children}
-      </div>
-    );
-    if (slide === 0) return (
-      <div style={{ position: 'absolute', inset: 0 }}>
-        {overlayCard(<>
-          <T s={7} color="rgba(255,255,255,0.6)" weight={700} caps spacing="0.1em">EXCLUSIVE OFFER</T>
-          <T s={10} color="#fff" weight={800} spacing="-0.02em">One card. Maximum impact.</T>
-        </>)}
-      </div>
-    );
-    if (slide === 1) return (
-      <div style={{ position: 'absolute', inset: 0 }}>
-        {overlayCard(<>
-          {['Fully responsive','High contrast','Eye-catching'].map((t, i) => (
-            <Row key={i}><Check color={accent} /><T s={8} color="rgba(255,255,255,0.85)" weight={600}>{t}</T></Row>
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1.1, background: `${accent}15`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, padding: 10 }}>
+          {[['47%','↑ Clicks'],['3x','Revenue'],['$0','Hidden fees']].map(([v, l], i) => (
+            <Col key={i} align="center" gap={0}>
+              <T s={13} color={accent} weight={900} spacing="-0.03em">{v}</T>
+              <T s={6} color="#64748b">{l}</T>
+            </Col>
           ))}
-        </>)}
+        </div>
+        <div style={{ flex: 1, background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: 12, gap: 6 }}>
+          <T s={8} color="#0f172a" weight={800}>Real numbers. Real growth.</T>
+          {['Avg customer','In 60 days'].map((t, i) => <T key={i} s={7} color="#64748b">{t}</T>)}
+        </div>
       </div>
     );
     return (
-      <div style={{ position: 'absolute', inset: 0 }}>
-        {overlayCard(<>
-          <T s={8} color="rgba(255,255,255,0.6)" align="center">{"Don't miss out"}</T>
-          <Btn label="Claim Offer →" bg={accent} />
-        </>)}
+      <div style={{ ...abs, flexDirection: 'row' }}>
+        <div style={{ flex: 1.1, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">Try free.</T>
+        </div>
+        <div style={{ flex: 1, background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
+          <div style={{ background: accent, borderRadius: 6, padding: '6px 12px', width: '100%', textAlign: 'center' }}>
+            <T s={8} color="#fff" weight={700} align="center">Start Now →</T>
+          </div>
+          <T s={6} color="#94a3b8" align="center">No card needed</T>
+        </div>
       </div>
     );
   }
 
-  // ─ CTA FINAL ─────────────────────────────────────────────────────────────
-  if (id === 'cta-final') {
+  // ─ overlay-card ────────────────────────────────────────────────────────────
+  if (id === 'overlay-card') {
     if (slide === 0) return (
-      <Col align="center" gap={6}>
-        <div style={{ background: 'rgba(239,68,68,0.2)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 4, padding: '2px 10px' }}>
-          <T s={7} color="#fca5a5" weight={800} caps spacing="0.1em">LIMITED TIME OFFER</T>
+      <div style={{ ...abs, background: `linear-gradient(180deg,${accent}88 0%,${accent}ee 100%)`, justifyContent: 'flex-end' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 32 }}>🚀</span>
         </div>
-        <T s={12} color="#fff" weight={900} align="center" spacing="-0.03em">{"Last chance. Don't miss it."}</T>
-        <Btn label="GRAB IT NOW →" bg={accent} />
-      </Col>
+        <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <T s={11} color="#fff" weight={800} spacing="-0.02em">Ready to transform?</T>
+          <T s={7} color="rgba(255,255,255,0.65)">Join thousands who already did.</T>
+          <div style={{ background: '#fff', borderRadius: 6, padding: '6px 14px', alignSelf: 'flex-start', marginTop: 4 }}>
+            <T s={8} color={accent} weight={800}>Get Access →</T>
+          </div>
+        </div>
+      </div>
     );
     if (slide === 1) return (
-      <Col gap={7}>
-        <T s={8} color="rgba(255,255,255,0.55)" weight={700}>Why act now?</T>
-        {['✓ Free shipping today only','✓ 30-day money back','✓ Only 47 units left'].map((t, i) => (
-          <T key={i} s={9} color="rgba(255,255,255,0.85)" weight={600}>{t}</T>
-        ))}
-      </Col>
+      <div style={{ ...abs, background: `linear-gradient(180deg,${accent}66 0%,${accent}cc 100%)`, justifyContent: 'flex-end' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: '45%', padding: '14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+          {['10,000+ users','4.9★ rating','24/7 support'].map((t, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#fff', opacity: 0.8 }} />
+              <T s={7} color="rgba(255,255,255,0.9)" weight={500}>{t}</T>
+            </div>
+          ))}
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <T s={9} color="#fff" weight={700}>Trusted by the best.</T>
+          <T s={7} color="rgba(255,255,255,0.6)">In 47 countries worldwide.</T>
+        </div>
+      </div>
     );
     return (
-      <Col align="center" gap={6}>
-        <T s={8} color="rgba(255,255,255,0.5)" align="center">Offer expires at midnight</T>
-        <div style={{ height: 32, background: accent, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px', boxShadow: `0 4px 18px ${accent}66` }}>
-          <T s={10} color="#fff" weight={900} caps spacing="0.06em">CLAIM NOW →</T>
+      <div style={{ ...abs, background: `linear-gradient(180deg,${accent}99 0%,${accent} 100%)`, justifyContent: 'flex-end' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: '45%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <T s={13} color="rgba(255,255,255,0.9)" weight={900} align="center" spacing="-0.02em">Start free.</T>
         </div>
-      </Col>
+        <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(14px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ background: '#fff', borderRadius: 6, padding: '8px 0', textAlign: 'center' }}>
+            <T s={9} color={accent} weight={800} align="center">Claim Free Trial →</T>
+          </div>
+          <T s={7} color="rgba(255,255,255,0.5)" align="center">No credit card · Cancel anytime</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ COUNTDOWN URGENCY ─────────────────────────────────────────────────────
+  // ─ cta-final ───────────────────────────────────────────────────────────────
+  if (id === 'cta-final') {
+    const red = '#ef4444';
+    if (slide === 0) return (
+      <div style={{ ...center, background: '#0f1117', gap: 8 }}>
+        <div style={{ background: `${red}20`, border: `1px solid ${red}55`, borderRadius: 6, padding: '3px 10px' }}>
+          <T s={7} color={red} weight={700} caps spacing="0.1em">⚡ Limited Time Offer</T>
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 36, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.05em', lineHeight: 0.9 }}>50%</div>
+          <div style={{ fontSize: 14, fontWeight: 900, color: red, letterSpacing: '-0.03em' }}>OFF TODAY</div>
+        </div>
+        <T s={7} color="rgba(241,245,249,0.45)" align="center">Price goes up at midnight</T>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: '#0f1117', padding: '14px', justifyContent: 'center', gap: 6 }}>
+        <T s={8} color="#f1f5f9" weight={800}>What's included:</T>
+        {[['✅','All 30+ templates'],['✅','AI copy engine'],['✅','Lifetime access'],['✅','Priority support']].map(([icon, t], i) => (
+          <Row key={i} gap={6}><T s={9} color="#22c55e">{icon}</T><T s={8} color="rgba(241,245,249,0.8)" weight={500}>{t as string}</T></Row>
+        ))}
+        <div style={{ background: `${red}15`, border: `1px solid ${red}30`, borderRadius: 6, padding: '5px 8px', marginTop: 4, display: 'flex', justifyContent: 'space-between' }}>
+          <T s={8} color="rgba(241,245,249,0.5)" weight={500}>Total value:</T>
+          <T s={8} color={red} weight={700}>$497 → FREE</T>
+        </div>
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: red, gap: 8 }}>
+        <T s={8} color="rgba(255,255,255,0.75)" align="center" caps spacing="0.1em">Last chance</T>
+        <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Grab it before it's gone.</T>
+        <div style={{ background: '#fff', borderRadius: 8, padding: '9px 22px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          <T s={9} color={red} weight={800}>CLAIM 50% OFF →</T>
+        </div>
+      </div>
+    );
+  }
+
+  // ─ countdown-urgency ───────────────────────────────────────────────────────
   if (id === 'countdown-urgency') {
-    const timer = (
-      <div style={{ display: 'flex', gap: 5 }}>
-        {[['00','HRS'],['12','MIN'],['34','SEC']].map(([n, l], i) => (
-          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <div style={{ width: 28, height: 28, background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.28)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, color: '#fff' }}>{n}</div>
-            <T s={6} color="rgba(255,255,255,0.4)" caps spacing="0.05em">{l}</T>
+    if (slide === 0) return (
+      <div style={{ ...center, background: '#0f1117', gap: 8 }}>
+        <T s={8} color="rgba(239,68,68,0.9)" weight={700} caps spacing="0.1em">⏰ Sale ends in</T>
+        <Row gap={4}>
+          {['00','12','34'].map((t, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <T s={14} color="rgba(241,245,249,0.3)" weight={700}>:</T>}
+              <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                <T s={16} color="#f1f5f9" weight={900}>{t}</T>
+                <T s={5} color="rgba(241,245,249,0.3)" caps spacing="0.05em">{['hrs','min','sec'][i]}</T>
+              </div>
+            </React.Fragment>
+          ))}
+        </Row>
+        <T s={7} color="rgba(239,68,68,0.7)" align="center">After midnight, price doubles.</T>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: '#0f1117', padding: '16px 14px', justifyContent: 'center', gap: 6 }}>
+        <T s={8} color="#f1f5f9" weight={700}>Before the timer hits zero:</T>
+        {[['🎁','Full access — lifetime deal'],['💸','Save $200 vs monthly price'],['🔒','Lock in your rate forever']].map(([icon, t], i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 8, padding: '7px 10px' }}>
+            <span style={{ fontSize: 11 }}>{icon}</span>
+            <T s={8} color="rgba(241,245,249,0.75)" weight={500}>{t as string}</T>
           </div>
         ))}
       </div>
     );
-    if (slide === 0) return (
-      <Col align="center" gap={7}>
-        <T s={8} color="#fca5a5" weight={800} caps spacing="0.1em">⏰ OFFER ENDS IN</T>
-        {timer}
-        <T s={8} color="rgba(255,255,255,0.5)">Swipe for the deal →</T>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={7}>
-        <T s={8} color="#fca5a5" weight={700}>Why buy now?</T>
-        {['🔥 50% off — today only','📦 Ships in 24 hours','🛡️ 60-day guarantee'].map((t, i) => (
-          <T key={i} s={9} color="rgba(255,255,255,0.85)" weight={600}>{t}</T>
-        ))}
-      </Col>
-    );
     return (
-      <Col align="center" gap={7}>
-        {timer}
-        <Btn label="CLAIM OFFER →" bg="rgba(239,68,68,0.6)" color="#fff" border="1px solid rgba(239,68,68,0.7)" />
-      </Col>
-    );
-  }
-
-  // ─ DARK LUXURY ───────────────────────────────────────────────────────────
-  if (id === 'dark-luxury') {
-    if (slide === 0) return (
-      <Col align="center" gap={8}>
-        <div style={{ height: 1, background: gold, width: 48 }} />
-        <T s={12} color="#f8f4e8" weight={300} align="center" spacing="0.06em">Exclusively<br/>Yours.</T>
-        <div style={{ height: 1, background: gold, width: 48 }} />
-        <T s={7} color="rgba(212,175,55,0.5)" caps spacing="0.14em">Swipe to explore</T>
-      </Col>
-    );
-    if (slide === 1) return (
-      <Col gap={8}>
-        {['Handcrafted quality','Members-only access','Lifetime guarantee'].map((t, i) => (
-          <Row key={i} gap={8}>
-            <div style={{ height: 1, background: gold, width: 14, flexShrink: 0 }} />
-            <T s={9} color="#f8f4e8" weight={400} spacing="0.04em">{t}</T>
-          </Row>
-        ))}
-      </Col>
-    );
-    return (
-      <Col align="center" gap={8}>
-        <div style={{ height: 1, background: gold, width: 48 }} />
-        <T s={8} color="rgba(248,244,232,0.6)" align="center" caps spacing="0.1em">By invitation only</T>
-        <div style={{ height: 22, border: `1px solid ${gold}`, borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 18px' }}>
-          <T s={8} color={gold} weight={500} caps spacing="0.12em">Request Access →</T>
+      <div style={{ ...center, background: '#0f1117', gap: 8 }}>
+        <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 6, padding: '3px 10px' }}>
+          <T s={7} color="#ef4444" weight={700}>Clock is ticking</T>
         </div>
-      </Col>
+        <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Shop before it's gone.</T>
+        <div style={{ background: '#ef4444', borderRadius: 8, padding: '8px 22px', boxShadow: '0 6px 20px rgba(239,68,68,0.5)' }}>
+          <T s={9} color="#fff" weight={800}>Grab the Deal →</T>
+        </div>
+      </div>
     );
   }
 
-  // ─ GENERIC FALLBACK ───────────────────────────────────────────────────────
-  if (slide === 0) return (
-    <Col align="center" gap={7}>
-      <T s={14} color={txt} weight={900} align="center" spacing="-0.03em">Hook them here.</T>
-      <div style={{ height: 2, background: accent, width: 40, borderRadius: 1 }} />
-      <T s={8} color={muted} align="center">Swipe to learn more →</T>
-    </Col>
-  );
-  if (slide === 1) return (
-    <Col gap={7}>
-      {['Benefit one','Benefit two','Benefit three'].map((t, i) => (
-        <Row key={i}><Check color={accent} /><T s={9} color={txt} weight={600}>{t}</T></Row>
-      ))}
-    </Col>
-  );
+  // ─ dark-luxury ─────────────────────────────────────────────────────────────
+  if (id === 'dark-luxury') {
+    const gold = '#d4af37';
+    if (slide === 0) return (
+      <div style={{ ...center, background: '#090909', gap: 8 }}>
+        <div style={{ height: 1, background: gold, width: 60, opacity: 0.6 }} />
+        <T s={7} color={gold} caps spacing="0.22em" weight={500}>Exclusively Yours</T>
+        <T s={15} color="#f5f0e8" weight={300} align="center" spacing="0.03em" >Luxury<br/>redefined.</T>
+        <div style={{ height: 1, background: gold, width: 60, opacity: 0.6 }} />
+        <T s={7} color="rgba(245,240,232,0.3)" align="center">Swipe to discover →</T>
+      </div>
+    );
+    if (slide === 1) return (
+      <div style={{ ...abs, background: '#090909', padding: '18px 16px', justifyContent: 'center', gap: 8 }}>
+        <T s={7} color={gold} caps spacing="0.18em">The collection</T>
+        {[['Craftsmanship','Handmade, always'],['Exclusivity','Limited to 100'],['Legacy','Est. 1987']].map(([k, v], i) => (
+          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(212,175,55,0.12)', paddingBottom: 7 }}>
+            <T s={8} color="rgba(245,240,232,0.7)" weight={400}>{k}</T>
+            <T s={7} color={gold} weight={500}>{v}</T>
+          </div>
+        ))}
+      </div>
+    );
+    return (
+      <div style={{ ...center, background: '#090909', gap: 10 }}>
+        <div style={{ height: 1, background: gold, width: 50, opacity: 0.5 }} />
+        <T s={10} color="#f5f0e8" weight={300} align="center" spacing="0.04em">Begin your story.</T>
+        <div style={{ border: `1px solid ${gold}66`, borderRadius: 4, padding: '8px 22px' }}>
+          <T s={8} color={gold} weight={500} spacing="0.08em">Explore</T>
+        </div>
+      </div>
+    );
+  }
+
+  // fallback
   return (
-    <Col align="center" gap={7}>
-      <T s={9} color={muted} align="center">Ready to start?</T>
-      <Btn label="Get Started →" bg={accent} />
-    </Col>
+    <div style={{ ...center, background: '#1e1b4b', gap: 8 }}>
+      <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">Ad Template</T>
+      <div style={{ background: accent, borderRadius: 8, padding: '7px 18px' }}>
+        <T s={8} color="#fff" weight={700}>Use Template →</T>
+      </div>
+    </div>
   );
 }
 
@@ -1935,27 +2162,21 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
 
   return (
     <div
-      style={{ width: '100%', height: '100%', background: style.bg, position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '16px 14px' }}
+      style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
       onMouseEnter={() => { setPaused(true); if (timerRef.current) clearInterval(timerRef.current); }}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Slide type badge */}
-      <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', padding: '2px 7px', borderRadius: 3, background: style.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)', color: style.light ? '#475569' : 'rgba(255,255,255,0.65)', zIndex: 1 }}>
-        {SLIDE_LABELS[slide]}
-      </div>
-
-      {/* Slide content — crossfades on change */}
-      <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.2s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', height: '100%', position: 'relative' }}>
-
+      {/* Full-bleed slide — crossfades */}
+      <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.25s ease', position: 'absolute', inset: 0 }}>
         {slide === 0 && <TemplateSlide id={id} slide={0} txt={txt} muted={muted} accent={accent} />}
         {slide === 1 && <TemplateSlide id={id} slide={1} txt={txt} muted={muted} accent={accent} />}
         {slide === 2 && <TemplateSlide id={id} slide={2} txt={txt} muted={muted} accent={accent} />}
       </div>
 
-      {/* Progress dots */}
-      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, zIndex: 1 }}>
+      {/* Instagram-native progress dots */}
+      <div style={{ position: 'absolute', bottom: 7, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 3, zIndex: 10 }}>
         {[0, 1, 2].map(i => (
-          <div key={i} style={{ height: 3, borderRadius: 2, background: i === slide ? txt : dotBase, width: i === slide ? 14 : 4, opacity: i === slide ? 0.9 : 1, transition: 'all 0.3s ease' }} />
+          <div key={i} style={{ height: 4, borderRadius: 2, background: '#fff', width: i === slide ? 12 : 4, opacity: i === slide ? 0.95 : 0.35, transition: 'all 0.3s ease', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
         ))}
       </div>
     </div>
