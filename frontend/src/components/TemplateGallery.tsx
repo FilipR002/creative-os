@@ -1887,12 +1887,11 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   const muted = dark  ? 'rgba(241,245,249,0.4)'
               : light ? 'rgba(30,41,59,0.4)'
               : 'rgba(241,245,249,0.45)';
-  const accent = tone === 'dark'    ? '#6366f1'
-               : tone === 'luxury'  ? '#d4af37'
-               : tone === 'light'   ? '#4f46e5'
-               : tone === 'minimal' ? '#0f172a'
-               : tone === 'urgent'  ? '#ef4444'
-               : '#6366f1';
+  const accent = TEMPLATE_ACCENTS[id] ?? (
+    tone === 'luxury'  ? '#d4af37' :
+    tone === 'urgent'  ? '#ef4444' :
+    '#6366f1'
+  );
 
   // Shared inner layout
   const wrap: React.CSSProperties = {
