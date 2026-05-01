@@ -44,11 +44,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
   const text  = isLight ? '#1e293b' : '#f1f5f9';
   const muted = isLight ? '#64748b' : 'rgba(255,255,255,0.45)';
 
-  const accents: Record<string, string> = {
-    bold: '#4f46e5', minimal: '#6366f1', premium: '#d97706',
-    friendly: '#2563eb', urgent: '#dc2626', energetic: '#ea580c',
-  };
-  const accent = accents[tone] ?? '#4f46e5';
+  const accent = TEMPLATE_ACCENTS[id] ?? TONE_ACCENTS[tone] ?? '#4f46e5';
 
   const s: React.CSSProperties = { width: '100%', height: '100%', overflow: 'hidden', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 16, background: bg, color: text };
 
@@ -478,6 +474,41 @@ const TONE_ACCENTS: Record<string, string> = {
   friendly: '#2563eb', urgent: '#dc2626', energetic: '#ea580c',
 };
 
+// Per-template accent colors — each template owns a unique hue so they
+// look visually distinct in the gallery regardless of the user's chosen tone.
+const TEMPLATE_ACCENTS: Record<string, string> = {
+  'full-bleed':         '#f59e0b',  // amber-orange
+  'bold-headline':      '#e11d48',  // rose-vivid
+  'minimal':            '#7c3aed',  // violet
+  'ugc-style':          '#10b981',  // emerald
+  'testimonial':        '#2563eb',  // blue
+  'stats-hero':         '#06b6d4',  // cyan
+  'feature-list':       '#16a34a',  // green
+  'cta-final':          '#dc2626',  // red
+  'gradient-pop':       '#22d3ee',  // bright cyan
+  'dark-luxury':        '#d97706',  // gold
+  'bright-minimal':     '#ec4899',  // pink
+  'story-hook':         '#22c55e',  // green-400
+  'problem-slide':      '#f43f5e',  // rose-red
+  'text-only-bold':     '#a855f7',  // purple
+  'product-center':     '#0ea5e9',  // sky
+  'neon-dark':          '#4ade80',  // neon green
+  'magazine-editorial': '#1e293b',  // editorial slate (dark)
+  'color-block':        '#f97316',  // orange
+  'floating-card':      '#86efac',  // light green (on dark bg)
+  'countdown-urgency':  '#ef4444',  // red-hot
+  'social-proof-grid':  '#3b82f6',  // blue
+  'headline-badge':     '#8b5cf6',  // violet-400
+  'side-by-side':       '#4f46e5',  // indigo
+  'diagonal-split':     '#fb7185',  // rose-light
+  'overlay-card':       '#38bdf8',  // sky-light
+  'number-list':        '#eab308',  // yellow
+  'brand-manifesto':    '#c026d3',  // fuchsia
+  'product-demo':       '#0891b2',  // teal
+  'retro-bold':         '#b45309',  // amber-brown
+  'split-panel':        '#059669',  // emerald-deep
+};
+
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
 
 // ── Shared mini helpers ───────────────────────────────────────────────────────
@@ -535,12 +566,13 @@ function SlideBg({ id, slide, accent }: { id: string; slide: 0|1|2; accent: stri
   if (slide === 2 && ['full-bleed','number-list','social-proof-grid','story-hook','side-by-side','problem-slide'].includes(id))
     return <div style={{ ...s, background: accent }}><div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.035 }} /></div>;
 
-  // ── dark aurora mesh ── purple/indigo blobs on near-black ─────────────────
+  // ── dark aurora mesh — primary blobs all use template accent ─────────────
   if (['full-bleed','neon-dark','bold-headline','headline-badge','story-hook','problem-slide','countdown-urgency','cta-final'].includes(id)) return (
     <div style={{ ...s, background: '#06080f' }}>
-      {blob('-18%', '-22%', 150, accent, 0.3)}
-      {blob('55%', '52%', 120, '#3730a3', 0.22)}
-      {blob('58%', '-18%', 95, '#7c3aed', 0.18)}
+      {blob('-18%', '-22%', 150, accent, 0.38)}
+      {blob('55%', '52%', 120, accent, 0.18)}
+      {blob('58%', '-18%', 95, accent, 0.12)}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.025 }} />
     </div>
   );
 
@@ -554,10 +586,11 @@ function SlideBg({ id, slide, accent }: { id: string; slide: 0|1|2; accent: stri
 
   // ── vivid aurora — gradient-pop / floating-card / overlay-card ────────────
   if (['gradient-pop','floating-card','overlay-card'].includes(id)) return (
-    <div style={{ ...s, background: '#180a2e' }}>
-      {blob('-12%', '-18%', 160, '#7c3aed', 0.52)}
-      {blob('42%', '32%', 130, '#db2777', 0.42)}
-      {blob('22%', '58%', 105, '#f97316', 0.32)}
+    <div style={{ ...s, background: '#0a0f1e' }}>
+      {blob('-12%', '-18%', 160, accent, 0.55)}
+      {blob('42%', '32%', 130, accent, 0.30)}
+      {blob('22%', '58%', 105, accent, 0.20)}
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.03 }} />
     </div>
   );
 
@@ -639,8 +672,8 @@ function SlideBg({ id, slide, accent }: { id: string; slide: 0|1|2; accent: stri
   // ── default dark aurora ───────────────────────────────────────────────────
   return (
     <div style={{ ...s, background: '#0f1117' }}>
-      {blob('25%', '15%', 110, accent, 0.2)}
-      {blob('60%', '60%', 90, '#3730a3', 0.15)}
+      {blob('25%', '15%', 110, accent, 0.28)}
+      {blob('60%', '60%', 90, accent, 0.16)}
     </div>
   );
 }
@@ -2285,7 +2318,7 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const style   = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
   const txt     = style.light ? '#1e293b' : '#ffffff';
   const muted   = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
-  const accent  = TONE_ACCENTS[tone] ?? '#4f46e5';
+  const accent  = TEMPLATE_ACCENTS[id] ?? TONE_ACCENTS[tone] ?? '#4f46e5';
   const dotBase = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
 
   useEffect(() => {
