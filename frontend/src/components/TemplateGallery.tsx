@@ -480,6 +480,379 @@ const TONE_ACCENTS: Record<string, string> = {
 
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
 
+// ── Cover slide renderers — one distinct layout per template ─────────────────
+function CoverSlide({ id, txt, muted, accent }: { id: string; txt: string; muted: string; accent: string }) {
+  const w = (n: number) => `${n}%`;
+
+  // Bold / impact group
+  if (id === 'full-bleed') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 14, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 55%)' }}>
+      <div style={{ height: 9, background: '#fff', borderRadius: 2, width: w(80), marginBottom: 5 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.45)', borderRadius: 2, width: w(58), marginBottom: 11 }} />
+      <div style={{ height: 22, background: accent, borderRadius: 5, width: 72, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 44 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'bold-headline') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: '100%' }}>
+      <div style={{ fontSize: 26, fontWeight: 900, color: '#fff', letterSpacing: '-0.05em', lineHeight: 0.95, textAlign: 'center', textTransform: 'uppercase' }}>THE<br/>HOOK</div>
+      <div style={{ height: 3, background: accent, width: 40, borderRadius: 1 }} />
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 2, width: w(65), marginTop: 2 }} />
+    </div>
+  );
+
+  if (id === 'gradient-pop') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
+      <div style={{ height: 11, background: '#fff', borderRadius: 3, width: w(85), opacity: 0.95 }} />
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: w(65) }} />
+      <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
+        {['#fff','rgba(255,255,255,0.5)','rgba(255,255,255,0.25)'].map((c, i) => (
+          <div key={i} style={{ height: 20, background: c, borderRadius: 4, width: 22 + i * 8 }} />
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'diagonal-split') return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, background: '#f8fafc' }} />
+      <div style={{ position: 'absolute', top: 0, right: 0, width: '55%', height: '100%', background: accent, clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 0% 100%)' }} />
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 14, gap: 6 }}>
+        <div style={{ height: 9, background: '#1e293b', borderRadius: 2, width: w(60) }} />
+        <div style={{ height: 5, background: 'rgba(30,41,59,0.4)', borderRadius: 2, width: w(45) }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'neon-dark') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ fontSize: 16, fontWeight: 900, color: accent, letterSpacing: '0.04em', textTransform: 'uppercase', textShadow: `0 0 12px ${accent}, 0 0 24px ${accent}66` }}>NEON</div>
+      <div style={{ height: 2, background: accent, width: 60, boxShadow: `0 0 8px ${accent}` }} />
+      <div style={{ height: 4, background: `${accent}55`, borderRadius: 2, width: w(70) }} />
+      <div style={{ height: 20, border: `1.5px solid ${accent}`, borderRadius: 5, width: 80, boxShadow: `0 0 8px ${accent}44`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 3, background: accent, borderRadius: 1, width: 48 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'retro-bold') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ border: '3px solid #1e293b', borderRadius: 4, padding: '4px 14px', display: 'inline-block' }}>
+        <div style={{ fontSize: 14, fontWeight: 900, color: '#1e293b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>RETRO</div>
+      </div>
+      <div style={{ height: 4, background: accent, borderRadius: 1, width: w(70) }} />
+      <div style={{ height: 4, background: 'rgba(30,41,59,0.25)', borderRadius: 2, width: w(55) }} />
+    </div>
+  );
+
+  if (id === 'color-block') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+      <div style={{ flex: 1, background: accent, display: 'flex', alignItems: 'flex-end', padding: 10 }}>
+        <div style={{ height: 7, background: '#fff', borderRadius: 2, width: '80%' }} />
+      </div>
+      <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 5, padding: 10 }}>
+        <div style={{ height: 5, background: '#1e293b', borderRadius: 2, width: '75%' }} />
+        <div style={{ height: 4, background: 'rgba(30,41,59,0.3)', borderRadius: 2, width: '60%' }} />
+        <div style={{ height: 18, background: accent, borderRadius: 4, width: '70%', marginTop: 4 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'headline-badge') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 7, width: '100%', padding: '0 4px' }}>
+      <div style={{ background: accent, borderRadius: 3, padding: '2px 8px', alignSelf: 'flex-start' }}>
+        <div style={{ height: 6, background: '#fff', borderRadius: 1, width: 48 }} />
+      </div>
+      <div style={{ height: 11, background: txt, borderRadius: 2, width: w(90), opacity: 0.9 }} />
+      <div style={{ height: 6, background: muted, borderRadius: 2, width: w(70) }} />
+    </div>
+  );
+
+  // Minimal group
+  if (id === 'minimal') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%' }}>
+      <div style={{ height: 1, background: 'rgba(30,41,59,0.2)', width: w(80) }} />
+      <div style={{ height: 9, background: '#1e293b', borderRadius: 2, width: w(75), opacity: 0.8 }} />
+      <div style={{ height: 5, background: 'rgba(30,41,59,0.3)', borderRadius: 2, width: w(55) }} />
+      <div style={{ height: 1, background: 'rgba(30,41,59,0.2)', width: w(80) }} />
+    </div>
+  );
+
+  if (id === 'bright-minimal') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%' }}>
+      <div style={{ width: 32, height: 32, borderRadius: '50%', background: `${accent}20`, border: `2px solid ${accent}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 12, height: 12, borderRadius: '50%', background: accent }} />
+      </div>
+      <div style={{ height: 8, background: '#1e293b', borderRadius: 2, width: w(70), opacity: 0.8 }} />
+      <div style={{ height: 4, background: 'rgba(30,41,59,0.3)', borderRadius: 2, width: w(50) }} />
+    </div>
+  );
+
+  if (id === 'text-only-bold') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, width: '100%', padding: '0 4px' }}>
+      <div style={{ height: 13, background: '#1e293b', borderRadius: 2, width: w(95), opacity: 0.9 }} />
+      <div style={{ height: 13, background: '#1e293b', borderRadius: 2, width: w(80), opacity: 0.9 }} />
+      <div style={{ height: 8, background: accent, borderRadius: 2, width: w(55), marginTop: 4 }} />
+    </div>
+  );
+
+  if (id === 'side-by-side') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', gap: 0 }}>
+      <div style={{ flex: 1, background: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 8, background: accent, opacity: 0.7 }} />
+      </div>
+      <div style={{ flex: 1, background: '#fff', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 5, padding: 10 }}>
+        <div style={{ height: 7, background: '#1e293b', borderRadius: 2, width: '85%' }} />
+        <div style={{ height: 4, background: 'rgba(30,41,59,0.3)', borderRadius: 2, width: '70%' }} />
+        <div style={{ height: 4, background: 'rgba(30,41,59,0.3)', borderRadius: 2, width: '80%' }} />
+      </div>
+    </div>
+  );
+
+  // Story group
+  if (id === 'story-hook') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%', padding: '0 4px' }}>
+      <div style={{ fontSize: 8, color: '#6ee7b7', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>STORY</div>
+      <div style={{ height: 9, background: '#fff', borderRadius: 2, width: w(90), opacity: 0.9 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: w(70) }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: w(80) }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: w(60) }} />
+    </div>
+  );
+
+  if (id === 'problem-slide') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%' }}>
+      <div style={{ fontSize: 9, fontWeight: 800, color: '#fca5a5', letterSpacing: '0.12em' }}>THE PROBLEM</div>
+      <div style={{ height: 8, background: '#fff', borderRadius: 2, width: w(85), opacity: 0.9 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: w(68) }} />
+      <div style={{ height: 20, background: 'rgba(239,68,68,0.3)', border: '1px solid rgba(239,68,68,0.5)', borderRadius: 5, width: w(80), marginTop: 4 }} />
+    </div>
+  );
+
+  if (id === 'brand-manifesto') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5, width: '100%', padding: '0 4px' }}>
+      <div style={{ height: 3, background: accent, width: 28, borderRadius: 1 }} />
+      <div style={{ height: 8, background: '#fff', borderRadius: 2, width: w(95), opacity: 0.95 }} />
+      <div style={{ height: 8, background: '#fff', borderRadius: 2, width: w(80), opacity: 0.95 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.35)', borderRadius: 2, width: w(65), marginTop: 3 }} />
+    </div>
+  );
+
+  if (id === 'ugc-style') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', padding: '0 4px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'rgba(30,41,59,0.2)', border: '1.5px solid rgba(30,41,59,0.3)', flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ height: 5, background: txt, borderRadius: 1, width: 55, opacity: 0.7 }} />
+          <div style={{ height: 3, background: muted, borderRadius: 1, width: 40 }} />
+        </div>
+      </div>
+      <div style={{ height: 4, background: txt, borderRadius: 2, width: w(90), opacity: 0.5 }} />
+      <div style={{ height: 4, background: txt, borderRadius: 2, width: w(75), opacity: 0.5 }} />
+    </div>
+  );
+
+  if (id === 'magazine-editorial') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 2, padding: 10 }}>
+      <div style={{ gridColumn: '1', gridRow: '1/3', background: '#e2e8f0', borderRadius: 4 }} />
+      <div style={{ background: '#cbd5e1', borderRadius: 4 }} />
+      <div style={{ background: '#f1f5f9', borderRadius: 4, display: 'flex', alignItems: 'flex-end', padding: 4 }}>
+        <div style={{ height: 5, background: '#475569', borderRadius: 1, width: '80%' }} />
+      </div>
+    </div>
+  );
+
+  // Social proof group
+  if (id === 'testimonial') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7, width: '100%' }}>
+      <div style={{ display: 'flex', gap: 3 }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} style={{ fontSize: 11, color: '#fbbf24' }}>★</div>
+        ))}
+      </div>
+      <div style={{ height: 4, background: txt, borderRadius: 2, width: w(85), opacity: 0.5 }} />
+      <div style={{ height: 4, background: txt, borderRadius: 2, width: w(70), opacity: 0.5 }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+        <div style={{ width: 18, height: 18, borderRadius: '50%', background: muted }} />
+        <div style={{ height: 4, background: muted, borderRadius: 2, width: 50 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'social-proof-grid') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%' }}>
+      <div style={{ height: 7, background: txt, borderRadius: 2, width: w(65), opacity: 0.7 }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
+        {[0,1,2,3].map(i => (
+          <div key={i} style={{ height: 22, background: txt === '#1e293b' ? 'rgba(30,41,59,0.06)' : 'rgba(255,255,255,0.08)', borderRadius: 5, border: `1px solid ${muted}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 24, height: 5, background: muted, borderRadius: 2 }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'stats-hero') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+      <div style={{ fontSize: 32, fontWeight: 900, color: accent, letterSpacing: '-0.04em', lineHeight: 1 }}>10x</div>
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: 70 }} />
+      <div style={{ height: 3, background: 'rgba(255,255,255,0.25)', borderRadius: 2, width: 50 }} />
+    </div>
+  );
+
+  // Product group
+  if (id === 'product-center') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ width: 52, height: 52, borderRadius: 12, background: `${accent}18`, border: `2px solid ${accent}30`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, borderRadius: 8, background: accent, opacity: 0.7 }} />
+      </div>
+      <div style={{ height: 7, background: txt, borderRadius: 2, width: w(70), opacity: 0.75 }} />
+      <div style={{ height: 4, background: muted, borderRadius: 2, width: w(50) }} />
+    </div>
+  );
+
+  if (id === 'product-demo') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 7 }}>
+      <div style={{ width: '85%', height: 55, background: '#e2e8f0', borderRadius: 6, border: '1.5px solid #cbd5e1', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: 8, background: '#cbd5e1', display: 'flex', alignItems: 'center', paddingLeft: 6, gap: 3 }}>
+          {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width: 4, height: 4, borderRadius: '50%', background: c }} />)}
+        </div>
+        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 6 }}>
+          <div style={{ height: 4, background: '#94a3b8', borderRadius: 1, width: '80%' }} />
+          <div style={{ height: 4, background: '#cbd5e1', borderRadius: 1, width: '60%' }} />
+        </div>
+      </div>
+      <div style={{ height: 5, background: txt, borderRadius: 2, width: w(60), opacity: 0.6 }} />
+    </div>
+  );
+
+  if (id === 'floating-card') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div style={{ background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)', borderRadius: 10, padding: '12px 14px', width: '85%', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.18)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ height: 7, background: '#fff', borderRadius: 2, width: '80%', opacity: 0.9 }} />
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.45)', borderRadius: 2, width: '65%' }} />
+        <div style={{ height: 20, background: accent, borderRadius: 6, width: '60%', marginTop: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 40 }} />
+        </div>
+      </div>
+    </div>
+  );
+
+  if (id === 'feature-list') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', padding: '0 4px' }}>
+      <div style={{ height: 7, background: txt, borderRadius: 2, width: w(75), opacity: 0.8 }} />
+      {[w(82), w(70), w(88), w(65)].map((width, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 2, background: accent, flexShrink: 0, opacity: 0.8 }} />
+          <div style={{ height: 4, background: txt, borderRadius: 1, width, opacity: 0.45 }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'number-list') return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%', padding: '0 4px' }}>
+      {[['1', w(80)], ['2', w(65)], ['3', w(75)]].map(([num, width], i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ width: 16, height: 16, borderRadius: '50%', background: `${accent}22`, border: `1.5px solid ${accent}55`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700, color: accent }}>{num}</div>
+          <div style={{ height: 4, background: txt, borderRadius: 1, width, opacity: 0.45 }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'split-panel') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
+      <div style={{ flex: 1, background: 'linear-gradient(160deg,#4f46e5,#7c3aed)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(255,255,255,0.5)' }} />
+        </div>
+      </div>
+      <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 10 }}>
+        <div style={{ height: 7, background: '#1e293b', borderRadius: 2, width: '85%' }} />
+        <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: '70%' }} />
+        <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: '80%' }} />
+        <div style={{ height: 18, background: '#4f46e5', borderRadius: 4, width: '60%', marginTop: 4 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'overlay-card') return (
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-end', padding: 10 }}>
+      <div style={{ width: '100%', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={{ height: 7, background: '#fff', borderRadius: 2, width: '85%', opacity: 0.9 }} />
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: '65%' }} />
+        <div style={{ height: 18, background: accent, borderRadius: 5, width: '55%', marginTop: 3 }} />
+      </div>
+    </div>
+  );
+
+  // Urgent group
+  if (id === 'cta-final') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ height: 8, background: '#fff', borderRadius: 2, width: w(80), opacity: 0.85 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: w(60) }} />
+      <div style={{ height: 30, background: accent, borderRadius: 8, width: w(80), display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${accent}66`, marginTop: 4 }}>
+        <div style={{ height: 5, background: '#fff', borderRadius: 1, width: 60 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'countdown-urgency') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ height: 6, background: 'rgba(255,255,255,0.5)', borderRadius: 2, width: 80 }} />
+      <div style={{ display: 'flex', gap: 5 }}>
+        {['00','12','34'].map((n, i) => (
+          <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <div style={{ width: 26, height: 26, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 5, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>{n}</div>
+            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.05em' }}>{['HRS','MIN','SEC'][i]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ height: 4, background: accent, borderRadius: 2, width: w(70) }} />
+    </div>
+  );
+
+  if (id === 'dark-luxury') return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+      <div style={{ height: 1, background: 'rgba(212,175,55,0.6)', width: 50 }} />
+      <div style={{ height: 8, background: '#f8f4e8', borderRadius: 2, width: w(75), opacity: 0.85 }} />
+      <div style={{ height: 4, background: 'rgba(212,175,55,0.45)', borderRadius: 2, width: w(55) }} />
+      <div style={{ height: 1, background: 'rgba(212,175,55,0.6)', width: 50 }} />
+      <div style={{ height: 22, border: '1px solid rgba(212,175,55,0.5)', borderRadius: 3, width: 85, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 3, background: 'rgba(212,175,55,0.7)', borderRadius: 1, width: 55 }} />
+      </div>
+    </div>
+  );
+
+  // Generic fallback
+  return (
+    <>
+      <div style={{ fontSize: 16, fontWeight: 900, color: txt, lineHeight: 1.2, letterSpacing: '-0.025em', textAlign: 'center' }}>Hook It</div>
+      <div style={{ height: 4, background: muted, borderRadius: 2, width: 70 }} />
+      <div style={{ fontSize: 8, color: muted, letterSpacing: '0.07em', marginTop: 4 }}>SWIPE →</div>
+    </>
+  );
+}
+
+// ── Feature slide — adapts to light/dark ──────────────────────────────────────
+function FeatureSlide({ txt, accent }: { txt: string; muted: string; accent: string; style: { light: boolean } }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%', paddingLeft: 8 }}>
+      {[82, 70, 90].map((w, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <div style={{ width: 13, height: 13, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 4, height: 3, borderLeft: '1.5px solid #fff', borderBottom: '1.5px solid #fff', transform: 'rotate(-45deg) translate(0.5px,-0.5px)' }} />
+          </div>
+          <div style={{ height: 4, background: txt, borderRadius: 1, width: `${w}%`, opacity: 0.6 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const [slide,  setSlide]  = useState(0);
   const [fading, setFading] = useState(false);
@@ -508,36 +881,19 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
       onMouseLeave={() => setPaused(false)}
     >
       {/* Slide type badge */}
-      <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', padding: '2px 7px', borderRadius: 3, background: style.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)', color: style.light ? '#475569' : 'rgba(255,255,255,0.65)' }}>
+      <div style={{ position: 'absolute', top: 8, left: 8, fontSize: 8, fontWeight: 700, letterSpacing: '0.09em', padding: '2px 7px', borderRadius: 3, background: style.light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.12)', color: style.light ? '#475569' : 'rgba(255,255,255,0.65)', zIndex: 1 }}>
         {SLIDE_LABELS[slide]}
       </div>
 
       {/* Slide content — crossfades on change */}
-      <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.2s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%' }}>
+      <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.2s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, width: '100%', height: '100%', position: 'relative' }}>
 
         {slide === 0 && (
-          /* COVER — hook + swipe hint */
-          <>
-            <div style={{ fontSize: 18, fontWeight: 900, color: txt, lineHeight: 1.2, letterSpacing: '-0.025em', textAlign: 'center' }}>
-              Stop Scrolling
-            </div>
-            <div style={{ height: 4, background: muted, borderRadius: 2, width: 70 }} />
-            <div style={{ fontSize: 8, color: muted, letterSpacing: '0.07em', marginTop: 4 }}>SWIPE →</div>
-          </>
+          <CoverSlide id={id} txt={txt} muted={muted} accent={accent} />
         )}
 
         {slide === 1 && (
-          /* FEATURE — 3 check rows */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%', paddingLeft: 8 }}>
-            {[82, 70, 90].map((w, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                <div style={{ width: 13, height: 13, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 4, height: 3, borderLeft: '1.5px solid #fff', borderBottom: '1.5px solid #fff', transform: 'rotate(-45deg) translate(0.5px,-0.5px)' }} />
-                </div>
-                <div style={{ height: 4, background: txt, borderRadius: 1, width: `${w}%`, opacity: 0.6 }} />
-              </div>
-            ))}
-          </div>
+          <FeatureSlide txt={txt} muted={muted} accent={accent} style={style} />
         )}
 
         {slide === 2 && (
@@ -553,7 +909,7 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
       </div>
 
       {/* Progress dots */}
-      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4 }}>
+      <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, zIndex: 1 }}>
         {[0, 1, 2].map(i => (
           <div key={i} style={{ height: 3, borderRadius: 2, background: i === slide ? txt : dotBase, width: i === slide ? 14 : 4, opacity: i === slide ? 0.9 : 1, transition: 'all 0.3s ease' }} />
         ))}
