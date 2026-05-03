@@ -7,7 +7,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { TemplateMetadata } from '@/lib/api/creator-client';
 
 export type GalleryFormat = 'carousel' | 'image' | 'video';
-type Category = 'all' | 'bold' | 'minimal' | 'story' | 'social' | 'product' | 'urgent';
+type Category = 'all' | 'conversion' | 'trust' | 'empathy' | 'engagement' | 'scroll-stop';
 
 interface Props {
   templates:     TemplateMetadata[];
@@ -16,30 +16,28 @@ interface Props {
 }
 
 const CATEGORIES: { id: Category; label: string; icon: string }[] = [
-  { id: 'all',     label: 'All Templates', icon: '⊞' },
-  { id: 'bold',    label: 'Bold',          icon: '⚡' },
-  { id: 'minimal', label: 'Minimal',       icon: '◻' },
-  { id: 'story',   label: 'Story',         icon: '✦' },
-  { id: 'social',  label: 'Social Proof',  icon: '★' },
-  { id: 'product', label: 'Product',       icon: '◈' },
-  { id: 'urgent',  label: 'Urgent',        icon: '◎' },
+  { id: 'all',        label: 'All',        icon: '⊞' },
+  { id: 'conversion', label: 'Conversion', icon: '⚡' },
+  { id: 'trust',      label: 'Trust',      icon: '★' },
+  { id: 'empathy',    label: 'Empathy',    icon: '♥' },
+  { id: 'engagement', label: 'Engagement', icon: '◈' },
+  { id: 'scroll-stop',label: 'Scroll-Stop',icon: '◎' },
 ];
 
 const CATEGORY_IDS: Record<Category, string[]> = {
-  all:     [],
-  bold:    ['full-bleed','bold-headline','gradient-pop','diagonal-split','neon-dark','retro-bold','color-block','headline-badge'],
-  minimal: ['minimal','bright-minimal','text-only-bold','side-by-side'],
-  story:   ['story-hook','problem-slide','brand-manifesto','ugc-style','magazine-editorial'],
-  social:  ['testimonial','social-proof-grid','stats-hero'],
-  product: ['product-center','product-demo','floating-card','feature-list','number-list','split-panel','overlay-card'],
-  urgent:  ['cta-final','countdown-urgency','dark-luxury'],
+  all:          [],
+  conversion:   ['countdown-urgency','cta-final','problem-slide','diagonal-split','bold-headline','gradient-pop','offer-stack','value-math'],
+  trust:        ['testimonial','social-proof-grid','stats-hero','story-hook','magazine-editorial','feature-list','case-study','insight-frame'],
+  empathy:      ['ugc-style','full-bleed','overlay-card','dark-luxury','pain-diagnostic','mistake-alert','empathy-card','validation-card'],
+  engagement:   ['number-list','side-by-side','split-panel','floating-card','product-demo','product-center','do-dont','transform-split'],
+  'scroll-stop':['text-only-bold','neon-dark','retro-bold','headline-badge','brand-manifesto','color-block','bright-minimal','minimal'],
 };
 
 // ─── Per-template mini preview fallbacks ─────────────────────────────────────
 // Each returns a distinct CSS-only layout that visually represents the template.
 
 function Fallback({ id, tone }: { id: string; tone: string }) {
-  const isLight = ['minimal','bright-minimal','feature-list','floating-card','product-demo','magazine-editorial','split-panel','side-by-side'].includes(id);
+  const isLight = ['minimal','bright-minimal','feature-list','floating-card','product-demo','magazine-editorial','split-panel','side-by-side','case-study','insight-frame','do-dont','transform-split'].includes(id);
   const bg    = isLight ? '#f8fafc' : '#0f172a';
   const text  = isLight ? '#1e293b' : '#f1f5f9';
   const muted = isLight ? '#64748b' : 'rgba(255,255,255,0.45)';
@@ -415,6 +413,163 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
     </div>
   );
 
+  if (id === 'offer-stack') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg,#450a0a,#991b1b)', gap: 4, justifyContent: 'center' }}>
+      <div style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 6, padding: '4px 12px', fontSize: 9, color: '#fca5a5', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>Limited Offer</div>
+      <div style={{ fontSize: 42, fontWeight: 900, color: '#fff', lineHeight: 1, letterSpacing: '-0.04em' }}>50<span style={{ fontSize: 22, color: '#ef4444' }}>%</span></div>
+      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>OFF TODAY ONLY</div>
+      <div style={{ marginTop: 8, height: 26, background: '#ef4444', borderRadius: 6, width: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(239,68,68,0.5)' }}>
+        <div style={{ height: 5, background: '#fff', borderRadius: 2, width: 65 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'value-math') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg,#020617,#0c1a3a)', gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.35)', fontSize: 16, fontWeight: 700 }}>$299</div>
+        <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>→</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: '#10b981', letterSpacing: '-0.03em' }}>$97</div>
+      </div>
+      <div style={{ height: 3, background: 'rgba(16,185,129,0.3)', borderRadius: 1, width: 100 }} />
+      <div style={{ fontSize: 8, color: '#10b981', fontWeight: 700, letterSpacing: '0.06em' }}>YOU SAVE $202</div>
+      <div style={{ marginTop: 6, height: 22, background: '#10b981', borderRadius: 5, width: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 55 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'case-study') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 14, gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 22, height: 22, borderRadius: 6, background: '#6366f1' }} />
+        <div style={{ height: 5, background: '#1e293b', borderRadius: 2, width: 70 }} />
+      </div>
+      <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />
+      <div style={{ display: 'flex', gap: 10, width: '100%' }}>
+        {[['Before','#94a3b8'],['After','#6366f1']].map(([label, col]) => (
+          <div key={label} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <div style={{ fontSize: 7, color: col as string, fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.08em' }}>{label}</div>
+            <div style={{ height: 14, background: col as string, borderRadius: 3, opacity: label === 'Before' ? 0.3 : 1 }} />
+            <div style={{ height: 4, background: '#94a3b8', borderRadius: 1, width: '80%' }} />
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 9, fontWeight: 800, color: '#6366f1' }}>+340% in 60 days</div>
+    </div>
+  );
+
+  if (id === 'insight-frame') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 14, gap: 8 }}>
+      <div style={{ fontSize: 9, color: '#0ea5e9', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>Insight</div>
+      <div style={{ height: 8, background: '#0f172a', borderRadius: 2, width: 130 }} />
+      <div style={{ height: 1, background: '#e2e8f0', width: '100%', marginTop: 2 }} />
+      {[1,2,3].map(i => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ fontSize: 7, color: '#fff', fontWeight: 900 }}>{i}</div>
+          </div>
+          <div style={{ height: 4, background: '#94a3b8', borderRadius: 1, width: 90 }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'pain-diagnostic') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)', gap: 8 }}>
+      <div style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 20, padding: '4px 12px', fontSize: 8, color: '#f43f5e', fontWeight: 700, letterSpacing: '0.08em' }}>DIAGNOSE</div>
+      <div style={{ fontSize: 15, fontWeight: 800, color: '#fff', textAlign: 'center', lineHeight: 1.3 }}>Sound<br />familiar?</div>
+      {['' as string,'' as string,'' as string].map((_, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: 8, color: '#f43f5e' }}>✕</div>
+          <div style={{ height: 4, background: 'rgba(244,63,94,0.4)', borderRadius: 1, width: [80,100,65][i] }} />
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'mistake-alert') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg,#1c0505,#431407)', gap: 8 }}>
+      <div style={{ background: '#f97316', borderRadius: 4, padding: '3px 10px', fontSize: 8, color: '#fff', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>⚠ Mistake #1</div>
+      <div style={{ height: 7, background: 'rgba(255,255,255,0.8)', borderRadius: 2, width: 120 }} />
+      <div style={{ height: 5, background: 'rgba(255,255,255,0.4)', borderRadius: 2, width: 95 }} />
+      <div style={{ marginTop: 4, height: 22, background: 'rgba(249,115,22,0.2)', border: '1px solid #f97316', borderRadius: 5, width: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 4, background: '#f97316', borderRadius: 1, width: 65 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'empathy-card') return (
+    <div style={{ ...s, background: 'linear-gradient(160deg,#fff7f0,#fce7f3)', gap: 8 }}>
+      <div style={{ fontSize: 22 }}>🤍</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed', textAlign: 'center', lineHeight: 1.4 }}>
+        You deserve<br />to feel this.
+      </div>
+      <div style={{ height: 5, background: 'rgba(124,58,237,0.2)', borderRadius: 2, width: 100 }} />
+      <div style={{ height: 22, background: 'linear-gradient(135deg,#7c3aed,#ec4899)', borderRadius: 20, width: 90, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 55 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'validation-card') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', gap: 8 }}>
+      <div style={{ display: 'flex', gap: -6 }}>
+        {['#a78bfa','#818cf8','#6366f1'].map((c,i) => (
+          <div key={i} style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: '2px solid #fff', marginLeft: i > 0 ? -6 : 0 }} />
+        ))}
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#4c1d95', textAlign: 'center', lineHeight: 1.4 }}>
+        You're not alone.<br />14,000+ feel this.
+      </div>
+      <div style={{ height: 5, background: 'rgba(124,58,237,0.2)', borderRadius: 2, width: 90 }} />
+      <div style={{ height: 22, background: '#7c3aed', borderRadius: 6, width: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ height: 4, background: '#fff', borderRadius: 1, width: 60 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'do-dont') return (
+    <div style={{ ...s, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: '#fff5f5', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 7, padding: 12 }}>
+        <div style={{ fontSize: 9, color: '#ef4444', fontWeight: 800, letterSpacing: '0.06em' }}>✕ DON'T</div>
+        {[80,70,90].map((w,i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ height: 3, background: 'rgba(239,68,68,0.35)', borderRadius: 1, width: w }} />
+          </div>
+        ))}
+      </div>
+      <div style={{ width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+      <div style={{ flex: 1, height: '100%', background: '#f0fdf4', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 7, padding: 12 }}>
+        <div style={{ fontSize: 9, color: '#16a34a', fontWeight: 800, letterSpacing: '0.06em' }}>✓ DO</div>
+        {[85,75,95].map((w,i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ height: 3, background: 'rgba(22,163,74,0.45)', borderRadius: 1, width: w }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'transform-split') return (
+    <div style={{ ...s, flexDirection: 'column', padding: 0, gap: 0, position: 'relative' }}>
+      {/* Top half — BEFORE */}
+      <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#1e293b,#334155)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Before</div>
+        <div style={{ height: 6, background: 'rgba(255,255,255,0.2)', borderRadius: 2, width: 80 }} />
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.12)', borderRadius: 2, width: 60 }} />
+      </div>
+      {/* Divider label */}
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#14b8a6', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1, fontSize: 10, color: '#fff', fontWeight: 900, boxShadow: '0 2px 8px rgba(20,184,166,0.5)' }}>→</div>
+      {/* Bottom half — AFTER */}
+      <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#042f2e,#0f766e)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: '#5eead4', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>After</div>
+        <div style={{ height: 6, background: '#5eead4', borderRadius: 2, width: 90, opacity: 0.8 }} />
+        <div style={{ height: 4, background: 'rgba(94,234,212,0.4)', borderRadius: 2, width: 70 }} />
+      </div>
+    </div>
+  );
+
   // Default gradient fallback for any unlisted template
   const bgs: Record<string, string> = {
     bold:      'linear-gradient(135deg, #1c1917 0%, #292524 100%)',
@@ -467,6 +622,16 @@ const TEMPLATE_STYLES: Record<string, { bg: string; light: boolean }> = {
   'product-demo':       { bg: '#f8fafc',                                            light: true  },
   'retro-bold':         { bg: '#fef3c7',                                            light: true  },
   'split-panel':        { bg: '#f8fafc',                                            light: true  },
+  'offer-stack':        { bg: 'linear-gradient(135deg,#450a0a,#991b1b)',           light: false },
+  'value-math':         { bg: 'linear-gradient(135deg,#020617,#0c1a3a)',           light: false },
+  'case-study':         { bg: '#ffffff',                                            light: true  },
+  'insight-frame':      { bg: '#ffffff',                                            light: true  },
+  'pain-diagnostic':    { bg: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)',          light: false },
+  'mistake-alert':      { bg: 'linear-gradient(135deg,#1c0505,#431407)',           light: false },
+  'empathy-card':       { bg: 'linear-gradient(135deg,#fff7f0,#fce7f3)',           light: true  },
+  'validation-card':    { bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)',           light: true  },
+  'do-dont':            { bg: '#ffffff',                                            light: true  },
+  'transform-split':    { bg: '#ffffff',                                            light: true  },
 };
 
 const TONE_ACCENTS: Record<string, string> = {
@@ -507,6 +672,16 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
   'product-demo':       '#0891b2',  // teal
   'retro-bold':         '#b45309',  // amber-brown
   'split-panel':        '#059669',  // emerald-deep
+  'offer-stack':        '#ef4444',  // vivid red
+  'value-math':         '#10b981',  // emerald savings-green
+  'case-study':         '#6366f1',  // indigo-trust
+  'insight-frame':      '#0ea5e9',  // sky-blue
+  'pain-diagnostic':    '#f43f5e',  // rose-danger
+  'mistake-alert':      '#f97316',  // orange-warning
+  'empathy-card':       '#fb7185',  // rose-warm
+  'validation-card':    '#a78bfa',  // violet-soft
+  'do-dont':            '#22c55e',  // green-correct
+  'transform-split':    '#14b8a6',  // teal-transformation
 };
 
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
@@ -757,6 +932,58 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
   // ── layout-as-background templates — transparent (panels handle colors) ───
   if (['diagonal-split','side-by-side','color-block'].includes(id))
     return <div style={{ ...s, background: 'transparent' }} />;
+
+  if (id === 'offer-stack') {
+    if (slide === 2) return <div style={{ ...s, background: '#ef4444' }}><div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 120%, rgba(255,255,255,0.08), transparent 70%)' }} /></div>;
+    return <div style={{ ...s, background: 'linear-gradient(135deg,#450a0a,#991b1b)' }}><div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, rgba(239,68,68,0.15) 1px, transparent 1px)`, backgroundSize: '14px 14px' }} /></div>;
+  }
+  if (id === 'value-math') {
+    if (slide === 2) return <div style={{ ...s, background: 'linear-gradient(135deg,#052e16,#065f46)' }} />;
+    return <div style={{ ...s, background: 'linear-gradient(160deg,#020617,#0c1a3a)' }}><div style={{ position: 'absolute', inset: 0, background: `linear-gradient(${accent}08 1px, transparent 1px), linear-gradient(90deg, ${accent}08 1px, transparent 1px)`, backgroundSize: '20px 20px' }} /></div>;
+  }
+  if (id === 'case-study') {
+    if (slide === 2) return <div style={{ ...s, background: accent }} />;
+    return <div style={{ ...s, background: '#ffffff' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} /></div>;
+  }
+  if (id === 'insight-frame') {
+    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }} />;
+    return <div style={{ ...s, background: '#ffffff' }}><div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} /></div>;
+  }
+  if (id === 'pain-diagnostic') {
+    if (slide === 2) return <div style={{ ...s, background: accent }} />;
+    return <div style={{ ...s, background: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)' }}>{blob('-10%','-10%',200,'#f43f5e',0.06)}{blob('60%','60%',180,'#7c3aed',0.06)}</div>;
+  }
+  if (id === 'mistake-alert') {
+    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#1c0505,#431407)` }} />;
+    return <div style={{ ...s, background: 'linear-gradient(135deg,#1c0505,#431407)' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} /></div>;
+  }
+  if (id === 'empathy-card') {
+    if (slide === 2) return <div style={{ ...s, background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }} />;
+    return <div style={{ ...s, background: 'linear-gradient(160deg,#fff7f0,#fce7f3)' }}>{blob('60%','-20%',180,'#ec4899',0.1)}</div>;
+  }
+  if (id === 'validation-card') {
+    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#4c1d95,#6d28d9)` }} />;
+    return <div style={{ ...s, background: 'linear-gradient(135deg,#f5f3ff,#ede9fe)' }}>{blob('60%','60%',200,'#a78bfa',0.15)}</div>;
+  }
+  if (id === 'do-dont') {
+    if (slide === 2) return <div style={{ ...s, background: '#f0fdf4' }} />;
+    return (
+      <div style={{ ...s, flexDirection: 'row', padding: 0, gap: 0 }}>
+        <div style={{ flex: 1, height: '100%', background: '#fff5f5' }} />
+        <div style={{ width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+        <div style={{ flex: 1, height: '100%', background: '#f0fdf4' }} />
+      </div>
+    );
+  }
+  if (id === 'transform-split') {
+    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#042f2e,#0f766e)` }} />;
+    return (
+      <div style={{ ...s, flexDirection: 'column', padding: 0, gap: 0 }}>
+        <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#1e293b,#334155)' }} />
+        <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#042f2e,#0f766e)' }} />
+      </div>
+    );
+  }
 
   // ── default dark aurora ───────────────────────────────────────────────────
   return (
@@ -1943,6 +2170,354 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       );
     }
 
+    // ── offer-stack ──────────────────────────────────────────────────────────────
+    if (id === 'offer-stack') {
+      if (slide === 0) return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 6, padding: 16 }}>
+          <div style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.25)', borderRadius: 20, padding: '4px 14px' }}>
+            <T s={7} color="rgba(255,255,255,0.8)" caps spacing="0.1em">Today Only</T>
+          </div>
+          <T s={54} color="#fff" weight={900} align="center" spacing="-0.05em">50%</T>
+          <T s={13} color="rgba(255,255,255,0.7)" align="center" caps spacing="0.06em">off everything</T>
+          <Btn label="Claim Your Offer →" bg={accent} />
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color={accent} caps spacing="0.1em">What's included</T>
+          <T s={14} color="#fff" weight={800} spacing="-0.02em">Everything you need.</T>
+          {['Feature one','Feature two','Feature three'].map((f,i) => (
+            <Row key={i}><Check color={accent} /><T s={9} color="rgba(255,255,255,0.75)">{f}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={10} color="rgba(255,255,255,0.55)" caps spacing="0.08em">Don't miss this</T>
+          <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">Offer closes at midnight.</T>
+          <Btn label="Get 50% Off Now →" bg={accent} color="#fff" />
+          <T s={7} color="rgba(255,255,255,0.35)" align="center">No code needed. Auto-applied at checkout.</T>
+        </div>
+      );
+    }
+
+    // ── value-math ───────────────────────────────────────────────────────────────
+    if (id === 'value-math') {
+      if (slide === 0) return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color="rgba(255,255,255,0.45)" caps spacing="0.1em">They charge</T>
+          <T s={28} color="rgba(255,255,255,0.25)" weight={900} spacing="-0.04em" align="center"><span style={{ textDecoration: 'line-through' }}>$299/mo</span></T>
+          <T s={8} color={accent} caps spacing="0.08em">You pay</T>
+          <T s={44} color={accent} weight={900} spacing="-0.05em" align="center">$97</T>
+          <T s={9} color="rgba(16,185,129,0.7)" align="center">Save $202 every month</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 20 }}>
+          <T s={8} color={accent} caps spacing="0.1em">The math</T>
+          {[['Old tool','$299/mo'],['Ours','$97/mo'],['You save','$202/mo']].map(([label, val], i) => (
+            <Row key={i}>
+              <T s={9} color={i === 2 ? accent : 'rgba(255,255,255,0.6)'}>{label}</T>
+              <div style={{ flex: 1 }} />
+              <T s={9} color={i === 2 ? accent : '#fff'} weight={i === 2 ? 800 : 600}>{val}</T>
+            </Row>
+          ))}
+          <Bar w="100%" color={accent} h={1} op={0.2} />
+          <T s={8} color="rgba(255,255,255,0.45)" align="center">Same results. Lower cost. No brainer.</T>
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#052e16,#065f46)' }}>
+          <T s={9} color={accent} caps spacing="0.08em">Start saving today</T>
+          <T s={16} color="#fff" weight={900} align="center" spacing="-0.02em">$202 back in your pocket every month.</T>
+          <Btn label="Switch Now →" bg={accent} color="#fff" />
+        </div>
+      );
+    }
+
+    // ── case-study ───────────────────────────────────────────────────────────────
+    if (id === 'case-study') {
+      if (slide === 0) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <Row gap={8}>
+            <div style={{ width: 30, height: 30, borderRadius: 8, background: accent, flexShrink: 0 }} />
+            <Col gap={2}>
+              <T s={9} color={txt} weight={700}>Acme Corp</T>
+              <T s={7} color={muted}>SaaS startup · 12 employees</T>
+            </Col>
+          </Row>
+          <Bar w="100%" color={muted} h={1} op={0.2} />
+          <T s={8} color={muted} caps spacing="0.08em">The problem</T>
+          <T s={14} color={txt} weight={800} spacing="-0.02em">Losing 40% of leads every month.</T>
+          <T s={8} color={muted}>Sound familiar? Here's what changed in 60 days.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 20 }}>
+          <T s={8} color={accent} caps spacing="0.1em">The result</T>
+          <Row gap={14}>
+            {[['340%','More leads'],['60d','To results'],['$0','Extra cost']].map(([val, label]) => (
+              <Col key={label} gap={2} align="center">
+                <T s={18} color={accent} weight={900} spacing="-0.03em" align="center">{val}</T>
+                <T s={7} color={muted} align="center">{label}</T>
+              </Col>
+            ))}
+          </Row>
+          <Bar w="100%" color={muted} h={1} op={0.15} />
+          <T s={8} color={muted} align="center">"We never expected results this fast." — CEO, Acme</T>
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: accent }}>
+          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Want results like this?</T>
+          <T s={16} color="#fff" weight={900} align="center" spacing="-0.02em">See how we did it.</T>
+          <Btn label="Read Full Case Study →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // ── insight-frame ─────────────────────────────────────────────────────────────
+    if (id === 'insight-frame') {
+      if (slide === 0) return (
+        <div style={{ ...z, justifyContent: 'center', padding: 18, gap: 8 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} />
+          <T s={8} color={accent} caps spacing="0.1em">Most people don't know this</T>
+          <T s={17} color={txt} weight={900} spacing="-0.03em">The reason you're not seeing results isn't what you think.</T>
+          <T s={8} color={muted}>Here's the actual framework — 3 steps.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', padding: 18, gap: 10 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} />
+          {[['1','Identify the root cause, not symptoms'],['2','Apply the one lever that moves everything'],['3','Measure outcome, not output']].map(([num, text]) => (
+            <Row key={num} gap={10}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <T s={9} color="#fff" weight={900}>{num}</T>
+              </div>
+              <T s={9} color={txt}>{text}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: `linear-gradient(135deg,${accent},${accent}cc)` }}>
+          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Apply this framework</T>
+          <T s={16} color="#fff" weight={900} align="center" spacing="-0.02em">Get the full breakdown — free.</T>
+          <Btn label="Get the Guide →" bg="rgba(255,255,255,0.25)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // ── pain-diagnostic ───────────────────────────────────────────────────────────
+    if (id === 'pain-diagnostic') {
+      const painTxt = '#f1f5f9';
+      const painMuted = 'rgba(241,245,249,0.5)';
+      if (slide === 0) return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <div style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 20, padding: '5px 16px' }}>
+            <T s={8} color="#f43f5e" caps spacing="0.1em">Diagnose</T>
+          </div>
+          <T s={20} color={painTxt} weight={900} align="center" spacing="-0.03em">Does this sound familiar?</T>
+          <T s={9} color={painMuted} align="center">If you answered yes to any of these — keep reading.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color="#f43f5e" caps spacing="0.1em">The real problem</T>
+          {['You\'re working harder than ever but results plateau','The tool you\'re using adds work, not removes it','You\'ve tried everything and nothing has stuck'].map((pain, i) => (
+            <Row key={i} gap={8}>
+              <div style={{ width: 16, height: 16, borderRadius: '50%', background: 'rgba(244,63,94,0.2)', border: '1px solid rgba(244,63,94,0.5)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, color: '#f43f5e' }}>✕</div>
+              <T s={8} color={painMuted}>{pain}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: accent }}>
+          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">There's a better way</T>
+          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Stop guessing. Start solving.</T>
+          <Btn label="See The Fix →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // ── mistake-alert ─────────────────────────────────────────────────────────────
+    if (id === 'mistake-alert') {
+      const maTxt = '#fff1ee';
+      const maMuted = 'rgba(255,241,238,0.55)';
+      if (slide === 0) return (
+        <div style={{ ...z, justifyContent: 'flex-start', gap: 6, padding: 18 }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} />
+          <div style={{ marginTop: 10, background: '#f97316', borderRadius: 4, padding: '3px 10px', display: 'inline-flex', alignSelf: 'flex-start' }}>
+            <T s={7} color="#fff" caps spacing="0.08em" weight={900}>⚠ Warning</T>
+          </div>
+          <T s={18} color={maTxt} weight={900} spacing="-0.03em">3 costly mistakes killing your results.</T>
+          <T s={8} color={maMuted}>Most people make all 3 without realising it.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 9, padding: 18 }}>
+          {[['Mistake #1','Chasing vanity metrics'],['Mistake #2','Skipping the hook'],['Mistake #3','No clear CTA']].map(([badge, text], i) => (
+            <Row key={i} gap={8}>
+              <div style={{ background: 'rgba(249,115,22,0.2)', border: '1px solid #f97316', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>
+                <T s={7} color="#f97316" weight={700}>{badge}</T>
+              </div>
+              <T s={8} color={maTxt}>{text}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={9} color="rgba(255,255,255,0.55)" caps spacing="0.08em">Fix it today</T>
+          <T s={15} color={maTxt} weight={900} align="center" spacing="-0.02em">Avoid all 3. Get better results this week.</T>
+          <Btn label="Show Me How →" bg="#f97316" color="#fff" />
+        </div>
+      );
+    }
+
+    // ── empathy-card ─────────────────────────────────────────────────────────────
+    if (id === 'empathy-card') {
+      const emTxt = '#3b0764';
+      const emMuted = '#7c3aed';
+      if (slide === 0) return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={24} color="#000" align="center">🤍</T>
+          <T s={18} color={emTxt} weight={900} align="center" spacing="-0.03em">You deserve to feel this.</T>
+          <T s={9} color={emMuted} align="center">Not eventually. Right now.</T>
+          <Btn label="Tell Me More →" bg={accent} color="#fff" />
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color={emMuted} caps spacing="0.1em">You're not alone</T>
+          <T s={14} color={emTxt} weight={800} spacing="-0.02em">"I was tired of feeling like I was the only one struggling."</T>
+          <Bar w="40%" color={accent} h={2} op={0.5} />
+          <T s={9} color={emMuted}>— Sarah, 34 · Joined 8 months ago</T>
+          <Stars color={accent} />
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>
+          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Start your journey</T>
+          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Feel what you've been missing.</T>
+          <Btn label="Begin Now →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // ── validation-card ───────────────────────────────────────────────────────────
+    if (id === 'validation-card') {
+      const valTxt = '#2e1065';
+      const valMuted = '#6d28d9';
+      if (slide === 0) return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
+          <div style={{ display: 'flex', gap: 0 }}>
+            {['#a78bfa','#818cf8','#6366f1','#4f46e5'].map((c,i) => (
+              <div key={i} style={{ width: 26, height: 26, borderRadius: '50%', background: c, border: '2px solid #f5f3ff', marginLeft: i > 0 ? -8 : 0 }} />
+            ))}
+          </div>
+          <T s={14} color={valTxt} weight={900} align="center" spacing="-0.02em">14,000+ people feel exactly the same way.</T>
+          <T s={8} color={valMuted} align="center">You're not broken. The system is.</T>
+          <Btn label="Join the Community →" bg={accent} color="#fff" />
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color={valMuted} caps spacing="0.1em">What they're saying</T>
+          {['"Finally, someone gets it."','"I thought it was just me."','"This changed how I see it."'].map((q,i) => (
+            <div key={i} style={{ background: 'rgba(167,139,250,0.1)', borderRadius: 8, padding: '7px 10px', border: '1px solid rgba(167,139,250,0.2)' }}>
+              <T s={8} color={valTxt}>{q}</T>
+            </div>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#4c1d95,#6d28d9)' }}>
+          <T s={9} color="rgba(255,255,255,0.65)" caps spacing="0.08em">You belong here</T>
+          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Join 14,000+ people who stopped going it alone.</T>
+          <Btn label="Join Free →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // ── do-dont ───────────────────────────────────────────────────────────────────
+    if (id === 'do-dont') {
+      if (slide === 0) return (
+        <div style={{ ...z, flexDirection: 'row', padding: 0 }}>
+          <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, padding: 14, background: '#fff5f5' }}>
+            <T s={9} color="#ef4444" weight={800} caps spacing="0.06em">✕ Don't</T>
+            {['Guess at strategy','Copy what worked for others','Ignore your data'].map((t,i) => (
+              <Row key={i} gap={5}><Cross /><T s={7.5} color="#64748b">{t}</T></Row>
+            ))}
+          </div>
+          <div style={{ width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+          <div style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8, padding: 14, background: '#f0fdf4' }}>
+            <T s={9} color="#16a34a" weight={800} caps spacing="0.06em">✓ Do</T>
+            {['Follow a proven system','Test and iterate fast','Let data lead'].map((t,i) => (
+              <Row key={i} gap={5}><Check color="#16a34a" /><T s={7.5} color="#374151">{t}</T></Row>
+            ))}
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 18 }}>
+          <T s={8} color={accent} caps spacing="0.1em">The difference</T>
+          <T s={15} color={txt} weight={900} spacing="-0.02em">One approach wastes time. The other compounds it.</T>
+          <Bar w="100%" color={muted} h={1} op={0.2} />
+          {[['Without system','Inconsistent results','High burnout'],['With system','Predictable growth','Less effort']].map(([label,...items], i) => (
+            <Col key={i} gap={4}>
+              <T s={8} color={i === 0 ? '#ef4444' : '#16a34a'} weight={700}>{label}</T>
+              {items.map(item => <T key={item} s={7.5} color={muted}>{item}</T>)}
+            </Col>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: '#f0fdf4' }}>
+          <T s={9} color="#16a34a" caps spacing="0.08em">Make the switch</T>
+          <T s={15} color="#0f172a" weight={900} align="center" spacing="-0.02em">Stop doing it the hard way.</T>
+          <Btn label="Do This Instead →" bg="#16a34a" color="#fff" />
+        </div>
+      );
+    }
+
+    // ── transform-split ───────────────────────────────────────────────────────────
+    if (id === 'transform-split') {
+      if (slide === 0) return (
+        <div style={{ ...z, flexDirection: 'column', padding: 0, position: 'relative' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 4, padding: 14, background: 'linear-gradient(135deg,#1e293b,#334155)' }}>
+            <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.12em">Before</T>
+            <T s={12} color="rgba(255,255,255,0.6)" weight={700} align="center">Struggling every day. No clear path forward.</T>
+          </div>
+          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 28, height: 28, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2, boxShadow: `0 2px 12px ${accent}66`, fontSize: 12, color: '#fff' }}>↓</div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: 4, padding: 14, background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
+            <T s={7} color={accent} caps spacing="0.12em">After</T>
+            <T s={12} color="#fff" weight={700} align="center">Consistent results. Clear momentum. Real growth.</T>
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...z, justifyContent: 'center', gap: 8, padding: 20, background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
+          <T s={8} color={accent} caps spacing="0.1em">The transformation</T>
+          {[['Week 1','Setup and first wins'],['Month 1','System running, 3x output'],['Month 3','Compounding results']].map(([time, result], i) => (
+            <Row key={i} gap={10}>
+              <T s={8} color={accent} weight={700}>{time}</T>
+              <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.1)' }} />
+              <T s={8} color="rgba(255,255,255,0.7)">{result}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: `linear-gradient(135deg,${accent}dd,${accent})` }}>
+          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Start your transformation</T>
+          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">From where you are to where you want to be.</T>
+          <Btn label="Begin the Journey →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
     // ── fallback ──────────────────────────────────────────────────────────────
     return (
       <div style={{ ...zc, gap: 8 }}>
@@ -2435,6 +3010,166 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
       <T s={15} color="#1e293b" weight={900} align="center" spacing="-0.02em">Old School.<br/>New Results.</T>
       <div style={{ height: 3, background: '#1e293b', width: 60 }} />
       <Btn label="Shop Now" bg="#1e293b" color="#fef3c7" />
+    </div>
+  );
+
+  // ── offer-stack ──────────────────────────────────────────────────────────────
+  if (id === 'offer-stack') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#450a0a,#991b1b)', padding: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 16 }}>
+        <T s={7} color={accent} caps spacing="0.1em">Today Only</T>
+        <T s={16} color="#fff" weight={900} spacing="-0.04em">50% Off Everything</T>
+        <T s={8} color="rgba(255,255,255,0.55)">Auto-applied at checkout. No code needed.</T>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 18px' }}>
+        <Btn label="Claim Offer →" bg={accent} color="#fff" />
+      </div>
+    </div>
+  );
+
+  // ── value-math ───────────────────────────────────────────────────────────────
+  if (id === 'value-math') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#020617,#0c1a3a)', padding: '0 16px', gap: 14 }}>
+      <Row gap={8}>
+        <div style={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 700 }}>$299</div>
+        <T s={9} color="rgba(255,255,255,0.4)">→</T>
+        <T s={22} color={accent} weight={900} spacing="-0.03em">$97</T>
+      </Row>
+      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', marginBlock: 6 }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={9} color="#fff" weight={700}>Same results. Lower cost.</T>
+        <T s={7.5} color="rgba(255,255,255,0.45)">Save $202 every single month.</T>
+      </div>
+      <Btn label="Switch Now →" bg={accent} color="#fff" />
+    </div>
+  );
+
+  // ── case-study ───────────────────────────────────────────────────────────────
+  if (id === 'case-study') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: '0 16px', gap: 12 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: accent }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={7} color={accent} caps spacing="0.08em">Case Study</T>
+        <T s={11} color={txt} weight={800} spacing="-0.02em">Acme Corp grew 340% in 60 days.</T>
+        <T s={7.5} color={muted}>From 200 to 880 qualified leads per month.</T>
+      </div>
+      <Btn label="Read Story →" bg={accent} color="#fff" />
+    </div>
+  );
+
+  // ── insight-frame ─────────────────────────────────────────────────────────────
+  if (id === 'insight-frame') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: '0 0 0 16px', gap: 12 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} />
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={7} color={accent} caps spacing="0.08em">Insight</T>
+        <T s={10} color={txt} weight={800} spacing="-0.02em">The real reason results aren't compounding.</T>
+        <T s={7.5} color={muted}>3-step framework. Free breakdown.</T>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px 0 0' }}>
+        <Btn label="Get It Free →" bg={accent} color="#fff" />
+      </div>
+    </div>
+  );
+
+  // ── pain-diagnostic ───────────────────────────────────────────────────────────
+  if (id === 'pain-diagnostic') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)', padding: '0 16px', gap: 12 }}>
+      <div style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 6, padding: '4px 10px', flexShrink: 0 }}>
+        <T s={7} color="#f43f5e" caps spacing="0.08em">Diagnose</T>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={10} color="#f1f5f9" weight={800} spacing="-0.02em">Does this sound familiar?</T>
+        <T s={7.5} color="rgba(241,245,249,0.45)">If yes — there's a better way. Keep reading.</T>
+      </div>
+      <Btn label="See The Fix →" bg={accent} color="#fff" />
+    </div>
+  );
+
+  // ── mistake-alert ─────────────────────────────────────────────────────────────
+  if (id === 'mistake-alert') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#1c0505,#431407)', padding: 0 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} />
+      <div style={{ background: '#f97316', padding: '0 16px', display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
+        <T s={9} color="#fff" weight={900} caps>⚠ Warning</T>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 14px' }}>
+        <T s={10} color="#fff1ee" weight={800} spacing="-0.02em">3 mistakes killing your results.</T>
+        <T s={7.5} color="rgba(255,241,238,0.5)">Most people make all of them without knowing.</T>
+      </div>
+      <div style={{ padding: '0 16px 0 0', display: 'flex', alignItems: 'center' }}>
+        <Btn label="Avoid Them →" bg="#f97316" color="#fff" />
+      </div>
+    </div>
+  );
+
+  // ── empathy-card ─────────────────────────────────────────────────────────────
+  if (id === 'empathy-card') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#fff7f0,#fce7f3)', padding: '0 16px', gap: 12 }}>
+      <div style={{ fontSize: 22 }}>🤍</div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={10} color="#3b0764" weight={800} spacing="-0.02em">You deserve to feel this.</T>
+        <T s={7.5} color="#7c3aed">Not eventually. Starting today.</T>
+      </div>
+      <Btn label="Begin Now →" bg={accent} color="#fff" />
+    </div>
+  );
+
+  // ── validation-card ───────────────────────────────────────────────────────────
+  if (id === 'validation-card') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', padding: '0 16px', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 0, flexShrink: 0 }}>
+        {['#a78bfa','#818cf8','#6366f1'].map((c,i) => (
+          <div key={i} style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: '2px solid #f5f3ff', marginLeft: i > 0 ? -7 : 0 }} />
+        ))}
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <T s={10} color="#2e1065" weight={800} spacing="-0.02em">14,000+ people feel exactly the same.</T>
+        <T s={7.5} color="#6d28d9">You're not broken. Join the community.</T>
+      </div>
+      <Btn label="Join Free →" bg={accent} color="#fff" />
+    </div>
+  );
+
+  // ── do-dont ───────────────────────────────────────────────────────────────────
+  if (id === 'do-dont') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: 14, background: '#fff5f5' }}>
+        <T s={11} color="#ef4444" weight={900}>✕</T>
+        <Col gap={2}>
+          <T s={7} color="#ef4444" caps spacing="0.06em" weight={700}>Don't</T>
+          <T s={9} color="#374151" weight={600}>Guess and hope it works</T>
+        </Col>
+      </div>
+      <div style={{ width: 1, background: '#e2e8f0', flexShrink: 0 }} />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: 14, background: '#f0fdf4' }}>
+        <T s={11} color="#16a34a" weight={900}>✓</T>
+        <Col gap={2}>
+          <T s={7} color="#16a34a" caps spacing="0.06em" weight={700}>Do</T>
+          <T s={9} color="#374151" weight={600}>Follow a proven system</T>
+        </Col>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 0 10px' }}>
+        <Btn label="Get The System →" bg="#16a34a" color="#fff" />
+      </div>
+    </div>
+  );
+
+  // ── transform-split ───────────────────────────────────────────────────────────
+  if (id === 'transform-split') return (
+    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 14, background: 'linear-gradient(135deg,#1e293b,#334155)' }}>
+        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Before</T>
+        <T s={9} color="rgba(255,255,255,0.6)" weight={600}>Struggling. No clear path.</T>
+      </div>
+      <div style={{ width: 24, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10, color: '#fff', fontWeight: 900 }}>→</div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 14, background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
+        <T s={7} color={accent} caps spacing="0.1em">After</T>
+        <T s={9} color="#fff" weight={600}>Clear momentum. Real growth.</T>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 0 0', background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
+        <Btn label="Start Transforming →" bg={accent} color="#fff" />
+      </div>
     </div>
   );
 
