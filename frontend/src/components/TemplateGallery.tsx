@@ -532,26 +532,45 @@ const PHOTO_OVERLAYS: Record<string, string> = {
   'neon-dark':          'linear-gradient(135deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.62) 100%)',
 };
 
-function useTemplatePhoto(id: string): string | null {
-  const [url, setUrl] = React.useState<string | null>(null);
+interface PhotoMeta {
+  url:              string;
+  credit:           string;
+  creditUrl:        string;
+  downloadLocation: string;
+}
+
+function useTemplatePhoto(id: string): PhotoMeta | null {
+  const [meta, setMeta] = React.useState<PhotoMeta | null>(null);
   React.useEffect(() => {
     if (!PHOTO_TEMPLATE_IDS.has(id)) return;
-    const key = `__tmpl_photo_${id}`;
+    const cacheKey = `__tmpl_photo_v2_${id}`;
     try {
-      const cached = sessionStorage.getItem(key);
-      if (cached) { setUrl(cached); return; }
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached) as PhotoMeta;
+        setMeta(parsed);
+        return;
+      }
     } catch {}
     fetch(`/api/unsplash?id=${id}`)
       .then(r => r.ok ? r.json() : null)
-      .then((data: { url?: string } | null) => {
+      .then((data: PhotoMeta | null) => {
         if (data?.url) {
-          try { sessionStorage.setItem(key, data.url); } catch {}
-          setUrl(data.url);
+          try { sessionStorage.setItem(cacheKey, JSON.stringify(data)); } catch {}
+          setMeta(data);
+          // Ping Unsplash download endpoint (TOS requirement — fire-and-forget)
+          if (data.downloadLocation) {
+            fetch('/api/unsplash/trigger-download', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ downloadLocation: data.downloadLocation }),
+            }).catch(() => {});
+          }
         }
       })
       .catch(() => {});
   }, [id]);
-  return url;
+  return meta;
 }
 
 // ── Shared mini helpers ───────────────────────────────────────────────────────
@@ -597,7 +616,7 @@ const Col = ({ children, gap = 5, align = 'flex-start' }: { children: React.Reac
 
 const NOISE_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E")`;
 
-function SlideBg({ id, slide, accent, photoUrl }: { id: string; slide: 0|1|2; accent: string; photoUrl?: string | null }) {
+function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; accent: string; photoMeta?: PhotoMeta | null }) {
   const s: React.CSSProperties = { position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 0 };
   const blob = (l: string, t: string, sz: number, col: string, op = 0.32) => (
     <div key={`${l}${t}`} style={{ position: 'absolute', left: l, top: t, width: sz, height: sz, borderRadius: '50%', background: col, filter: `blur(${Math.round(sz * 0.55)}px)`, opacity: op, pointerEvents: 'none' }} />
@@ -606,14 +625,29 @@ function SlideBg({ id, slide, accent, photoUrl }: { id: string; slide: 0|1|2; ac
   const lineGrid = `linear-gradient(${accent}0d 1px, transparent 1px), linear-gradient(90deg, ${accent}0d 1px, transparent 1px)`;
 
   // ── Real photo background (slides 0 + 1 only — CTA keeps accent override) ──
-  if (photoUrl && PHOTO_TEMPLATE_IDS.has(id) && slide !== 2) return (
+  if (photoMeta?.url && PHOTO_TEMPLATE_IDS.has(id) && slide !== 2) return (
     <div style={{ ...s, background: '#000' }}>
       <img
-        src={photoUrl} alt=""
+        src={photoMeta.url} alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78 }}
       />
       <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))' }} />
       <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.025 }} />
+      {/* Unsplash attribution — required by TOS */}
+      <a
+        href={photoMeta.creditUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'absolute', bottom: 4, right: 6,
+          fontSize: 6, color: 'rgba(255,255,255,0.55)',
+          textDecoration: 'none', zIndex: 10,
+          textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Photo: {photoMeta.credit} · Unsplash
+      </a>
     </div>
   );
 
@@ -734,8 +768,8 @@ function SlideBg({ id, slide, accent, photoUrl }: { id: string; slide: 0|1|2; ac
 }
 
 // ── TemplateSlide — orchestrates SlideBg + per-template content ──────────────
-function TemplateSlide({ id, slide, txt, muted, accent, photoUrl }: {
-  id: string; slide: 0|1|2; txt: string; muted: string; accent: string; photoUrl?: string | null;
+function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
+  id: string; slide: 0|1|2; txt: string; muted: string; accent: string; photoMeta?: PhotoMeta | null;
 }) {
   // Content wrappers — sit above SlideBg at zIndex:1, no background
   const z: React.CSSProperties = { position: 'absolute', inset: 0, zIndex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' };
@@ -1922,7 +1956,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoUrl }: {
 
   return (
     <>
-      <SlideBg id={id} slide={slide} accent={accent} photoUrl={photoUrl} />
+      <SlideBg id={id} slide={slide} accent={accent} photoMeta={photoMeta} />
       {content}
     </>
   );
@@ -1958,16 +1992,30 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   };
 
   // ── Real-photo support ───────────────────────────────────────────────────────
-  const photo     = useTemplatePhoto(id);
-  const hasPhoto  = Boolean(photo && PHOTO_TEMPLATE_IDS.has(id));
+  const photoMeta = useTemplatePhoto(id);
+  const hasPhoto  = Boolean(photoMeta?.url && PHOTO_TEMPLATE_IDS.has(id));
   // Layer: img + gradient overlay — sits at absolute zIndex 0/1
   const photoLayer = hasPhoto ? (
     <>
       <img
-        src={photo!} alt=""
+        src={photoMeta!.url} alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78, zIndex: 0 }}
       />
       <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))', zIndex: 1 }} />
+      {/* Unsplash attribution — required by TOS */}
+      <a
+        href={photoMeta!.creditUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'absolute', bottom: 4, right: 6, zIndex: 10,
+          fontSize: 6, color: 'rgba(255,255,255,0.55)',
+          textDecoration: 'none', textShadow: '0 1px 2px rgba(0,0,0,0.6)',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Photo: {photoMeta!.credit} · Unsplash
+      </a>
     </>
   ) : null;
   // Content z-index wrapper for photo templates — ensures text is above photo
@@ -2411,7 +2459,7 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const muted    = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
   const accent   = TEMPLATE_ACCENTS[id] ?? TONE_ACCENTS[tone] ?? '#4f46e5';
   const dotBase  = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
-  const photoUrl = useTemplatePhoto(id);
+  const photoMeta = useTemplatePhoto(id);
 
   useEffect(() => {
     if (paused) return;
@@ -2430,9 +2478,9 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
     >
       {/* Full-bleed slide — crossfades */}
       <div style={{ opacity: fading ? 0 : 1, transition: 'opacity 0.25s ease', position: 'absolute', inset: 0 }}>
-        {slide === 0 && <TemplateSlide id={id} slide={0} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
-        {slide === 1 && <TemplateSlide id={id} slide={1} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
-        {slide === 2 && <TemplateSlide id={id} slide={2} txt={txt} muted={muted} accent={accent} photoUrl={photoUrl} />}
+        {slide === 0 && <TemplateSlide id={id} slide={0} txt={txt} muted={muted} accent={accent} photoMeta={photoMeta} />}
+        {slide === 1 && <TemplateSlide id={id} slide={1} txt={txt} muted={muted} accent={accent} photoMeta={photoMeta} />}
+        {slide === 2 && <TemplateSlide id={id} slide={2} txt={txt} muted={muted} accent={accent} photoMeta={photoMeta} />}
       </div>
 
       {/* Instagram-native progress dots */}

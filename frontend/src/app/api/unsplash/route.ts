@@ -1,18 +1,12 @@
 /**
  * GET /api/unsplash?id=<template-id>
  *
- * Server-side proxy to Unsplash API — keeps the access key off the client.
- * Returns a photo URL + attribution for the requested template ID.
- *
+ * Server-side Unsplash proxy. Returns photo URL + attribution + download location.
  * Requires env var: UNSPLASH_ACCESS_KEY (free at unsplash.com/developers)
- *
- * Caches one photo per template ID in-memory for the server lifetime so the
- * same gallery session never re-fetches. A fresh deploy picks new photos.
+ * Caches one photo per template ID in-memory for the server lifetime.
  */
 
 import { NextResponse } from 'next/server';
-
-// ─── Photo queries — one per photo-enabled template ──────────────────────────
 
 const PHOTO_QUERIES: Record<string, string> = {
   'full-bleed':         'cinematic lifestyle dramatic portrait outdoor',
@@ -25,17 +19,14 @@ const PHOTO_QUERIES: Record<string, string> = {
   'neon-dark':          'neon lights cyberpunk city night',
 };
 
-// ─── Module-level cache — reset on server restart / redeploy ─────────────────
-
 interface CachedPhoto {
-  url:       string;
-  credit:    string;
-  creditUrl: string;
+  url:              string;
+  credit:           string;
+  creditUrl:        string;
+  downloadLocation: string;   // must be pinged when user "uses" photo (Unsplash TOS)
 }
 
 const cache = new Map<string, CachedPhoto>();
-
-// ─── Route handler ───────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -46,16 +37,12 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unknown template id' }, { status: 400 });
   }
 
-  // Return cached result if available
   const hit = cache.get(id);
   if (hit) return NextResponse.json(hit);
 
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
-    return NextResponse.json(
-      { error: 'UNSPLASH_ACCESS_KEY not configured' },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: 'UNSPLASH_ACCESS_KEY not configured' }, { status: 503 });
   }
 
   try {
@@ -70,14 +57,16 @@ export async function GET(request: Request) {
     }
 
     const data = await res.json() as {
-      urls: { regular: string };
-      user: { name: string; links: { html: string } };
+      urls:  { regular: string };
+      links: { download_location: string };
+      user:  { name: string; links: { html: string } };
     };
 
     const result: CachedPhoto = {
-      url:       `${data.urls.regular}&w=700&q=80&fit=crop&auto=format`,
-      credit:    data.user.name,
-      creditUrl: `${data.user.links.html}?utm_source=creative_os&utm_medium=referral`,
+      url:              `${data.urls.regular}&w=700&q=80&fit=crop&auto=format`,
+      credit:           data.user.name,
+      creditUrl:        `${data.user.links.html}?utm_source=creative_os&utm_medium=referral`,
+      downloadLocation: data.links.download_location,
     };
 
     cache.set(id, result);
