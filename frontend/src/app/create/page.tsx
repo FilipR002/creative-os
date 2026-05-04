@@ -147,6 +147,8 @@ function CreatePageInner() {
   const [prUnsplashLoading, setPrUnsplashLoading] = useState<Record<number, boolean>>({});
   const [mediaLibrary,  setMediaLibrary]  = useState<string[]>([]);
   const [prMediaOpen,   setPrMediaOpen]   = useState<number | null>(null); // which slide has picker open
+  const [prBrief,       setPrBrief]       = useState('');           // AI generation brief
+  const [prGenerating,  setPrGenerating]  = useState(false);        // AI generation loading
 
   // Load media library from localStorage
   useEffect(() => {
@@ -589,16 +591,95 @@ function CreatePageInner() {
             {/* Header */}
             <div>
               <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>Photo Reveal Carousel</div>
-              <div style={{ fontSize: 13, color: 'var(--muted)' }}>Add your photos + reveal labels. Each slide = one photo + one bold label. Slide 1 is your hook.</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)' }}>Describe your topic — AI writes the hook + labels and sources photos automatically.</div>
             </div>
 
-            {/* Hook headline */}
+            {/* AI brief + generate */}
+            <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 20, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div className="form-label" style={{ margin: 0 }}>What is this carousel about?</div>
+              <textarea
+                value={prBrief}
+                onChange={e => setPrBrief(e.target.value)}
+                placeholder="e.g. The untold story of how SpaceX almost went bankrupt before their first successful launch"
+                rows={3}
+                style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' as const }}
+              />
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <button
+                  disabled={prGenerating || !prBrief.trim()}
+                  onClick={async () => {
+                    if (!prBrief.trim()) return;
+                    setPrGenerating(true);
+                    try {
+                      const res = await fetch('/api/photo-reveal', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ brief: prBrief, slideCount: 5, mediaCount: mediaLibrary.length }),
+                      });
+                      if (!res.ok) throw new Error('Generation failed');
+                      const data = await res.json() as {
+                        hook:   string;
+                        slides: { label: string; unsplashKeyword: string; mediaIndex?: number | null }[];
+                      };
+
+                      // Populate hook + labels
+                      setPrHook(data.hook ?? '');
+                      setPrItems(data.slides.map(s => s.label));
+                      setPrImages({});
+                      setPrUnsplashQ({});
+
+                      // Auto-source images for each slide
+                      data.slides.forEach(async (slide, idx) => {
+                        // Prefer media library if Claude picked an index and it exists
+                        if (slide.mediaIndex != null && mediaLibrary[slide.mediaIndex]) {
+                          setPrImages(p => ({ ...p, [idx]: mediaLibrary[slide.mediaIndex as number] }));
+                          return;
+                        }
+                        // Otherwise fetch from Unsplash
+                        if (slide.unsplashKeyword) {
+                          setPrUnsplashLoading(p => ({ ...p, [idx]: true }));
+                          try {
+                            const r = await fetch(`/api/unsplash?q=${encodeURIComponent(slide.unsplashKeyword)}`);
+                            if (r.ok) {
+                              const img = await r.json() as { url: string };
+                              if (img.url) setPrImages(p => ({ ...p, [idx]: img.url }));
+                            }
+                          } finally {
+                            setPrUnsplashLoading(p => ({ ...p, [idx]: false }));
+                          }
+                        }
+                      });
+                    } catch {
+                      // silently keep what was generated so far
+                    } finally {
+                      setPrGenerating(false);
+                    }
+                  }}
+                  style={{
+                    padding: '10px 24px', borderRadius: 8, fontWeight: 700, fontSize: 13,
+                    background: prGenerating || !prBrief.trim() ? 'var(--surface-2)' : 'var(--accent)',
+                    color: prGenerating || !prBrief.trim() ? 'var(--muted)' : '#000',
+                    border: 'none', cursor: prGenerating || !prBrief.trim() ? 'not-allowed' : 'pointer',
+                    fontFamily: 'inherit', transition: 'all 0.15s',
+                  }}
+                >
+                  {prGenerating ? 'Generating...' : 'Generate Carousel'}
+                </button>
+                {(prHook || prItems.length > 0) && !prGenerating && (
+                  <span style={{ fontSize: 12, color: 'var(--accent)' }}>
+                    {prItems.length + 1} slides ready — scroll down to edit
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Hook headline — editable after generation */}
             <div>
               <div className="form-label">Hook Headline (Slide 1)</div>
               <input
                 value={prHook}
                 onChange={e => setPrHook(e.target.value)}
-                placeholder="e.g. BEFORE PASSING AWAY, HE SHARED HIS ORIGINAL CONCEPTS"
+                placeholder="Generate above or type manually..."
                 style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' as const }}
               />
             </div>
@@ -802,7 +883,7 @@ function CreatePageInner() {
 
             {/* Export note */}
             <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 10, padding: '14px 18px', fontSize: 12, color: 'var(--indigo-l)', lineHeight: 1.6 }}>
-              Download each slide as a PNG — right-click any slide preview image and save, or screenshot the preview strip above. Full export coming soon.
+              AI sources photos from Unsplash or your media library automatically. You can swap any photo manually using Upload, Library, or a new Unsplash search. Full PNG export per slide coming soon.
             </div>
 
           </div>
