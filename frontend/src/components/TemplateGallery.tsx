@@ -1551,6 +1551,86 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
     );
   }
 
+  // ── Batch 5: 44 new templates ──────────────────────────────────────────────
+
+  // Group A: Dark/premium
+  if (id === 'guarantee-badge' || id === 'award-winner') return (
+    <div style={{ ...s, background: '#0a0e1a' }}>{blob('30%','30%',160,accent,0.28)}</div>
+  );
+  if (id === 'limited-drop') return (
+    <div style={{ ...s, background: '#000' }}>
+      {blob('-15%','-10%',130,'#ef4444',0.35)}
+      {blob('60%','60%',110,accent,0.22)}
+    </div>
+  );
+  if (id === 'hot-take') return <div style={{ ...s, background: accent }}><div style={{ position:'absolute', inset:0, backgroundImage: NOISE_SVG, backgroundSize:'200px 200px', opacity:0.04 }} /></div>;
+  if (id === 'mono-editorial') return <div style={{ ...s, background: '#fff' }} />;
+  if (id === 'caption-style' || id === 'tiktok-native') return (
+    <div style={{ ...s, background: '#000' }}>{blob('30%','70%',120,accent,0.15)}</div>
+  );
+  if (id === 'brutalist') return <div style={{ ...s, background: '#fff' }} />;
+
+  // Group B: White with subtle warm glow
+  if (['free-trial','price-compare','review-card','trust-bar','checklist-viral','vs-table','three-reasons','timeline-journey','steps-infographic','chart-reveal','flat-lay','leaderboard','stat-study','email-mockup'].includes(id)) return (
+    <div style={{ ...s, background: '#fff' }}>
+      <div style={{ position:'absolute', top:'-40%', right:'-20%', width:200, height:200, borderRadius:'50%', background:`radial-gradient(circle, ${accent}10 0%, transparent 70%)` }} />
+    </div>
+  );
+  if (id === 'news-frame') return (
+    <div style={{ ...s, background: '#f8f9fa' }}>
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background: accent }} />
+    </div>
+  );
+  if (id === 'brand-awareness') return (
+    <div style={{ ...s, background: slide === 2 ? '#0f172a' : '#fff' }}>
+      <div style={{ position:'absolute', top:'-40%', right:'-20%', width:200, height:200, borderRadius:'50%', background:`radial-gradient(circle, ${accent}14 0%, transparent 70%)` }} />
+    </div>
+  );
+
+  // Group C: Warm/social
+  if (id === 'founder-story') return <div style={{ ...s, background: 'linear-gradient(135deg, #fef3c7, #fde68a)' }} />;
+  if (id === 'community-quote' || id === 'reddit-thread') return <div style={{ ...s, background: '#f1f5f9' }} />;
+  if (id === 'chat-thread' || id === 'tweet-screenshot' || id === 'meme-format' || id === 'receipt-style' || id === 'photo-grid') return <div style={{ ...s, background: '#fff' }} />;
+  if (id === 'comment-reply') return <div style={{ ...s, background: '#000' }}>{blob('40%','30%',130,accent,0.18)}</div>;
+  if (id === 'poll-card') return <div style={{ ...s, background: '#1a1a2e' }}>{blob('60%','60%',140,accent,0.25)}</div>;
+  if (id === 'bundle-stack') return <div style={{ ...s, background: '#f8fafc' }} />;
+  if (id === 'app-mockup') return (
+    <div style={{ ...s, background: '#f0f4ff' }}>
+      <div style={{ position:'absolute', top:'-30%', right:'-15%', width:160, height:160, borderRadius:'50%', background:`${accent}10` }} />
+    </div>
+  );
+  if (id === 'event-card') return <div style={{ ...s, background: '#0f172a' }}>{blob('25%','25%',150,accent,0.28)}</div>;
+
+  // Group D: Vivid/gradient
+  if (id === 'offer-announce') return <div style={{ ...s, background: accent }}><div style={{ position:'absolute', inset:0, backgroundImage: NOISE_SVG, backgroundSize:'200px 200px', opacity:0.04 }} /></div>;
+  if (id === 'myth-reality') return (
+    <div style={{ ...s, flexDirection:'row' }}>
+      <div style={{ flex:1, background:'#1e293b' }} />
+      <div style={{ flex:1, background: accent }} />
+    </div>
+  );
+  if (id === 'aurora-gradient') return <div style={{ ...s, background: 'linear-gradient(135deg, #c084fc 0%, #818cf8 30%, #38bdf8 60%, #34d399 100%)' }} />;
+  if (id === 'duotone-photo') return (
+    <div style={{ ...s, background: slide === 2 ? accent : '#000' }}>
+      {slide !== 2 && <div style={{ position:'absolute', inset:0, background: `linear-gradient(135deg, ${accent}66, transparent)` }} />}
+    </div>
+  );
+  if (id === 'risograph-print') return (
+    <div style={{ ...s, background: '#fafaf0' }}>
+      {blob('15%','20%',100,'#ef4444',0.18)}
+      {blob('60%','55%',110,accent,0.20)}
+      {blob('30%','75%',90,'#3b82f6',0.16)}
+    </div>
+  );
+  if (id === 'collage-cutout') return (
+    <div style={{ ...s, background: '#fafaf5' }}>
+      <div style={{ position:'absolute', top:'10%', left:'-10%', width:80, height:50, background: `${accent}30`, transform:'rotate(-8deg)' }} />
+      <div style={{ position:'absolute', bottom:'15%', right:'-5%', width:90, height:60, background: '#fbbf2440', transform:'rotate(6deg)' }} />
+      <div style={{ position:'absolute', top:'40%', right:'20%', width:50, height:50, borderRadius:'50%', background: '#ec489930' }} />
+    </div>
+  );
+  if (id === 'video-thumbnail') return <div style={{ ...s, background: '#0a0a0a' }}>{blob('40%','40%',150,accent,0.25)}</div>;
+
   // ── default dark aurora ───────────────────────────────────────────────────
   return (
     <div style={{ ...s, background: '#0f1117' }}>
@@ -3091,6 +3171,1291 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       );
     }
 
+    // ── Batch 5: 44 new templates ─────────────────────────────────────────────
+
+    // guarantee-badge
+    if (id === 'guarantee-badge') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <T s={6} color={accent} weight={700} caps spacing="0.14em">Guaranteed</T>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', border: `3px solid ${accent}`, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column' }}>
+            <T s={14} color="#fff" weight={900}>30</T>
+            <T s={5} color="rgba(255,255,255,0.6)" caps spacing="0.1em">Days</T>
+          </div>
+          <T s={9} color="#fff" weight={900} caps spacing="0.05em">Money Back</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          {['Full refund anytime','No questions asked','Keep the bonuses'].map((t,i) => (
+            <Row key={i} gap={7}><div style={{ width:14, height:14, color: accent, fontSize:12 }}>▣</div><T s={8} color="#f1f5f9">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 9 }}>
+          <T s={13} color="#fff" weight={900} align="center">Try Risk Free</T>
+          <T s={8} color="rgba(255,255,255,0.6)" align="center">30-Day Guarantee</T>
+          <Btn label="Start Now →" bg={accent} />
+        </div>
+      );
+    }
+
+    // award-winner
+    if (id === 'award-winner') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ width:42, height:42, borderRadius:'50%', background:'#fbbf24', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 14px rgba(251,191,36,0.5)' }}>
+            <div style={{ fontSize:22, color:'#fff' }}>★</div>
+          </div>
+          <T s={14} color="#fff" weight={900}>VOTED #1</T>
+          <T s={7} color="rgba(255,255,255,0.5)" caps spacing="0.1em">Best in Category 2026</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {[['4.9★','Average rating'],['10k+','Reviews'],['5 yrs','Award winner']].map(([n,l],i) => (
+            <Row key={i} gap={9}>
+              <T s={14} color={accent} weight={900}>{n}</T>
+              <T s={7} color="rgba(255,255,255,0.55)">{l}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 9 }}>
+          <Stars color="#fbbf24" />
+          <T s={13} color="#fff" weight={900} align="center">Join the Winners</T>
+          <Btn label="Get Award-Winner →" bg={accent} />
+        </div>
+      );
+    }
+
+    // limited-drop
+    if (id === 'limited-drop') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 4 }}>
+          <T s={8} color="rgba(255,255,255,0.6)" caps spacing="0.14em">Only</T>
+          <div style={{ fontSize: 38, color: accent, fontWeight: 900, lineHeight: 1 }}>47</div>
+          <T s={8} color="#fff" weight={800} caps spacing="0.08em">Left in stock</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {['Ships today','Limited run','No restock ever'].map((t,i) => (
+            <Row key={i} gap={7}><Dot color={accent} /><T s={8} color="#f1f5f9" weight={600}>{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Claim Yours Now</T>
+          <Row gap={4}>
+            {['02','47','33'].map((n,i) => (
+              <div key={i} style={{ background:'rgba(255,255,255,0.1)', border:`1px solid ${accent}`, borderRadius:4, padding:'4px 7px' }}>
+                <T s={11} color={accent} weight={900}>{n}</T>
+              </div>
+            ))}
+          </Row>
+          <Btn label="Buy Now" bg={accent} />
+        </div>
+      );
+    }
+
+    // hot-take
+    if (id === 'hot-take') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={8} color="#fff" weight={800} caps spacing="0.14em">Hot Take:</T>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Most "experts" are just guessing.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <Col gap={3}><T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.1em">Most people:</T><T s={9} color="#fff" weight={700}>Follow trends blindly</T></Col>
+          <div style={{ height:1, background:'rgba(255,255,255,0.2)', width:'100%' }} />
+          <Col gap={3}><T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.1em">Smart people:</T><T s={9} color="#fff" weight={800}>Question everything first</T></Col>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 9 }}>
+          <T s={12} color="#fff" weight={900} align="center">Agree? Share this.</T>
+          <Btn label="Share Now →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // mono-editorial
+    if (id === 'mono-editorial') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 6 }}>
+          <div style={{ width: 30, height: 2, background:'#000' }} />
+          <T s={16} color="#000" weight={900} spacing="-0.03em">The only brand that tells you the truth.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <div style={{ borderLeft:'2px solid #000', paddingLeft:10 }}>
+            <T s={11} color="#000" weight={700} spacing="-0.01em">"They told us no, but we built it anyway."</T>
+            <T s={7} color="#666" spacing="0.04em">— Founders' note</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 9 }}>
+          <T s={13} color="#000" weight={900}>BRAND</T>
+          <T s={7} color="#666" caps spacing="0.14em">Since 2019</T>
+          <Btn label="Shop" bg="#000" color="#fff" />
+        </div>
+      );
+    }
+
+    // caption-style
+    if (id === 'caption-style') {
+      if (slide === 0) return (
+        <div style={{ ...z }}>
+          <div style={{ position:'absolute', top:0, left:0, right:0, height:'55%', background:'linear-gradient(135deg,#1f2937,#374151)' }} />
+          <div style={{ position:'absolute', bottom:14, left:12, right:12 }}>
+            <T s={9} color="#fff" weight={700} spacing="-0.01em"><span style={{textShadow:'0 1px 3px rgba(0,0,0,0.8)'}}>When I tried X for 30 days...</span></T>
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <T s={9} color="rgba(255,255,255,0.6)">Day 1: Skeptical</T>
+          <div style={{ height:1, background:'rgba(255,255,255,0.15)', width:'60%' }} />
+          <T s={11} color="#fff" weight={800} spacing="-0.01em">Day 30: Life changed</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={9} color="#fff" weight={700}>@brand · Follow for more</T>
+          <div style={{ height: 2, width: 50, background: accent }} />
+          <Btn label="Follow" bg={accent} />
+        </div>
+      );
+    }
+
+    // tiktok-native
+    if (id === 'tiktok-native') {
+      if (slide === 0) return (
+        <div style={{ ...z, padding:10 }}>
+          <div style={{ position:'absolute', top:6, left:8, right:8, display:'flex', gap:3 }}>
+            {[0,1,2].map(i => <div key={i} style={{ flex:1, height:2, background:i===0?'#fff':'rgba(255,255,255,0.3)', borderRadius:1 }} />)}
+          </div>
+          <div style={{ position:'absolute', bottom:14, left:10, right:36 }}>
+            <T s={9} color="#fff" weight={800}>@brand</T>
+            <T s={7} color="rgba(255,255,255,0.8)">Discover what actually works ✨</T>
+          </div>
+          <div style={{ position:'absolute', right:8, bottom:14, display:'flex', flexDirection:'column', gap:8, alignItems:'center' }}>
+            <Col gap={1} align="center"><div style={{ fontSize:14 }}>♥</div><T s={6} color="#fff">12k</T></Col>
+            <Col gap={1} align="center"><div style={{ fontSize:14, color:'#fff' }}>💬</div><T s={6} color="#fff">847</T></Col>
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <T s={9} color={accent} weight={700} caps spacing="0.1em">POV:</T>
+          <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">You just discovered the best X.</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 9 }}>
+          <div style={{ position:'absolute', top:6, left:8, right:8, display:'flex', gap:3 }}>
+            {[0,1,2].map(i => <div key={i} style={{ flex:1, height:2, background: '#fff', borderRadius:1 }} />)}
+          </div>
+          <T s={11} color="#fff" weight={800} align="center">Follow for part 2 👀</T>
+          <Btn label="Follow @brand" bg={accent} />
+        </div>
+      );
+    }
+
+    // brutalist
+    if (id === 'brutalist') {
+      if (slide === 0) return (
+        <div style={{ ...z, padding: 8 }}>
+          <div style={{ position:'absolute', inset:6, border:'2px solid #000' }} />
+          <div style={{ position:'absolute', top:'50%', left:14, right:14, transform:'translateY(-50%)' }}>
+            <T s={20} color="#000" weight={900} spacing="-0.04em">YOUR AD HERE</T>
+            <div style={{ height:3, background:'#000', width:60, marginTop:6 }} />
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <div style={{ position:'absolute', inset:6, border:'2px solid #000', pointerEvents:'none' }} />
+          {['01. NO BS','02. NO FLUFF','03. JUST WORKS'].map((t,i) => (
+            <T key={i} s={11} color="#000" weight={900} spacing="-0.02em">{t}</T>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...z, padding:8 }}>
+          <div style={{ position:'absolute', inset:6, border:'2px solid #000' }} />
+          <div style={{ position:'absolute', bottom:14, left:14, right:14, background:'#000', padding:'10px 0' }}>
+            <T s={12} color="#fff" weight={900} align="center" spacing="0.06em">BUY NOW</T>
+          </div>
+        </div>
+      );
+    }
+
+    // free-trial
+    if (id === 'free-trial') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <T s={20} color={accent} weight={900} spacing="-0.03em">START FREE</T>
+          <T s={8} color="#64748b">No credit card required</T>
+          <Row gap={8}>{['✓ Free','✓ Easy','✓ Fast'].map((t,i) => <T key={i} s={7} color="#16a34a" weight={700}>{t}</T>)}</Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 9 }}>
+          {['Full access','Cancel anytime','24/7 support'].map((t,i) => (
+            <Row key={i} gap={7}><Check color={accent} /><T s={8} color="#1e293b" weight={600}>{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 7 }}>
+          <T s={13} color="#0f172a" weight={900} align="center">Try 14 Days Free</T>
+          <Btn label="Start Free →" bg={accent} />
+          <T s={6} color="#94a3b8">Cancel anytime</T>
+        </div>
+      );
+    }
+
+    // price-compare
+    if (id === 'price-compare') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 10 }}>
+          <Row gap={14}>
+            <Col align="center" gap={2}>
+              <T s={7} color="#94a3b8" caps spacing="0.1em">Others</T>
+              <div style={{ fontSize: 16, color:'#94a3b8', fontWeight: 800, textDecoration:'line-through' }}>$199</div>
+            </Col>
+            <Col align="center" gap={2}>
+              <T s={7} color={accent} caps spacing="0.1em" weight={700}>Us</T>
+              <div style={{ fontSize: 22, color: accent, fontWeight: 900 }}>$99</div>
+            </Col>
+          </Row>
+          <T s={8} color="#16a34a" weight={700}>Save 50%</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={8} color="#0f172a" weight={800}>What you get:</T>
+          {['Lifetime updates','Premium support','All features'].map((t,i) => (
+            <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#334155">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={13} color={accent} weight={900} align="center">SAVE 50% TODAY</T>
+          <Btn label="Claim Discount →" bg={accent} />
+          <T s={6} color="#94a3b8">Ends midnight tonight</T>
+        </div>
+      );
+    }
+
+    // review-card
+    if (id === 'review-card') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 7 }}>
+          <Stars color="#fbbf24" />
+          <T s={11} color="#0f172a" weight={700} spacing="-0.01em">"Honestly the best thing I've bought all year."</T>
+          <Row gap={6}>
+            <div style={{ width:18, height:18, borderRadius:'50%', background:accent }} />
+            <Col gap={1}><T s={7} color="#0f172a" weight={700}>Sarah M.</T><T s={6} color="#16a34a" weight={600}>✓ Verified</T></Col>
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          {[['5★','92%'],['4★','6%'],['3★','2%']].map(([s,p],i) => (
+            <Row key={i} gap={6}>
+              <T s={7} color="#0f172a" weight={700}>{s}</T>
+              <div style={{ flex:1, height:5, background:'#f1f5f9', borderRadius:3, overflow:'hidden' }}>
+                <div style={{ width: p, height:'100%', background: '#fbbf24' }} />
+              </div>
+              <T s={6} color="#94a3b8">{p}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Join 10,000+ happy customers</T>
+          <Btn label="Get Started" bg={accent} />
+        </div>
+      );
+    }
+
+    // trust-bar
+    if (id === 'trust-bar') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <Row gap={8}>
+            {[['10M+','Users'],['4.9★','Rating'],['Free','Forever']].map(([n,l],i) => (
+              <Col key={i} align="center" gap={1}>
+                <T s={11} color={accent} weight={900}>{n}</T>
+                <T s={6} color="#64748b" caps spacing="0.06em">{l}</T>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">As Seen In</T>
+          <Row gap={6}>
+            {['FORBES','TC','WIRED','VOX'].map((b,i) => (
+              <div key={i} style={{ background:'#f1f5f9', padding:'4px 7px', borderRadius:3 }}>
+                <T s={6} color="#475569" weight={800}>{b}</T>
+              </div>
+            ))}
+          </Row>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Trusted worldwide</T>
+          <Btn label="Join Now →" bg={accent} />
+        </div>
+      );
+    }
+
+    // checklist-viral
+    if (id === 'checklist-viral') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={9} color="#0f172a" weight={800}>Do you have these problems?</T>
+          {[['✓','Always tired'],['✗','Eating well'],['✓','No energy'],['✗','Sleeping enough']].map(([m,t],i) => (
+            <Row key={i} gap={5}>
+              <div style={{ width:12, height:12, border: m==='✓'?`2px solid ${accent}`:'2px solid #cbd5e1', borderRadius:3, color: m==='✓'?accent:'transparent', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:900 }}>{m==='✓'?'✓':''}</div>
+              <T s={7} color="#475569">{t}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={8} color={accent} weight={700} caps spacing="0.1em">What works:</T>
+          {['Sleep 8 hours','Move daily','Eat real food'].map((t,i) => (
+            <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#1e293b">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Get the full checklist</T>
+          <Btn label="Download Free →" bg={accent} />
+        </div>
+      );
+    }
+
+    // vs-table
+    if (id === 'vs-table') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <Row gap={4}>
+            <T s={6} color="#94a3b8" weight={700}>Feature</T>
+            <div style={{ flex:1 }} />
+            <T s={6} color={accent} weight={800} caps>Us</T>
+            <div style={{ width: 18 }} />
+            <T s={6} color="#94a3b8" weight={700} caps>Them</T>
+          </Row>
+          <div style={{ height:1, background:'#e2e8f0', width:'100%' }} />
+          {['Speed','Support','Price','Easy'].map((f,i) => (
+            <Row key={i} gap={4}>
+              <T s={7} color="#475569">{f}</T>
+              <div style={{ flex:1 }} />
+              <Check color={accent} />
+              <div style={{ width: 18 }} />
+              <Cross />
+            </Row>
+          ))}
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('flex-start','center'), gap: 7 }}>
+          <T s={8} color={accent} weight={700} caps spacing="0.1em">Why we win</T>
+          <T s={13} color="#0f172a" weight={900} spacing="-0.02em">10x faster setup. Half the price.</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#0f172a" weight={900} align="center">Switch today</T>
+          <Btn label="Compare Live →" bg={accent} />
+        </div>
+      );
+    }
+
+    // three-reasons
+    if (id === 'three-reasons') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <div style={{ fontSize: 44, color: accent, fontWeight: 900, lineHeight: 1 }}>3</div>
+          <T s={11} color="#0f172a" weight={800} align="center">Reasons to switch today</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          {[['1','Save hours daily'],['2','Better results'],['3','Half the cost']].map(([n,t],i) => (
+            <Row key={i} gap={8}>
+              <T s={14} color={accent} weight={900}>{n}</T>
+              <T s={9} color="#0f172a" weight={700}>{t}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Start reason #1 today</T>
+          <Btn label="Get Started →" bg={accent} />
+        </div>
+      );
+    }
+
+    // timeline-journey
+    if (id === 'timeline-journey') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 8 }}>
+          <T s={8} color={accent} weight={700} caps spacing="0.1em">Your journey</T>
+          <Row gap={0}>
+            {['Day 1','Week 2','Month 3'].map((l,i) => (
+              <Row key={i} gap={0}>
+                <Col align="center" gap={2}>
+                  <div style={{ width:10, height:10, borderRadius:'50%', background: accent }} />
+                  <T s={6} color="#475569" weight={600}>{l}</T>
+                </Col>
+                {i < 2 && <div style={{ width:24, height:2, background:`${accent}55`, alignSelf:'flex-start', marginTop:4, marginLeft:4, marginRight:4 }} />}
+              </Row>
+            ))}
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {[['Day 1','First win'],['Week 2','Habit forms'],['Month 3','Real results']].map(([t,r],i) => (
+            <Row key={i} gap={8}>
+              <T s={7} color={accent} weight={700}>{t}</T>
+              <T s={8} color="#1e293b">{r}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Start your Day 1 today</T>
+          <Btn label="Begin Journey →" bg={accent} />
+        </div>
+      );
+    }
+
+    // steps-infographic
+    if (id === 'steps-infographic') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 8 }}>
+          <T s={9} color="#0f172a" weight={800}>How it works</T>
+          <Row gap={0}>
+            {[1,2,3,4].map((n,i) => (
+              <Row key={i} gap={0}>
+                <div style={{ width:18, height:18, borderRadius:'50%', background: accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:900 }}>{n}</div>
+                {i < 3 && <div style={{ width:14, height:2, background:`${accent}66` }} />}
+              </Row>
+            ))}
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          {[['1','Sign up free'],['2','Pick template'],['3','Customize'],['4','Launch']].map(([n,t],i) => (
+            <Row key={i} gap={6}>
+              <div style={{ width:14, height:14, borderRadius:'50%', background: accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, fontWeight:900, flexShrink:0 }}>{n}</div>
+              <T s={7} color="#1e293b">{t}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#0f172a" weight={900} align="center">Start Step 1 Now</T>
+          <Btn label="Begin →" bg={accent} />
+        </div>
+      );
+    }
+
+    // chart-reveal
+    if (id === 'chart-reveal') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 7 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.12em">Results</T>
+          <Row gap={5}>
+            {[20,40,75].map((h,i) => (
+              <div key={i} style={{ width:14, height: h, background: i===2?accent:`${accent}55`, borderRadius:'2px 2px 0 0' }} />
+            ))}
+          </Row>
+          <T s={11} color="#0f172a" weight={900}>312% increase</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('flex-start','center'), gap: 7 }}>
+          <T s={8} color={accent} weight={700} caps spacing="0.1em">Before vs After</T>
+          <Row gap={8}>
+            <Col gap={1}><T s={6} color="#94a3b8" caps>Before</T><T s={14} color="#475569" weight={900}>$2k</T></Col>
+            <Col gap={1}><T s={6} color={accent} caps>After</T><T s={14} color={accent} weight={900}>$8k</T></Col>
+          </Row>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Get these results</T>
+          <Btn label="Show Me →" bg={accent} />
+        </div>
+      );
+    }
+
+    // flat-lay
+    if (id === 'flat-lay') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <div style={{ width:70, height:50, background:`linear-gradient(135deg, ${accent}, ${accent}aa)`, borderRadius:6, boxShadow:'0 8px 20px rgba(0,0,0,0.12)' }} />
+          <T s={9} color="#0f172a" weight={800}>The Essentials</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {['Premium quality','Sustainable','Hand-crafted'].map((t,i) => (
+            <Row key={i} gap={6}><Dot color={accent} /><T s={8} color="#1e293b" weight={600}>{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 7 }}>
+          <T s={16} color={accent} weight={900}>$49</T>
+          <Btn label="Add to Cart →" bg={accent} />
+        </div>
+      );
+    }
+
+    // leaderboard
+    if (id === 'leaderboard') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={8} color="#0f172a" weight={800} caps spacing="0.1em">Top Picks 2026</T>
+          {[['01','Our Brand','#fbbf24'],['02','Brand B','#cbd5e1'],['03','Brand C','#f97316']].map(([n,b,c],i) => (
+            <Row key={i} gap={6}>
+              <T s={9} color={c as string} weight={900}>{n}</T>
+              <T s={8} color={i===0?accent:'#475569'} weight={i===0?800:600}>{b}</T>
+            </Row>
+          ))}
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={8} color={accent} weight={700} caps spacing="0.1em">Why we're #1</T>
+          {['Best value','Top rated','Fastest support'].map((t,i) => (
+            <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#1e293b">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Try the #1 rated</T>
+          <Btn label="Get Started →" bg={accent} />
+        </div>
+      );
+    }
+
+    // stat-study
+    if (id === 'stat-study') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 5 }}>
+          <T s={6} color="#64748b" caps spacing="0.14em">New Study Reveals</T>
+          <div style={{ fontSize: 38, color: accent, fontWeight: 900, lineHeight: 1 }}>73%</div>
+          <T s={8} color="#1e293b" weight={600} align="center">of users see results in week 1</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={6} color="#94a3b8" caps spacing="0.1em">Study by Brand Labs · 2026</T>
+          <T s={8} color="#1e293b" weight={600}>Surveyed 5,000 active users over 90 days.</T>
+          <Row gap={8}>
+            <Col gap={1}><T s={11} color={accent} weight={900}>89%</T><T s={6} color="#94a3b8">Satisfied</T></Col>
+            <Col gap={1}><T s={11} color={accent} weight={900}>4.8★</T><T s={6} color="#94a3b8">Rating</T></Col>
+          </Row>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={13} color="#0f172a" weight={900} align="center">Be in the 73%</T>
+          <Btn label="Start Today →" bg={accent} />
+        </div>
+      );
+    }
+
+    // news-frame
+    if (id === 'news-frame') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={6} color={accent} caps spacing="0.18em" weight={700}>The Daily · Tech</T>
+          <T s={13} color="#0f172a" weight={900} spacing="-0.02em">Brand X is changing how we shop online.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          {['"This is the most innovative tool we\'ve seen this year."','Industry analysts are calling it a turning point.','Early adopters report significant growth.'].map((t,i) => (
+            <T key={i} s={7} color="#475569" weight={500}>{t}</T>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Read the full story</T>
+          <Btn label="Read More →" bg={accent} />
+        </div>
+      );
+    }
+
+    // brand-awareness
+    if (id === 'brand-awareness') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <div style={{ width:42, height:42, borderRadius:'50%', background: accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <T s={18} color="#fff" weight={900}>B</T>
+          </div>
+          <T s={9} color="#0f172a" weight={600}>Crafted for creators.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <Row gap={10}>
+            {['BOLD','HONEST','REAL'].map((w,i) => (
+              <T key={i} s={10} color="#0f172a" weight={900} caps spacing="0.06em">{w}</T>
+            ))}
+          </Row>
+          <div style={{ height:2, width:50, background: accent }} />
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={9} color="rgba(255,255,255,0.6)" caps spacing="0.12em">brand.com</T>
+          <T s={13} color="#fff" weight={900}>Visit us</T>
+          <Btn label="Explore →" bg={accent} />
+        </div>
+      );
+    }
+
+    // email-mockup
+    if (id === 'email-mockup') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={6} color="#94a3b8">From: Brand &lt;hello@brand.com&gt;</T>
+          <div style={{ height:1, background:'#e2e8f0', width:'100%' }} />
+          <T s={9} color="#0f172a" weight={800} spacing="-0.01em">Your 50% off ends tonight</T>
+          <T s={6} color="#94a3b8">Don't miss out — claim before midnight...</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color="#1e293b">Hi friend,</T>
+          <T s={7} color="#475569">Just 6 hours left to grab 50% off everything.</T>
+          <div style={{ background: accent, borderRadius:4, padding:'5px 10px', alignSelf:'flex-start' }}>
+            <T s={7} color="#fff" weight={800}>Shop Now →</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Open your inbox</T>
+          <Btn label="Get Email →" bg={accent} />
+        </div>
+      );
+    }
+
+    // founder-story
+    if (id === 'founder-story') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <Row gap={6}>
+            <div style={{ width:32, height:32, borderRadius:'50%', background: accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <T s={11} color="#fff" weight={900}>JD</T>
+            </div>
+            <Col gap={1}><T s={8} color="#0f172a" weight={800}>Jane Doe</T><T s={6} color="#92400e">Founder</T></Col>
+          </Row>
+          <T s={9} color="#78350f" weight={500} spacing="-0.01em">"I built this because nothing else worked."</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#92400e" caps spacing="0.1em" weight={700}>The story</T>
+          <T s={7} color="#451a03" weight={500}>In 2019 I was broke, exhausted, and ready to quit. Then I tried something different — and it changed everything.</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#451a03" weight={900} align="center">Read our story</T>
+          <Btn label="Continue →" bg={accent} />
+        </div>
+      );
+    }
+
+    // community-quote
+    if (id === 'community-quote') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <Row gap={6}>
+            <Col align="center" gap={0}>
+              <div style={{ fontSize:8, color:accent }}>▲</div>
+              <T s={7} color="#0f172a" weight={800}>14.2k</T>
+            </Col>
+            <Col gap={2}>
+              <T s={6} color="#64748b" weight={600}>r/community</T>
+              <T s={9} color="#0f172a" weight={700} spacing="-0.01em">This product changed my routine</T>
+              <T s={6} color="#94a3b8">u/realuser · 8h</T>
+            </Col>
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <div style={{ borderLeft:'2px solid #cbd5e1', paddingLeft:8 }}>
+            <T s={7} color="#475569" weight={500}>"Tried it for a month and honestly didn't expect this. Worth every penny."</T>
+            <T s={6} color="#94a3b8">847 replies · 2.1k upvotes</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Join the conversation</T>
+          <Btn label="See Thread →" bg={accent} />
+        </div>
+      );
+    }
+
+    // chat-thread
+    if (id === 'chat-thread') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <div style={{ alignSelf:'flex-end', background: accent, borderRadius:'10px 10px 2px 10px', padding:'5px 9px', maxWidth:'70%' }}>
+            <T s={7} color="#fff">Does this actually work?</T>
+          </div>
+          <div style={{ alignSelf:'flex-start', background:'#f1f5f9', borderRadius:'10px 10px 10px 2px', padding:'5px 9px', maxWidth:'80%' }}>
+            <T s={7} color="#1e293b">Changed my life honestly 🤯</T>
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <div style={{ alignSelf:'flex-end', background: accent, borderRadius:'10px 10px 2px 10px', padding:'4px 8px', maxWidth:'70%' }}>
+            <T s={6} color="#fff">What did you use?</T>
+          </div>
+          <div style={{ alignSelf:'flex-start', background:'#f1f5f9', borderRadius:'10px 10px 10px 2px', padding:'4px 8px', maxWidth:'80%' }}>
+            <T s={6} color="#1e293b">Brand X. Game changer.</T>
+          </div>
+          <div style={{ alignSelf:'flex-end', background: accent, borderRadius:'10px 10px 2px 10px', padding:'4px 8px', maxWidth:'70%' }}>
+            <T s={6} color="#fff">Sending the link 🙏</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Start your conversation</T>
+          <Btn label="Try Brand X →" bg={accent} />
+        </div>
+      );
+    }
+
+    // tweet-screenshot
+    if (id === 'tweet-screenshot') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <Row gap={5}>
+            <div style={{ width:22, height:22, borderRadius:'50%', background: accent }} />
+            <Col gap={0}><T s={7} color="#0f172a" weight={800}>Real User</T><T s={6} color="#64748b">@realuser</T></Col>
+          </Row>
+          <T s={8} color="#0f172a" weight={500}>I tried Brand X and now I won't shut up about it. Seriously.</T>
+          <Row gap={9}>
+            {[['💬','42'],['🔁','128'],['♥','2.1k']].map(([i,n],k) => (
+              <Row key={k} gap={2}><div style={{ fontSize:8 }}>{i}</div><T s={6} color="#64748b">{n}</T></Row>
+            ))}
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#0f172a" weight={500}>Update: 30 days in. Still wow.</T>
+          <div style={{ height:1, background:'#e2e8f0', width:'100%' }} />
+          <div style={{ border:'1px solid #e2e8f0', borderRadius:6, padding:6 }}>
+            <T s={6} color="#64748b">Quoting @brand</T>
+            <T s={7} color="#0f172a" weight={500}>Built for people who want results.</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Join 12k+ followers</T>
+          <Btn label="Follow" bg={accent} />
+        </div>
+      );
+    }
+
+    // reddit-thread
+    if (id === 'reddit-thread') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <Row gap={6}>
+            <Col align="center" gap={0}>
+              <div style={{ fontSize:9, color:'#f97316' }}>▲</div>
+              <T s={7} color="#0f172a" weight={800}>14.2k</T>
+            </Col>
+            <Col gap={1}>
+              <T s={9} color="#0f172a" weight={700} spacing="-0.01em">After 6 months, here's what worked</T>
+              <Row gap={4}>
+                <div style={{ background:'#fbbf24', borderRadius:8, padding:'1px 5px' }}><T s={5} color="#fff" weight={800}>GOLD</T></div>
+                <T s={6} color="#94a3b8">r/community · 12h</T>
+              </Row>
+            </Col>
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          {['Top comment: "100% agree"','847 replies','2.1k upvotes'].map((t,i) => (
+            <Row key={i} gap={5}><Dot color={accent} /><T s={7} color="#475569">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Upvote if this helped</T>
+          <Btn label="Read Thread →" bg={accent} />
+        </div>
+      );
+    }
+
+    // meme-format
+    if (id === 'meme-format') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','flex-start'), gap: 6 }}>
+          <T s={11} color="#000" weight={900} align="center" caps spacing="-0.01em">When you finally try it</T>
+          <div style={{ background:'#e2e8f0', height:60, width:'100%', borderRadius:4 }} />
+          <T s={11} color="#000" weight={900} align="center" caps spacing="-0.01em">And it just works</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('flex-start','flex-start'), gap: 6 }}>
+          <T s={10} color="#000" weight={900} caps>Other tools:</T>
+          <div style={{ background:'#fee2e2', height:50, width:'100%', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center', fontSize: 20 }}>😩</div>
+          <T s={10} color="#000" weight={900} caps>Brand X:</T>
+          <div style={{ background:'#dcfce7', height:30, width:'100%', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center', fontSize: 16 }}>✨</div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#000" weight={900} align="center">Tag someone who needs this</T>
+          <Btn label="Share →" bg={accent} />
+        </div>
+      );
+    }
+
+    // comment-reply
+    if (id === 'comment-reply') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <div style={{ background: accent, borderRadius:20, padding:'3px 10px', alignSelf:'flex-start' }}>
+            <T s={7} color="#fff" weight={700}>Replying to @user</T>
+          </div>
+          <div style={{ background:'rgba(255,255,255,0.06)', height:60, borderRadius:6, width:'100%' }} />
+          <T s={9} color="#fff" weight={700}>Here's what happened...</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">The full story</T>
+          <T s={8} color="#fff" weight={500}>I tried it for 30 days. Tracked everything. Here's what I learned: it just works.</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Follow for more</T>
+          <Btn label="Follow @brand" bg={accent} />
+        </div>
+      );
+    }
+
+    // poll-card
+    if (id === 'poll-card') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.12em">Quick Poll</T>
+          <T s={11} color="#fff" weight={800} spacing="-0.01em">Which problem is biggest for you?</T>
+          <Col gap={5}>
+            <div style={{ background:'rgba(255,255,255,0.1)', border:`1px solid ${accent}`, borderRadius:6, padding:'6px 8px' }}><T s={7} color="#fff" weight={600}>A) Not enough time</T></div>
+            <div style={{ background:'rgba(255,255,255,0.1)', border:`1px solid ${accent}`, borderRadius:6, padding:'6px 8px' }}><T s={7} color="#fff" weight={600}>B) Too expensive</T></div>
+          </Col>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">Results</T>
+          {[['A · Time','68%'],['B · Cost','32%']].map(([l,p],i) => (
+            <Col key={i} gap={3}>
+              <Row gap={4}><T s={7} color="#fff" weight={600}>{l}</T><div style={{flex:1}}/><T s={7} color={accent} weight={800}>{p}</T></Row>
+              <div style={{ height:5, background:'rgba(255,255,255,0.1)', borderRadius:3, overflow:'hidden' }}><div style={{ width:p, height:'100%', background:accent }} /></div>
+            </Col>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Which did you pick?</T>
+          <Btn label="See Solution →" bg={accent} />
+        </div>
+      );
+    }
+
+    // receipt-style
+    if (id === 'receipt-style') {
+      if (slide === 0) return (
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#0f172a" caps spacing="0.14em" weight={800} align="center">Order Receipt</T>
+          <div style={{ borderTop:'1px dashed #94a3b8', width:'100%' }} />
+          {[['Course','$197'],['Templates','$97'],['Bonus','$203']].map(([n,v],i) => (
+            <Row key={i} gap={4}><T s={7} color="#475569">{n}</T><div style={{flex:1}}/><T s={7} color="#0f172a" weight={700}>{v}</T></Row>
+          ))}
+          <div style={{ borderTop:'1px solid #0f172a', width:'100%' }} />
+          <Row gap={4}><T s={8} color="#0f172a" weight={900}>TOTAL VALUE</T><div style={{flex:1}}/><T s={8} color={accent} weight={900}>$497</T></Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">What's included</T>
+          {['Full course access','30 templates','Lifetime updates'].map((t,i) => (
+            <Row key={i} gap={5}><Check color={accent} /><T s={7} color="#1e293b">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Claim your order</T>
+          <Btn label="Get Bundle →" bg={accent} />
+        </div>
+      );
+    }
+
+    // bundle-stack
+    if (id === 'bundle-stack') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ position:'relative', width:80, height:60 }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ position:'absolute', top:i*6, left:i*8, width:60, height:42, background:`linear-gradient(135deg, ${accent}${i===2?'':'aa'}, ${accent}66)`, borderRadius:4, boxShadow:'0 4px 10px rgba(0,0,0,0.1)' }} />
+            ))}
+          </div>
+          <Row gap={6}>
+            <div style={{ fontSize:9, color:'#94a3b8', fontWeight:700, textDecoration:'line-through' }}>$297</div>
+            <T s={14} color={accent} weight={900}>$97</T>
+          </Row>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">In the bundle</T>
+          {[['Item 1','$99'],['Item 2','$99'],['Item 3','$99']].map(([n,v],i) => (
+            <Row key={i} gap={4}><Dot color={accent} /><T s={7} color="#1e293b">{n}</T><div style={{flex:1}}/><T s={7} color="#475569">{v}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Get the bundle</T>
+          <Btn label="Save 67% →" bg={accent} />
+        </div>
+      );
+    }
+
+    // photo-grid
+    if (id === 'photo-grid') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 4 }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:3, width:'100%' }}>
+            {[accent, '#fbbf24', '#ec4899', '#3b82f6'].map((c,i) => (
+              <div key={i} style={{ aspectRatio:'1', background:`linear-gradient(135deg, ${c}, ${c}99)`, borderRadius:4 }} />
+            ))}
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('flex-start','center'), gap: 5 }}>
+          <div style={{ width:'100%', height:80, background:`linear-gradient(135deg, ${accent}, ${accent}99)`, borderRadius:4 }} />
+          <T s={7} color="#0f172a" weight={700} align="center">The full collection</T>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">See the collection</T>
+          <Btn label="Browse All →" bg={accent} />
+        </div>
+      );
+    }
+
+    // app-mockup
+    if (id === 'app-mockup') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <div style={{ width:60, height:100, border:'2px solid #cbd5e1', borderRadius:14, padding:6, background:'#fff', boxShadow:'0 6px 16px rgba(0,0,0,0.08)' }}>
+            <div style={{ background: accent, height:18, borderRadius:3, marginBottom:4 }} />
+            <Bar w={'100%'} color="#cbd5e1" h={3} />
+            <div style={{ height:3 }} />
+            <Bar w={'70%'} color="#cbd5e1" h={3} />
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {['One-tap setup','Sync everywhere','Free forever'].map((t,i) => (
+            <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#1e293b">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#0f172a" weight={900} align="center">Download free</T>
+          <Btn label="Get the App →" bg={accent} />
+        </div>
+      );
+    }
+
+    // event-card
+    if (id === 'event-card') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ background: accent, borderRadius:6, padding:'6px 10px', textAlign:'center' }}>
+            <T s={6} color="rgba(255,255,255,0.8)" caps spacing="0.1em">May</T>
+            <T s={16} color="#fff" weight={900}>15</T>
+          </div>
+          <T s={11} color="#fff" weight={800} align="center">Free Masterclass</T>
+          <T s={7} color="rgba(255,255,255,0.6)">2PM EST · Live</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">You'll learn</T>
+          {['How to start fast','The 3-step framework','Live Q&A session'].map((t,i) => (
+            <Row key={i} gap={5}><Dot color={accent} /><T s={7} color="#fff">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Reserve your spot</T>
+          <Btn label="Save Seat →" bg={accent} />
+        </div>
+      );
+    }
+
+    // offer-announce
+    if (id === 'offer-announce') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 4 }}>
+          <div style={{ fontSize: 38, color:'#fff', fontWeight:900, lineHeight:1 }}>40%</div>
+          <T s={11} color="#fff" weight={900} caps spacing="0.05em">Off Everything</T>
+          <T s={7} color="rgba(255,255,255,0.7)">Today Only</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('flex-start','center'), gap: 8 }}>
+          <T s={8} color="rgba(255,255,255,0.85)" caps spacing="0.1em" weight={700}>Hurry · ends in</T>
+          <Row gap={5}>
+            {[['09','HRS'],['47','MIN'],['33','SEC']].map(([n,l],i) => (
+              <Col key={i} align="center" gap={1}>
+                <div style={{ background:'rgba(255,255,255,0.15)', borderRadius:4, padding:'4px 7px' }}><T s={11} color="#fff" weight={900}>{n}</T></div>
+                <T s={5} color="rgba(255,255,255,0.7)">{l}</T>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={9} color="rgba(255,255,255,0.7)">Don't miss out</T>
+          <Btn label="Shop Now →" bg="#fff" color={accent} />
+          <T s={6} color="rgba(255,255,255,0.7)">Offer ends midnight</T>
+        </div>
+      );
+    }
+
+    // myth-reality
+    if (id === 'myth-reality') {
+      if (slide === 0) return (
+        <div style={{ ...z, flexDirection:'row' }}>
+          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:8 }}>
+            <div style={{ textDecoration:'line-through', textDecorationColor:'#ef4444', textDecorationThickness:2 }}>
+              <T s={14} color="#fff" weight={900} caps spacing="0.04em" align="center">Myth</T>
+            </div>
+          </div>
+          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', padding:8 }}>
+            <T s={14} color="#fff" weight={900} caps spacing="0.04em" align="center">Reality</T>
+          </div>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 8 }}>
+          <Col gap={2}>
+            <T s={6} color="rgba(255,255,255,0.6)" caps spacing="0.12em">Myth</T>
+            <T s={9} color="#fff" weight={700}>"It takes years to see results."</T>
+          </Col>
+          <div style={{ height:1, background:'rgba(255,255,255,0.2)', width:'100%' }} />
+          <Col gap={2}>
+            <T s={6} color="#fff" caps spacing="0.12em" weight={800}>Reality</T>
+            <T s={9} color="#fff" weight={800}>Most see change in week 1.</T>
+          </Col>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Know the truth</T>
+          <Btn label="Learn More →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        </div>
+      );
+    }
+
+    // aurora-gradient
+    if (id === 'aurora-gradient') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <div style={{ width:50, height:50, borderRadius:'50%', border:'2px solid rgba(255,255,255,0.4)', boxShadow:'0 0 30px rgba(255,255,255,0.3)' }} />
+          <T s={14} color="#fff" weight={800} align="center" spacing="-0.02em">The future is here.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp('center','center'), gap: 6 }}>
+          {['AI-Powered','Real-Time','Beautiful'].map((t,i) => (
+            <div key={i} style={{ background:'rgba(255,255,255,0.18)', backdropFilter:'blur(8px)', borderRadius:20, padding:'5px 14px', border:'1px solid rgba(255,255,255,0.3)' }}>
+              <T s={8} color="#fff" weight={700}>{t}</T>
+            </div>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Get Early Access</T>
+          <Btn label="Join Waitlist →" bg="#fff" color="#7c3aed" />
+        </div>
+      );
+    }
+
+    // duotone-photo
+    if (id === 'duotone-photo') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','flex-end'), gap: 5 }}>
+          <T s={6} color={accent} caps spacing="0.14em" weight={700}>Editorial</T>
+          <T s={14} color="#fff" weight={900} spacing="-0.02em">A new kind of brand.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          {['Bold by design','Built for scale','Loved by users'].map((t,i) => (
+            <Row key={i} gap={5}><div style={{width:3,height:14,background:accent}} /><T s={8} color="#fff" weight={600}>{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#fff" weight={900} align="center">See it in motion</T>
+          <Btn label="Watch Demo →" bg="#fff" color={accent} />
+        </div>
+      );
+    }
+
+    // risograph-print
+    if (id === 'risograph-print') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 6 }}>
+          <div style={{ position:'relative' }}>
+            <T s={20} color="#ef4444" weight={900} spacing="-0.03em">CRAFTED</T>
+            <div style={{ position:'absolute', top: 2, left: 2, mixBlendMode:'multiply' }}>
+              <T s={20} color={accent} weight={900} spacing="-0.03em">CRAFTED</T>
+            </div>
+          </div>
+          <T s={8} color="#451a03">By hand. With love.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#ef4444" caps spacing="0.12em" weight={700}>Artisan made</T>
+          {['Small batches','Hand-finished','Numbered editions'].map((t,i) => (
+            <T key={i} s={8} color="#451a03" weight={500}>· {t}</T>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#451a03" weight={900} align="center">Shop the collection</T>
+          <Btn label="Browse →" bg={accent} />
+        </div>
+      );
+    }
+
+    // collage-cutout
+    if (id === 'collage-cutout') {
+      if (slide === 0) return (
+        <div style={{ ...zp('flex-start','center'), gap: 4 }}>
+          <T s={20} color="#0f172a" weight={900} spacing="-0.04em">BOLD.</T>
+          <div style={{ fontSize:14, color: accent, fontWeight:900, letterSpacing:'-0.04em', transform:'rotate(-2deg)' }}>raw.</div>
+          <T s={18} color="#0f172a" weight={900} spacing="-0.04em">REAL.</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <div style={{ background:'#fff', padding:'4px 8px', alignSelf:'flex-start', boxShadow:'2px 2px 0 #0f172a' }}>
+            <T s={8} color="#0f172a" weight={800}>No filters</T>
+          </div>
+          <div style={{ background: accent, padding:'4px 8px', alignSelf:'flex-end' }}>
+            <T s={8} color="#fff" weight={800}>No fakery</T>
+          </div>
+          <div style={{ background:'#fbbf24', padding:'4px 8px', alignSelf:'flex-start' }}>
+            <T s={8} color="#0f172a" weight={800}>Just real.</T>
+          </div>
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={12} color="#0f172a" weight={900} align="center">See for yourself</T>
+          <Btn label="Get It →" bg={accent} />
+        </div>
+      );
+    }
+
+    // video-thumbnail
+    if (id === 'video-thumbnail') {
+      if (slide === 0) return (
+        <div style={{ ...zc, gap: 8 }}>
+          <div style={{ width:50, height:50, borderRadius:'50%', background:'#fff', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 6px 20px rgba(0,0,0,0.4)' }}>
+            <div style={{ width:0, height:0, borderTop:'9px solid transparent', borderBottom:'9px solid transparent', borderLeft:`14px solid #0a0a0a`, marginLeft:3 }} />
+          </div>
+          <T s={10} color="#fff" weight={800} align="center">Watch the demo</T>
+          <T s={7} color={accent} weight={700}>2.4M views</T>
+        </div>
+      );
+      if (slide === 1) return (
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">In this video</T>
+          {['How it works','Real results','Behind the scenes'].map((t,i) => (
+            <Row key={i} gap={5}><div style={{ width:0, height:0, borderTop:'4px solid transparent', borderBottom:'4px solid transparent', borderLeft:`6px solid ${accent}` }} /><T s={7} color="#fff">{t}</T></Row>
+          ))}
+        </div>
+      );
+      return (
+        <div style={{ ...zc, gap: 8 }}>
+          <T s={11} color="#fff" weight={900} align="center">Watch now</T>
+          <Btn label="Play Video →" bg={accent} />
+        </div>
+      );
+    }
+
     // ── fallback ──────────────────────────────────────────────────────────────
     return (
       <div style={{ ...zc, gap: 8 }}>
@@ -3783,22 +5148,6 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
 
   // photo-reveal uses static Fallback preview (user photos, not Unsplash)
   if (id === 'photo-reveal') {
-    return <Fallback id={id} tone={tone} />;
-  }
-
-  // Batch 5 — 44 new templates render via static Fallback preview
-  const NEW_TEMPLATE_IDS = new Set([
-    'guarantee-badge','free-trial','limited-drop','offer-announce','price-compare',
-    'award-winner','founder-story','review-card','trust-bar','news-frame',
-    'video-thumbnail','community-quote','stat-study','caption-style','chat-thread',
-    'meme-format','comment-reply','poll-card','hot-take','leaderboard',
-    'checklist-viral','myth-reality','event-card','three-reasons','timeline-journey',
-    'brutalist','collage-cutout','aurora-gradient','duotone-photo','mono-editorial',
-    'risograph-print','chart-reveal','steps-infographic','vs-table','flat-lay',
-    'app-mockup','photo-grid','brand-awareness','tweet-screenshot','tiktok-native',
-    'reddit-thread','email-mockup','receipt-style','bundle-stack',
-  ]);
-  if (NEW_TEMPLATE_IDS.has(id)) {
     return <Fallback id={id} tone={tone} />;
   }
 
