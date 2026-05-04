@@ -234,7 +234,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 
   if (id === 'problem-slide') return (
     <div style={{ ...s, background: 'linear-gradient(135deg, #1c0505 0%, #450a0a 100%)', gap: 8 }}>
-      <div style={{ fontSize: 28, marginBottom: 4 }}>😤</div>
+      <div style={{ width: 28, height: 28, borderRadius: 6, background: 'rgba(252,165,165,0.2)', border: '1.5px solid rgba(252,165,165,0.5)', marginBottom: 4 }} />
       <div style={{ height: 9, background: '#fca5a5', borderRadius: 2, width: 130 }} />
       <div style={{ height: 5, background: 'rgba(252,165,165,0.5)', borderRadius: 2, width: 100 }} />
     </div>
@@ -528,7 +528,7 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 
   if (id === 'empathy-card') return (
     <div style={{ ...s, background: 'linear-gradient(160deg,#fff7f0,#fce7f3)', gap: 8 }}>
-      <div style={{ fontSize: 22 }}>🤍</div>
+      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#ec4899,#a78bfa)', marginBottom: 2 }} />
       <div style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed', textAlign: 'center', lineHeight: 1.4 }}>
         You deserve<br />to feel this.
       </div>
@@ -1047,9 +1047,9 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       );
       if (slide === 1) return (
         <div style={{ ...zp('flex-start'), gap: 7 }}>
-          {[['⚡','Works in 60 seconds'],['✅','10,000+ happy users'],['🔒','No experience needed']].map(([ic, t], i) => (
+          {['Works in 60 seconds','10,000+ happy users','No experience needed'].map((t, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,0.07)', borderRadius: 8, padding: '7px 10px', width: '100%' }}>
-              <span style={{ fontSize: 11 }}>{ic}</span><T s={8} color="#f1f5f9" weight={600}>{t as string}</T>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: accent, flexShrink: 0 }} /><T s={8} color="#f1f5f9" weight={600}>{t}</T>
             </div>
           ))}
         </div>
@@ -1195,9 +1195,9 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       );
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 7 }}>
-          {[['⚡','Instant deploy'],['🎯','Laser targeting'],['💎','Premium results']].map(([ic, t], i) => (
+          {['Instant deploy','Laser targeting','Premium results'].map((t, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', border: `1px solid ${accent}44`, borderRadius: 8, padding: '6px 10px', background: `${accent}0a`, width: '100%' }}>
-              <span style={{ fontSize: 11 }}>{ic}</span><T s={8} color="#f1f5f9" weight={600}>{t as string}</T>
+              <div style={{ width: 6, height: 6, borderRadius: 2, background: accent, flexShrink: 0 }} /><T s={8} color="#f1f5f9" weight={600}>{t}</T>
             </div>
           ))}
         </div>
@@ -1311,10 +1311,10 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <div style={{ background: `${accent}18`, border: `1px solid ${accent}33`, borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start' }}>
             <T s={6} color={accent} weight={700}>Why it works</T>
           </div>
-          {[['🧠','Psychology-backed copy'],['⚡','Instant attention grab'],['📈','Proven to convert']].map(([ic, t], i) => (
+          {['Psychology-backed copy','Instant attention grab','Proven to convert'].map((t, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ fontSize: 12 }}>{ic}</span>
-              <T s={8} color="#e2e8f0" weight={500}>{t as string}</T>
+              <div style={{ width: 3, height: 14, borderRadius: 2, background: accent, flexShrink: 0 }} />
+              <T s={8} color="#e2e8f0" weight={500}>{t}</T>
             </div>
           ))}
         </div>
@@ -1437,7 +1437,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
           <div style={{ flex: 1, background: '#f0fdf4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
             <T s={8} color={accent} weight={800} caps>After</T>
-            <div style={{ fontSize: 22 }}>🚀</div>
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: `${accent}40`, border: `2px solid ${accent}` }} />
             <T s={7} color={accent} align="center">Fast &amp; winning</T>
           </div>
         </div>
@@ -1593,11 +1593,18 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
               <T s={7} color="#94a3b8">Sponsored · 2h ago</T>
             </div>
           </Row>
-          <div style={{ background: '#f1f5f9', borderRadius: 8, height: 58, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-            <span style={{ fontSize: 24 }}>📱</span>
+          <div style={{ background: '#f1f5f9', borderRadius: 8, height: 58, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <div style={{ width: 28, height: 44, borderRadius: 6, background: '#cbd5e1', border: '2px solid #94a3b8' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: 40 }} />
+              <div style={{ height: 4, background: '#cbd5e1', borderRadius: 2, width: 30 }} />
+            </div>
           </div>
           <T s={8} color="#1e293b" weight={500}>"Day 47 using this and I just crossed $10K/month. Not kidding."</T>
-          <T s={7} color="#94a3b8">❤️ 2.4K  💬 183</T>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f43f5e' }} /><T s={7} color="#94a3b8">2.4K</T></div>
+            <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}><div style={{ width: 8, height: 8, borderRadius: 2, background: '#94a3b8' }} /><T s={7} color="#94a3b8">183</T></div>
+          </div>
         </div>
       );
       if (slide === 1) return (
@@ -1781,10 +1788,10 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     if (id === 'product-center') {
       if (slide === 0) return (
         <div style={{ ...zc, gap: 8 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg,${accent},#818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 24px ${accent}44`, fontSize: 24 }}>⚡</div>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg,${accent},#818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 8px 24px ${accent}44` }}><div style={{ width: 18, height: 18, borderRadius: 4, background: 'rgba(255,255,255,0.35)' }} /></div>
           <T s={12} color="#0f172a" weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
           <Row gap={6}>
-            {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => (
+            {['Fast','Smart','Safe'].map(f => (
               <div key={f} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 6, padding: '3px 7px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                 <T s={7} color="#475569" weight={600}>{f}</T>
               </div>
@@ -1795,10 +1802,10 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 7 }}>
           <T s={9} color="#0f172a" weight={800} spacing="-0.01em">Everything you need:</T>
-          {[['⚡','Instant results, day one'],['📊','Real-time analytics'],['🤖','AI does the heavy lifting']].map(([ic, t], i) => (
+          {['Instant results, day one','Real-time analytics','AI does the heavy lifting'].map((t, i) => (
             <div key={i} style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '6px 10px', display: 'flex', gap: 8, alignItems: 'center', width: '100%', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              <span style={{ fontSize: 12 }}>{ic}</span>
-              <T s={8} color="#334155" weight={500}>{t as string}</T>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: accent, flexShrink: 0 }} />
+              <T s={8} color="#334155" weight={500}>{t}</T>
             </div>
           ))}
         </div>
@@ -1988,7 +1995,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 0) return (
         <div style={{ ...z, flexDirection: 'row' }}>
           <div style={{ flex: 1.1, background: `linear-gradient(180deg,${accent},${accent}cc)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <div style={{ fontSize: 26 }}>🎯</div>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'rgba(255,255,255,0.25)', border: '2px solid rgba(255,255,255,0.5)' }} />
             <T s={8} color="rgba(255,255,255,0.85)" align="center">Built for results</T>
           </div>
           <div style={{ flex: 1, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: 12, gap: 5 }}>
@@ -2038,7 +2045,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 0) return (
         <div style={{ ...z }}>
           <div style={{ ...topZone, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 32 }}>🚀</span>
+            <div style={{ width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,0.15)', border: '2px solid rgba(255,255,255,0.3)' }} />
           </div>
           <div style={glassCard}>
             <T s={11} color="#fff" weight={800} spacing="-0.02em">Ready to transform?</T>
@@ -2086,7 +2093,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 0) return (
         <div style={{ ...zc, gap: 8 }}>
           <div style={{ background: `${red}22`, border: `1px solid ${red}55`, borderRadius: 6, padding: '3px 10px' }}>
-            <T s={7} color={red} weight={700} caps spacing="0.1em">⚡ Limited Time</T>
+            <T s={7} color={red} weight={700} caps spacing="0.1em">Limited Time</T>
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ fontSize: 40, fontWeight: 900, color: '#f1f5f9', letterSpacing: '-0.05em', lineHeight: 0.9 }}>50%</div>
@@ -2098,8 +2105,8 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 7 }}>
           <T s={8} color="#f1f5f9" weight={800}>What's included:</T>
-          {[['✅','All 30+ templates'],['✅','AI copy engine'],['✅','Lifetime access'],['✅','Priority support']].map(([ic, t], i) => (
-            <Row key={i} gap={6}><T s={9} color="#22c55e">{ic}</T><T s={8} color="rgba(241,245,249,0.8)" weight={500}>{t as string}</T></Row>
+          {['All 30+ templates','AI copy engine','Lifetime access','Priority support'].map((t, i) => (
+            <Row key={i} gap={6}><Check color="#22c55e" /><T s={8} color="rgba(241,245,249,0.8)" weight={500}>{t}</T></Row>
           ))}
           <div style={{ background: `${red}18`, border: `1px solid ${red}33`, borderRadius: 6, padding: '5px 8px', display: 'flex', justifyContent: 'space-between', width: '100%' }}>
             <T s={8} color="rgba(241,245,249,0.5)">Total value:</T>
@@ -2143,10 +2150,10 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 7 }}>
           <T s={8} color="#f1f5f9" weight={700}>Before the timer hits zero:</T>
-          {[['🎁','Full access — lifetime deal'],['💸','Save $200 vs monthly price'],['🔒','Lock in your rate forever']].map(([ic, t], i) => (
+          {['Full access — lifetime deal','Save $200 vs monthly price','Lock in your rate forever'].map((t, i) => (
             <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'center', background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '7px 10px', backdropFilter: 'blur(4px)', width: '100%' }}>
-              <span style={{ fontSize: 11 }}>{ic}</span>
-              <T s={8} color="rgba(241,245,249,0.75)" weight={500}>{t as string}</T>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
+              <T s={8} color="rgba(241,245,249,0.75)" weight={500}>{t}</T>
             </div>
           ))}
         </div>
@@ -2410,7 +2417,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       const emMuted = '#7c3aed';
       if (slide === 0) return (
         <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
-          <T s={24} color="#000" align="center">🤍</T>
+          <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'linear-gradient(135deg,#ec4899,#a78bfa)' }} />
           <T s={18} color={emTxt} weight={900} align="center" spacing="-0.03em">You deserve to feel this.</T>
           <T s={9} color={emMuted} align="center">Not eventually. Right now.</T>
           <Btn label="Tell Me More →" bg={accent} color="#fff" />
@@ -2822,10 +2829,10 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
     <div style={{ ...wrap, background: hasPhoto ? '#000' : '#f8fafc', gap: 8 }}>
       {photoLayer}
       <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>⚡</div>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 16, height: 16, borderRadius: 4, background: 'rgba(255,255,255,0.35)' }} /></div>
         <T s={11} color={hasPhoto ? '#fff' : '#1e293b'} weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
         <Row gap={10}>
-          {['🚀 Fast','✨ Smart','🔒 Safe'].map(f => <T key={f} s={7} color={hasPhoto ? 'rgba(255,255,255,0.7)' : '#475569'} weight={600}>{f}</T>)}
+          {['Fast','Smart','Safe'].map(f => <T key={f} s={7} color={hasPhoto ? 'rgba(255,255,255,0.7)' : '#475569'} weight={600}>{f}</T>)}
         </Row>
         <Btn label="Try Free" bg={accent} />
       </div>
@@ -3135,7 +3142,7 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   // ── empathy-card ─────────────────────────────────────────────────────────────
   if (id === 'empathy-card') return (
     <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#fff7f0,#fce7f3)', padding: '0 16px', gap: 12 }}>
-      <div style={{ fontSize: 22 }}>🤍</div>
+      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#ec4899,#a78bfa)', flexShrink: 0 }} />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <T s={10} color="#3b0764" weight={800} spacing="-0.02em">You deserve to feel this.</T>
         <T s={7.5} color="#7c3aed">Not eventually. Starting today.</T>
