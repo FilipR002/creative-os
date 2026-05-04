@@ -53,7 +53,52 @@ export type TemplateId =
   | 'do-dont'             // engagement: two-column right-vs-wrong comparison
   | 'transform-split'     // engagement: top=before / bottom=after transformation
   // ── Photo-reveal (user-photo carousel) ───────────────────────────────────────
-  | 'photo-reveal';       // full-bleed real photo + bold bottom label — @wealth style
+  | 'photo-reveal'       // full-bleed real photo + bold bottom label — @wealth style
+  // ── Batch 5: 44 new templates (10 categories) ────────────────────────────────
+  | 'guarantee-badge'
+  | 'free-trial'
+  | 'limited-drop'
+  | 'offer-announce'
+  | 'price-compare'
+  | 'award-winner'
+  | 'founder-story'
+  | 'review-card'
+  | 'trust-bar'
+  | 'news-frame'
+  | 'video-thumbnail'
+  | 'community-quote'
+  | 'stat-study'
+  | 'caption-style'
+  | 'chat-thread'
+  | 'meme-format'
+  | 'comment-reply'
+  | 'poll-card'
+  | 'hot-take'
+  | 'leaderboard'
+  | 'checklist-viral'
+  | 'myth-reality'
+  | 'event-card'
+  | 'three-reasons'
+  | 'timeline-journey'
+  | 'brutalist'
+  | 'collage-cutout'
+  | 'aurora-gradient'
+  | 'duotone-photo'
+  | 'mono-editorial'
+  | 'risograph-print'
+  | 'chart-reveal'
+  | 'steps-infographic'
+  | 'vs-table'
+  | 'flat-lay'
+  | 'app-mockup'
+  | 'photo-grid'
+  | 'brand-awareness'
+  | 'tweet-screenshot'
+  | 'tiktok-native'
+  | 'reddit-thread'
+  | 'email-mockup'
+  | 'receipt-style'
+  | 'bundle-stack';
 
 export type AdSize =
   | '1080x1080'   // square — Instagram, Facebook

@@ -34,7 +34,7 @@ function useGlobalSlide(paused: boolean): { slide: number; fading: boolean } {
 }
 
 export type GalleryFormat = 'carousel' | 'image' | 'video';
-type Category = 'all' | 'conversion' | 'trust' | 'empathy' | 'engagement' | 'scroll-stop';
+type Category = 'all' | 'conversion' | 'trust' | 'empathy' | 'engagement' | 'scroll-stop' | 'social-native' | 'aesthetic' | 'education' | 'product' | 'brand';
 
 interface Props {
   templates:     TemplateMetadata[];
@@ -42,22 +42,32 @@ interface Props {
   defaultFormat?: GalleryFormat;
 }
 
-const CATEGORIES: { id: Category; label: string; icon: string }[] = [
-  { id: 'all',        label: 'All',        icon: '⊞' },
-  { id: 'conversion', label: 'Conversion', icon: '⚡' },
-  { id: 'trust',      label: 'Trust',      icon: '★' },
-  { id: 'empathy',    label: 'Empathy',    icon: '♥' },
-  { id: 'engagement', label: 'Engagement', icon: '◈' },
-  { id: 'scroll-stop',label: 'Scroll-Stop',icon: '◎' },
+const CATEGORIES: { id: Category; label: string }[] = [
+  { id: 'all',           label: 'All' },
+  { id: 'conversion',    label: 'Conversion' },
+  { id: 'trust',         label: 'Trust' },
+  { id: 'empathy',       label: 'Empathy' },
+  { id: 'engagement',    label: 'Engagement' },
+  { id: 'scroll-stop',   label: 'Scroll-Stop' },
+  { id: 'social-native', label: 'Social Native' },
+  { id: 'aesthetic',     label: 'Aesthetic' },
+  { id: 'education',     label: 'Education' },
+  { id: 'product',       label: 'Product' },
+  { id: 'brand',         label: 'Brand' },
 ];
 
 const CATEGORY_IDS: Record<Category, string[]> = {
-  all:          [],
-  conversion:   ['countdown-urgency','cta-final','problem-slide','diagonal-split','bold-headline','gradient-pop','offer-stack','value-math'],
-  trust:        ['testimonial','social-proof-grid','stats-hero','story-hook','magazine-editorial','feature-list','case-study','insight-frame'],
-  empathy:      ['ugc-style','full-bleed','overlay-card','dark-luxury','pain-diagnostic','mistake-alert','empathy-card','validation-card'],
-  engagement:   ['number-list','side-by-side','split-panel','floating-card','product-demo','product-center','do-dont','transform-split'],
-  'scroll-stop':['photo-reveal','text-only-bold','neon-dark','retro-bold','headline-badge','brand-manifesto','color-block','bright-minimal'],
+  all:            [],
+  conversion:     ['countdown-urgency','cta-final','offer-stack','value-math','bold-headline','diagonal-split','gradient-pop','guarantee-badge','free-trial','limited-drop','offer-announce','price-compare','bundle-stack','problem-slide','story-hook'],
+  trust:          ['testimonial','social-proof-grid','stats-hero','case-study','feature-list','magazine-editorial','insight-frame','award-winner','founder-story','review-card','trust-bar','news-frame','video-thumbnail','community-quote','stat-study'],
+  empathy:        ['ugc-style','empathy-card','validation-card','pain-diagnostic','mistake-alert','story-hook','problem-slide','caption-style','chat-thread','meme-format','comment-reply','full-bleed','overlay-card','photo-reveal','brand-manifesto'],
+  engagement:     ['do-dont','transform-split','poll-card','hot-take','leaderboard','checklist-viral','myth-reality','photo-reveal','side-by-side','event-card','meme-format','three-reasons','timeline-journey','reddit-thread','photo-grid'],
+  'scroll-stop':  ['bold-headline','text-only-bold','retro-bold','neon-dark','headline-badge','brand-manifesto','brutalist','collage-cutout','aurora-gradient','duotone-photo','hot-take','full-bleed','gradient-pop','color-block','mono-editorial'],
+  'social-native':['chat-thread','tweet-screenshot','tiktok-native','reddit-thread','email-mockup','receipt-style','ugc-style','caption-style','meme-format','comment-reply','photo-reveal','poll-card','video-thumbnail','story-hook','floating-card'],
+  aesthetic:      ['aurora-gradient','duotone-photo','mono-editorial','risograph-print','dark-luxury','overlay-card','gradient-pop','color-block','floating-card','collage-cutout','neon-dark','magazine-editorial','diagonal-split','full-bleed','bright-minimal'],
+  education:      ['chart-reveal','three-reasons','timeline-journey','vs-table','insight-frame','feature-list','number-list','stat-study','steps-infographic','checklist-viral','stats-hero','case-study','do-dont','myth-reality','leaderboard'],
+  product:        ['product-center','product-demo','bundle-stack','split-panel','flat-lay','app-mockup','photo-grid','side-by-side','color-block','bright-minimal','minimal','full-bleed','floating-card','overlay-card','price-compare'],
+  brand:          ['brand-manifesto','brand-awareness','founder-story','mono-editorial','magazine-editorial','minimal','bright-minimal','text-only-bold','retro-bold','diagonal-split','dark-luxury','color-block','gradient-pop','aurora-gradient','headline-badge'],
 };
 
 // ─── Per-template mini preview fallbacks ─────────────────────────────────────
@@ -594,6 +604,534 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
         <div style={{ height: 6, background: '#5eead4', borderRadius: 2, width: 90, opacity: 0.8 }} />
         <div style={{ height: 4, background: 'rgba(94,234,212,0.4)', borderRadius: 2, width: 70 }} />
       </div>
+    </div>
+  );
+
+  // ── Batch 5 — 44 new templates ───────────────────────────────────────────────
+
+  if (id === 'guarantee-badge') return (
+    <div style={{ ...s, background: '#1a1a2e', gap: 6 }}>
+      <div style={{ width: 80, height: 80, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+        <div style={{ fontSize: 7, color: accent, fontWeight: 800, letterSpacing: '0.12em' }}>GUARANTEED</div>
+        <div style={{ fontSize: 11, color: '#fff', fontWeight: 900, lineHeight: 1 }}>MONEY</div>
+        <div style={{ fontSize: 11, color: '#fff', fontWeight: 900, lineHeight: 1 }}>BACK</div>
+      </div>
+      <div style={{ fontSize: 13, color: accent, fontWeight: 800, marginTop: 4 }}>30 Days</div>
+      <div style={{ marginTop: 4, height: 22, background: accent, borderRadius: 5, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1a1a2e', fontSize: 9, fontWeight: 800 }}>CLAIM YOURS</div>
+    </div>
+  );
+
+  if (id === 'free-trial') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ fontSize: 28, color: '#0f172a', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>START FREE</div>
+      <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 500 }}>No credit card required</div>
+      <div style={{ marginTop: 8, height: 28, background: '#10b981', borderRadius: 6, padding: '0 18px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 10, fontWeight: 800, boxShadow: '0 4px 14px rgba(16,185,129,0.35)' }}>Try 14 Days Free</div>
+    </div>
+  );
+
+  if (id === 'limited-drop') return (
+    <div style={{ ...s, background: '#000', gap: 6 }}>
+      <div style={{ fontSize: 9, color: '#f97316', fontWeight: 800, letterSpacing: '0.14em' }}>ONLY 12 LEFT</div>
+      <div style={{ fontSize: 16, color: '#fff', fontWeight: 900, letterSpacing: '-0.02em' }}>The Drop</div>
+      <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
+        {['02','47','33'].map((n,i) => (
+          <React.Fragment key={i}>
+            <div style={{ width: 26, height: 28, background: '#1c1c1c', border: '1px solid #333', borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 900 }}>{n}</div>
+            {i < 2 && <div style={{ color: '#f97316', fontSize: 14, fontWeight: 900, alignSelf: 'center' }}>:</div>}
+          </React.Fragment>
+        ))}
+      </div>
+      <div style={{ marginTop: 6, height: 22, background: '#f97316', borderRadius: 4, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#000', fontSize: 9, fontWeight: 900 }}>CLAIM NOW</div>
+    </div>
+  );
+
+  if (id === 'offer-announce') return (
+    <div style={{ ...s, background: accent, gap: 4 }}>
+      <div style={{ fontSize: 32, color: '#fff', fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1 }}>40% OFF</div>
+      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.95)', fontWeight: 700, marginTop: 2 }}>Premium Plan</div>
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.7)', fontWeight: 600, letterSpacing: '0.08em' }}>TODAY ONLY</div>
+      <div style={{ marginTop: 6, height: 24, background: '#fff', borderRadius: 6, padding: '0 16px', display: 'flex', alignItems: 'center', color: '#0f172a', fontSize: 9, fontWeight: 800 }}>Get Deal →</div>
+    </div>
+  );
+
+  if (id === 'price-compare') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 600 }}>WAS</div>
+          <div style={{ fontSize: 18, color: '#94a3b8', fontWeight: 700, textDecoration: 'line-through' }}>$199</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+          <div style={{ fontSize: 9, color: accent, fontWeight: 800 }}>NOW</div>
+          <div style={{ fontSize: 26, color: accent, fontWeight: 900, letterSpacing: '-0.03em' }}>$99</div>
+        </div>
+      </div>
+      <div style={{ background: accent, color: '#fff', fontSize: 9, fontWeight: 800, padding: '3px 10px', borderRadius: 12, marginTop: 4 }}>SAVE $100</div>
+      <div style={{ marginTop: 4, height: 22, background: '#0f172a', borderRadius: 5, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 9, fontWeight: 700 }}>Buy Now</div>
+    </div>
+  );
+
+  if (id === 'award-winner') return (
+    <div style={{ ...s, background: '#0f172a', gap: 6 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#fbbf24', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#0f172a' }}>★</div>
+      <div style={{ fontSize: 18, color: '#fff', fontWeight: 900, letterSpacing: '-0.02em' }}>VOTED #1</div>
+      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.55)', fontWeight: 500 }}>Best in Category</div>
+      <div style={{ fontSize: 8, color: '#fbbf24', fontWeight: 700, padding: '2px 8px', border: '1px solid #fbbf24', borderRadius: 10 }}>2026</div>
+      <div style={{ marginTop: 4, height: 22, background: '#fbbf24', borderRadius: 5, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#0f172a', fontSize: 9, fontWeight: 800 }}>See Why</div>
+    </div>
+  );
+
+  if (id === 'founder-story') return (
+    <div style={{ ...s, background: '#fef3c7', gap: 6 }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#92400e', color: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800 }}>SR</div>
+      <div style={{ fontSize: 12, color: '#451a03', fontWeight: 800 }}>Sarah R., Founder</div>
+      <div style={{ fontStyle: 'italic', fontSize: 10, color: '#78350f', textAlign: 'center', lineHeight: 1.3, padding: '0 8px' }}>"I built this because I needed it..."</div>
+      <div style={{ width: 60, height: 1, background: '#92400e' }} />
+      <div style={{ marginTop: 4, height: 22, background: '#92400e', borderRadius: 5, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fef3c7', fontSize: 9, fontWeight: 700 }}>Read Story</div>
+    </div>
+  );
+
+  if (id === 'review-card') return (
+    <div style={{ ...s, background: '#fff', gap: 6, alignItems: 'flex-start', padding: 18 }}>
+      <div style={{ fontSize: 14, color: '#fbbf24', letterSpacing: 1 }}>★★★★★</div>
+      <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 600, lineHeight: 1.3 }}>"Genuinely changed how I work — worth every cent."</div>
+      <div style={{ fontSize: 9, color: '#64748b', fontWeight: 600 }}>— Maya K. <span style={{ color: '#10b981' }}>✓ Verified Buyer</span></div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: accent }} />
+    </div>
+  );
+
+  if (id === 'trust-bar') return (
+    <div style={{ ...s, background: '#fff', flexDirection: 'row', gap: 0, padding: 0 }}>
+      {[['10K+','Customers'],['4.9★','Rating'],['99%','Retention']].map(([n,l],i) => (
+        <React.Fragment key={i}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+            <div style={{ fontSize: 18, color: accent, fontWeight: 900, letterSpacing: '-0.03em' }}>{n}</div>
+            <div style={{ fontSize: 8, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{l}</div>
+          </div>
+          {i < 2 && <div style={{ width: 1, height: 50, background: '#e2e8f0', alignSelf: 'center' }} />}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+
+  if (id === 'news-frame') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 18, gap: 5, borderTop: `3px solid ${accent}` }}>
+      <div style={{ fontSize: 8, color: accent, fontWeight: 800, letterSpacing: '0.16em' }}>BREAKING</div>
+      <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 800, lineHeight: 1.2 }}>The Industry Is Shifting — Here's What You Need To Know</div>
+      <div style={{ fontSize: 8, color: '#94a3b8', fontWeight: 500, marginTop: 4 }}>May 4, 2026 · 4 min read</div>
+    </div>
+  );
+
+  if (id === 'video-thumbnail') return (
+    <div style={{ ...s, background: 'linear-gradient(160deg,#0f172a,#1e293b)', gap: 8 }}>
+      <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'rgba(255,255,255,0.95)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+        <div style={{ width: 0, height: 0, borderLeft: '14px solid #0f172a', borderTop: '8px solid transparent', borderBottom: '8px solid transparent', marginLeft: 4 }} />
+      </div>
+      <div style={{ fontSize: 11, color: '#fff', fontWeight: 700, textAlign: 'center' }}>How We 10× Our Output</div>
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.5)' }}>248K views · 12:48</div>
+    </div>
+  );
+
+  if (id === 'community-quote') return (
+    <div style={{ ...s, background: '#f1f5f9', alignItems: 'flex-start', padding: 14, gap: 5 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 18, height: 18, borderRadius: '50%', background: accent }} />
+        <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 700 }}>u/curious_dev</div>
+        <div style={{ fontSize: 9, color: '#64748b' }}>↑ 2.4k</div>
+      </div>
+      <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 700, lineHeight: 1.25 }}>"Honestly the best switch I've made all year"</div>
+      <div style={{ fontSize: 8, color: '#64748b' }}>r/productivity · 142 comments</div>
+    </div>
+  );
+
+  if (id === 'stat-study') return (
+    <div style={{ ...s, background: '#fff', gap: 4 }}>
+      <div style={{ fontSize: 9, color: accent, fontWeight: 800, letterSpacing: '0.12em' }}>NEW STUDY</div>
+      <div style={{ fontSize: 40, color: accent, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em' }}>73%</div>
+      <div style={{ fontSize: 10, color: '#0f172a', fontWeight: 600, textAlign: 'center', padding: '0 12px' }}>of users report better results in week one</div>
+      <div style={{ fontSize: 7, color: '#94a3b8', marginTop: 4 }}>Source: Internal Survey 2026</div>
+    </div>
+  );
+
+  if (id === 'caption-style') return (
+    <div style={{ ...s, background: '#000', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1.4, background: 'linear-gradient(160deg,#1e293b,#0f172a)' }} />
+      <div style={{ flex: 1, padding: 12, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 11, color: '#fff', fontWeight: 700, lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>"It actually saved me hours."</div>
+        <div style={{ fontSize: 11, color: '#fff', fontWeight: 700, lineHeight: 1.2, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>Try it free →</div>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>@maya · Follow</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'chat-thread') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'stretch', padding: 14, gap: 6, justifyContent: 'center' }}>
+      <div style={{ alignSelf: 'flex-end', maxWidth: '80%', background: '#3b82f6', color: '#fff', fontSize: 10, padding: '6px 10px', borderRadius: '12px 12px 2px 12px', fontWeight: 600 }}>Does X actually work?</div>
+      <div style={{ alignSelf: 'flex-start', maxWidth: '80%', background: '#e2e8f0', color: '#0f172a', fontSize: 10, padding: '6px 10px', borderRadius: '12px 12px 12px 2px', fontWeight: 600 }}>Life changing honestly 🙌</div>
+      <div style={{ fontSize: 7, color: '#94a3b8', textAlign: 'center', marginTop: 2 }}>2:47 PM</div>
+    </div>
+  );
+
+  if (id === 'meme-format') return (
+    <div style={{ ...s, background: '#fff', justifyContent: 'space-between', padding: 12 }}>
+      <div style={{ fontSize: 13, color: '#000', fontWeight: 900, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.1, letterSpacing: '-0.01em' }}>WHEN YOU FINALLY TRY IT</div>
+      <div style={{ width: '100%', flex: 1, background: '#cbd5e1', borderRadius: 4, margin: '6px 0' }} />
+      <div style={{ fontSize: 13, color: '#000', fontWeight: 900, textTransform: 'uppercase', textAlign: 'center', lineHeight: 1.1, letterSpacing: '-0.01em' }}>WHY DIDN'T I SOONER??</div>
+    </div>
+  );
+
+  if (id === 'comment-reply') return (
+    <div style={{ ...s, background: '#000', padding: 0, gap: 0 }}>
+      <div style={{ padding: '10px 12px 0' }}>
+        <div style={{ display: 'inline-block', background: accent, color: '#fff', fontSize: 8, fontWeight: 700, padding: '3px 8px', borderRadius: 12 }}>Replying to @user</div>
+      </div>
+      <div style={{ flex: 1, margin: '8px 12px', background: 'linear-gradient(160deg,#1e293b,#0f172a)', borderRadius: 4 }} />
+      <div style={{ padding: '0 12px 12px', fontSize: 11, color: '#fff', fontWeight: 700, lineHeight: 1.2 }}>Here's what actually happened...</div>
+    </div>
+  );
+
+  if (id === 'poll-card') return (
+    <div style={{ ...s, background: 'linear-gradient(160deg,#312e81,#1e1b4b)', gap: 6 }}>
+      <div style={{ fontSize: 12, color: '#fff', fontWeight: 800, textAlign: 'center', padding: '0 8px' }}>Which would you pick?</div>
+      <div style={{ display: 'flex', gap: 6, width: '90%' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ background: 'rgba(255,255,255,0.95)', color: '#1e1b4b', fontSize: 9, fontWeight: 800, padding: '6px 8px', borderRadius: 6, textAlign: 'center' }}>OPTION A</div>
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.25)', borderRadius: 2 }}><div style={{ height: '100%', width: '62%', background: accent, borderRadius: 2 }} /></div>
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ background: 'rgba(255,255,255,0.15)', color: '#fff', fontSize: 9, fontWeight: 800, padding: '6px 8px', borderRadius: 6, textAlign: 'center', border: '1px solid rgba(255,255,255,0.3)' }}>OPTION B</div>
+          <div style={{ height: 3, background: 'rgba(255,255,255,0.25)', borderRadius: 2 }}><div style={{ height: '100%', width: '38%', background: accent, borderRadius: 2 }} /></div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (id === 'hot-take') return (
+    <div style={{ ...s, background: accent, gap: 5 }}>
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.85)', fontWeight: 800, letterSpacing: '0.16em' }}>🔥 HOT TAKE</div>
+      <div style={{ fontSize: 16, color: '#fff', fontWeight: 900, textAlign: 'center', lineHeight: 1.1, padding: '0 14px', letterSpacing: '-0.02em' }}>Most "productivity tools" make you slower.</div>
+      <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginTop: 4 }}>Do you agree?</div>
+    </div>
+  );
+
+  if (id === 'leaderboard') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 16, gap: 5 }}>
+      <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 800, letterSpacing: '0.12em' }}>TOP PICKS</div>
+      {[['01','★','#fbbf24','Premium Pro'],['02','','#94a3b8','Standard'],['03','','#b45309','Lite'],['04','','#cbd5e1','Free']].map(([n,star,c,l],i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+          <div style={{ fontSize: 11, fontWeight: 900, color: c as string, width: 18 }}>{n}</div>
+          {star && <div style={{ fontSize: 10, color: c as string }}>{star}</div>}
+          <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 600 }}>{l}</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'checklist-viral') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 16, gap: 5 }}>
+      <div style={{ fontSize: 10, color: '#0f172a', fontWeight: 800 }}>Check what applies:</div>
+      {[['✓','#16a34a','Always tired by 3pm'],['✓','#16a34a','Brain fog after meals'],['✗','#dc2626','Sleep through the night'],['✓','#16a34a','Crave sugar daily']].map(([m,c,t],i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ fontSize: 11, color: c as string, fontWeight: 900 }}>{m}</div>
+          <div style={{ fontSize: 9, color: '#334155', fontWeight: 500 }}>{t}</div>
+        </div>
+      ))}
+      <div style={{ marginTop: 4, height: 20, background: accent, borderRadius: 4, padding: '0 12px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 800 }}>How many?</div>
+    </div>
+  );
+
+  if (id === 'myth-reality') return (
+    <div style={{ ...s, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, background: '#0f172a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.55)', fontWeight: 800, letterSpacing: '0.14em' }}>MYTH</div>
+        <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 900, textDecoration: 'line-through' }}>More hours</div>
+      </div>
+      <div style={{ flex: 1, background: accent, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.85)', fontWeight: 800, letterSpacing: '0.14em' }}>REALITY</div>
+        <div style={{ fontSize: 13, color: '#fff', fontWeight: 900 }}>Better focus</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'event-card') return (
+    <div style={{ ...s, background: '#0f172a', gap: 5 }}>
+      <div style={{ width: 32, height: 32, background: accent, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📅</div>
+      <div style={{ fontSize: 13, color: '#fff', fontWeight: 800, textAlign: 'center', padding: '0 12px', lineHeight: 1.2 }}>Free Live Workshop</div>
+      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.7)', fontWeight: 600 }}>May 15 · 2PM EST</div>
+      <div style={{ marginTop: 4, height: 22, background: accent, borderRadius: 5, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 9, fontWeight: 800 }}>Register Free →</div>
+    </div>
+  );
+
+  if (id === 'three-reasons') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 14, gap: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+        <div style={{ fontSize: 36, color: accent, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.05em' }}>3</div>
+        <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 800 }}>Reasons Why</div>
+      </div>
+      {[['01','Faster'],['02','Cheaper'],['03','Better']].map(([n,t],i) => (
+        <div key={i} style={{ width: '100%' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '3px 0' }}>
+            <div style={{ fontSize: 8, color: accent, fontWeight: 800 }}>{n}</div>
+            <div style={{ fontSize: 9, color: '#334155', fontWeight: 700 }}>{t}</div>
+          </div>
+          {i < 2 && <div style={{ height: 1, background: '#e2e8f0' }} />}
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'timeline-journey') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ fontSize: 10, color: '#0f172a', fontWeight: 800 }}>Your Journey</div>
+      <div style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '85%' }}>
+        <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 2, background: '#e2e8f0' }} />
+        {[1,2,3,4].map((n,i) => (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+            <div style={{ width: 18, height: 18, borderRadius: '50%', background: i === 0 ? accent : '#e2e8f0', color: i === 0 ? '#fff' : '#94a3b8', fontSize: 8, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>{n}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', width: '85%', justifyContent: 'space-between', fontSize: 7, color: '#94a3b8', fontWeight: 600 }}>
+        <span>Start</span><span>Learn</span><span>Apply</span><span>Win</span>
+      </div>
+    </div>
+  );
+
+  if (id === 'brutalist') return (
+    <div style={{ ...s, background: '#fff', border: '3px solid #000', alignItems: 'flex-start', padding: 14, gap: 5 }}>
+      <div style={{ fontSize: 24, color: '#000', fontWeight: 900, lineHeight: 0.95, letterSpacing: '-0.04em' }}>NO BS.</div>
+      <div style={{ fontSize: 24, color: '#000', fontWeight: 900, lineHeight: 0.95, letterSpacing: '-0.04em' }}>JUST RESULTS.</div>
+      <div style={{ height: 2, background: '#000', width: '100%' }} />
+      <div style={{ fontSize: 9, color: '#000', fontWeight: 700 }}>Built for those who get it.</div>
+    </div>
+  );
+
+  if (id === 'collage-cutout') return (
+    <div style={{ ...s, background: '#faf5e9', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 30, left: 24, width: 70, height: 50, background: accent, transform: 'rotate(-6deg)' }} />
+      <div style={{ position: 'absolute', top: 50, left: 60, width: 70, height: 50, background: '#0f172a', transform: 'rotate(4deg)' }} />
+      <div style={{ position: 'absolute', top: 70, left: 90, width: 60, height: 40, background: '#94a3b8', transform: 'rotate(-3deg)' }} />
+      <div style={{ position: 'relative', zIndex: 2, fontSize: 13, fontWeight: 900, color: '#0f172a', background: '#faf5e9', padding: '4px 8px', letterSpacing: '-0.02em' }}>Hand-crafted vibes</div>
+    </div>
+  );
+
+  if (id === 'aurora-gradient') return (
+    <div style={{ ...s, background: 'linear-gradient(135deg, #c084fc 0%, #818cf8 30%, #38bdf8 60%, #34d399 100%)', gap: 6 }}>
+      <div style={{ fontSize: 18, color: '#fff', fontWeight: 900, letterSpacing: '-0.03em', textAlign: 'center', textShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>Beyond Ordinary</div>
+      <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.85)', fontWeight: 600 }}>Made for visionaries</div>
+      <div style={{ marginTop: 4, height: 22, background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 11, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 9, fontWeight: 700 }}>Explore →</div>
+    </div>
+  );
+
+  if (id === 'duotone-photo') return (
+    <div style={{ ...s, padding: 0, position: 'relative' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1e1b4b,#312e81)' }} />
+      <div style={{ position: 'absolute', inset: 0, background: accent, opacity: 0.55, mixBlendMode: 'screen' }} />
+      <div style={{ position: 'relative', zIndex: 2, fontSize: 16, color: '#fff', fontWeight: 900, textAlign: 'center', padding: '0 16px', letterSpacing: '-0.03em' }}>Bold Vision Required</div>
+    </div>
+  );
+
+  if (id === 'mono-editorial') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'flex-start', padding: 18, gap: 6 }}>
+      <div style={{ fontFamily: 'Georgia, serif', fontSize: 18, color: '#000', fontStyle: 'italic', lineHeight: 1.15, letterSpacing: '-0.02em' }}>The future, rewritten.</div>
+      <div style={{ height: 1, background: '#000', width: 60 }} />
+      <div style={{ fontFamily: 'Georgia, serif', fontSize: 9, color: '#000', lineHeight: 1.4 }}>An essay on what comes next, and why it matters now.</div>
+    </div>
+  );
+
+  if (id === 'risograph-print') return (
+    <div style={{ ...s, background: '#fafaf0', position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 32, left: 30, width: 80, height: 60, background: '#f43f5e', opacity: 0.85 }} />
+      <div style={{ position: 'absolute', top: 42, left: 46, width: 80, height: 60, background: '#0d9488', opacity: 0.7 }} />
+      <div style={{ position: 'absolute', top: 52, left: 62, width: 80, height: 60, background: '#fbbf24', opacity: 0.65 }} />
+      <div style={{ position: 'relative', zIndex: 2, fontSize: 12, color: '#0f172a', fontWeight: 900, background: '#fafaf0', padding: '4px 8px', letterSpacing: '-0.02em' }}>Print Vibes</div>
+    </div>
+  );
+
+  if (id === 'chart-reveal') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ fontSize: 8, color: accent, fontWeight: 800, letterSpacing: '0.14em' }}>RESULTS</div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 50 }}>
+        {[20,32,45,60].map((h,i) => (
+          <div key={i} style={{ width: 14, height: h, background: i === 3 ? accent : 'rgba(0,0,0,0.15)', borderRadius: '2px 2px 0 0' }} />
+        ))}
+      </div>
+      <div style={{ fontSize: 18, color: accent, fontWeight: 900, letterSpacing: '-0.03em' }}>+247%</div>
+      <div style={{ fontSize: 7, color: '#94a3b8' }}>YoY growth · Source: Q1 report</div>
+    </div>
+  );
+
+  if (id === 'steps-infographic') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 800 }}>How it works</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {[1,2,3,4].map((n,i) => (
+          <React.Fragment key={i}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <div style={{ width: 22, height: 22, borderRadius: '50%', background: accent, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 900 }}>{n}</div>
+              <div style={{ fontSize: 7, color: '#64748b', fontWeight: 600 }}>Step</div>
+            </div>
+            {i < 3 && <div style={{ fontSize: 10, color: '#cbd5e1' }}>→</div>}
+          </React.Fragment>
+        ))}
+      </div>
+      <div style={{ marginTop: 4, height: 20, background: accent, borderRadius: 4, padding: '0 12px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 800 }}>Get Started</div>
+    </div>
+  );
+
+  if (id === 'vs-table') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'stretch', padding: 14, gap: 0, justifyContent: 'center' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: 4, fontSize: 8, color: '#94a3b8', fontWeight: 700, padding: '4px 0', borderBottom: '1px solid #e2e8f0' }}>
+        <div>Feature</div><div style={{ textAlign: 'center', color: accent }}>Us</div><div style={{ textAlign: 'center' }}>Them</div>
+      </div>
+      {['Speed','Price','Support','Quality'].map((f,i) => (
+        <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: 4, fontSize: 9, color: '#0f172a', fontWeight: 600, padding: '3px 0', borderBottom: i < 3 ? '1px solid #f1f5f9' : 'none' }}>
+          <div>{f}</div><div style={{ textAlign: 'center', color: accent, fontWeight: 900 }}>✓</div><div style={{ textAlign: 'center', color: '#cbd5e1' }}>✗</div>
+        </div>
+      ))}
+    </div>
+  );
+
+  if (id === 'flat-lay') return (
+    <div style={{ ...s, background: '#fff', gap: 6 }}>
+      <div style={{ width: 80, height: 60, background: 'linear-gradient(135deg,#f1f5f9,#e2e8f0)', borderRadius: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }} />
+      <div style={{ fontSize: 10, color: '#0f172a', fontWeight: 700 }}>The Essential Kit</div>
+      <div style={{ fontSize: 9, color: accent, fontWeight: 800 }}>$49</div>
+      <div style={{ marginTop: 2, height: 20, background: '#0f172a', borderRadius: 4, padding: '0 12px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 700 }}>Shop Now</div>
+    </div>
+  );
+
+  if (id === 'app-mockup') return (
+    <div style={{ ...s, background: '#f8fafc', flexDirection: 'row', gap: 10 }}>
+      <div style={{ width: 60, height: 100, border: '2px solid #0f172a', borderRadius: 10, padding: 4, background: '#fff', display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <div style={{ height: 8, background: accent, borderRadius: 2 }} />
+        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2 }} />
+        <div style={{ height: 4, background: '#e2e8f0', borderRadius: 2, width: '70%' }} />
+        <div style={{ height: 14, background: '#f1f5f9', borderRadius: 2, marginTop: 'auto' }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 800 }}>Your App</div>
+        <div style={{ fontSize: 8, color: '#64748b' }}>iOS + Android</div>
+        <div style={{ marginTop: 4, height: 20, background: accent, borderRadius: 4, padding: '0 10px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 700 }}>Download</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'photo-grid') return (
+    <div style={{ ...s, padding: 8, gap: 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gridTemplateRows: '1fr 1fr', gap: 4, width: '100%', height: '100%' }}>
+        {['linear-gradient(135deg,#fda4af,#f43f5e)','linear-gradient(135deg,#a5b4fc,#6366f1)','linear-gradient(135deg,#86efac,#16a34a)','linear-gradient(135deg,#fcd34d,#d97706)'].map((g,i) => (
+          <div key={i} style={{ background: g, borderRadius: 4, border: '2px solid #fff', position: 'relative' }}>
+            <div style={{ position: 'absolute', bottom: 2, left: 4, fontSize: 7, color: '#fff', fontWeight: 800 }}>0{i+1}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'brand-awareness') return (
+    <div style={{ ...s, background: '#fff', gap: 8 }}>
+      <div style={{ width: 48, height: 48, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 20, fontWeight: 900 }}>B</div>
+      <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500, letterSpacing: '0.04em' }}>Built different.</div>
+    </div>
+  );
+
+  if (id === 'tweet-screenshot') return (
+    <div style={{ ...s, background: '#f8fafc', padding: 12 }}>
+      <div style={{ width: '100%', background: '#fff', borderRadius: 10, padding: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.08)', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+          <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#0f172a' }} />
+          <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 800 }}>Maya K.</div>
+          <div style={{ fontSize: 8, color: '#64748b' }}>@mayak</div>
+          <div style={{ marginLeft: 'auto', fontSize: 11, color: '#0f172a', fontWeight: 900 }}>𝕏</div>
+        </div>
+        <div style={{ fontSize: 10, color: '#0f172a', fontWeight: 500, lineHeight: 1.3 }}>this changed my workflow honestly. just buy it.</div>
+        <div style={{ height: 1, background: '#f1f5f9' }} />
+        <div style={{ fontSize: 8, color: '#64748b', display: 'flex', gap: 8 }}><span>♡ 2.4k</span><span>🔁 847</span><span>📊 48k</span></div>
+      </div>
+    </div>
+  );
+
+  if (id === 'tiktok-native') return (
+    <div style={{ ...s, background: '#000', flexDirection: 'row', padding: 0, gap: 0, alignItems: 'stretch' }}>
+      <div style={{ width: 3, background: accent, height: '40%', alignSelf: 'flex-start', marginTop: 8 }} />
+      <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 10 }}>
+        <div style={{ fontSize: 9, color: '#fff', fontWeight: 800 }}>@creator</div>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.85)', fontWeight: 500, marginTop: 2, lineHeight: 1.2 }}>POV: you finally tried it #fyp</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', padding: 10, gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: 14 }}>♥</div>
+          <div style={{ fontSize: 7, color: '#fff', fontWeight: 700 }}>248K</div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ fontSize: 14 }}>💬</div>
+          <div style={{ fontSize: 7, color: '#fff', fontWeight: 700 }}>4.2K</div>
+        </div>
+        <div style={{ fontSize: 14 }}>↗</div>
+      </div>
+    </div>
+  );
+
+  if (id === 'reddit-thread') return (
+    <div style={{ ...s, background: '#fff', flexDirection: 'row', padding: 10, gap: 8, alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+        <div style={{ fontSize: 12, color: accent }}>▲</div>
+        <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 800 }}>14.2k</div>
+        <div style={{ fontSize: 12, color: '#cbd5e1' }}>▼</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
+        <div style={{ fontSize: 7, color: '#64748b' }}>r/buildinpublic · u/dev_anon</div>
+        <div style={{ fontSize: 11, color: '#0f172a', fontWeight: 800, lineHeight: 1.2 }}>I built this in a weekend and it's making me $4k/mo</div>
+        <div style={{ display: 'flex', gap: 4, marginTop: 2 }}>
+          <div style={{ fontSize: 9 }}>🏆</div>
+          <div style={{ fontSize: 9 }}>⭐</div>
+          <div style={{ fontSize: 7, color: '#64748b', alignSelf: 'center', marginLeft: 'auto' }}>847 comments</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (id === 'email-mockup') return (
+    <div style={{ ...s, background: '#fff', border: '1px solid #e2e8f0', alignItems: 'flex-start', padding: 14, gap: 6 }}>
+      <div style={{ fontSize: 8, color: '#64748b', fontWeight: 500 }}>From: <span style={{ color: '#0f172a', fontWeight: 700 }}>Brand</span> &lt;hello@brand.com&gt;</div>
+      <div style={{ height: 2, background: '#0f172a', width: '100%' }} />
+      <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 800, lineHeight: 1.2 }}>Your invitation is ready</div>
+      <div style={{ fontSize: 9, color: '#94a3b8', lineHeight: 1.3 }}>Hi there — we wanted to share something we think you'll love. Click below to claim yours...</div>
+      <div style={{ marginTop: 4, height: 22, background: accent, borderRadius: 4, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 9, fontWeight: 800 }}>Open Invite</div>
+    </div>
+  );
+
+  if (id === 'receipt-style') return (
+    <div style={{ ...s, background: '#fff', borderTop: '2px dashed #0f172a', borderBottom: '2px dashed #0f172a', alignItems: 'stretch', padding: 14, gap: 4, justifyContent: 'flex-start' }}>
+      <div style={{ fontSize: 9, color: '#0f172a', fontWeight: 800, textAlign: 'center', letterSpacing: '0.14em' }}>ORDER RECEIPT</div>
+      <div style={{ height: 1, background: '#e2e8f0', margin: '4px 0' }} />
+      {[['Course access','$199'],['Templates','$ 99'],['Community','$ 49'],['Bonuses','$ 79']].map(([l,v],i) => (
+        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 8, color: '#334155' }}>
+          <span>{l}</span>
+          <span style={{ fontWeight: 700 }}>{v}</span>
+        </div>
+      ))}
+      <div style={{ height: 2, background: '#0f172a', margin: '4px 0' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span style={{ fontSize: 9, color: '#0f172a', fontWeight: 800 }}>TOTAL VALUE</span>
+        <span style={{ fontSize: 16, color: accent, fontWeight: 900 }}>$426</span>
+      </div>
+      <div style={{ marginTop: 4, height: 20, background: accent, borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 8, fontWeight: 800 }}>GET ALL FOR $99</div>
+    </div>
+  );
+
+  if (id === 'bundle-stack') return (
+    <div style={{ ...s, background: '#f8fafc', position: 'relative' }}>
+      <div style={{ fontSize: 8, color: accent, fontWeight: 800, letterSpacing: '0.14em', marginBottom: 6 }}>BUNDLE & SAVE</div>
+      <div style={{ position: 'relative', width: 100, height: 60 }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: 60, height: 50, background: 'linear-gradient(135deg,#cbd5e1,#94a3b8)', borderRadius: 4, boxShadow: '0 4px 8px rgba(0,0,0,0.12)' }} />
+        <div style={{ position: 'absolute', top: 5, left: 18, width: 60, height: 50, background: 'linear-gradient(135deg,#a5b4fc,#6366f1)', borderRadius: 4, boxShadow: '0 4px 8px rgba(0,0,0,0.12)' }} />
+        <div style={{ position: 'absolute', top: 10, left: 36, width: 60, height: 50, background: accent, borderRadius: 4, boxShadow: '0 4px 8px rgba(0,0,0,0.18)' }} />
+      </div>
+      <div style={{ marginTop: 8, fontSize: 9, color: '#94a3b8', textDecoration: 'line-through' }}>$297</div>
+      <div style={{ fontSize: 16, color: accent, fontWeight: 900, lineHeight: 1 }}>$129</div>
+      <div style={{ marginTop: 4, height: 20, background: '#0f172a', borderRadius: 4, padding: '0 12px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 700 }}>Get Bundle</div>
     </div>
   );
 
@@ -3248,6 +3786,22 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
     return <Fallback id={id} tone={tone} />;
   }
 
+  // Batch 5 — 44 new templates render via static Fallback preview
+  const NEW_TEMPLATE_IDS = new Set([
+    'guarantee-badge','free-trial','limited-drop','offer-announce','price-compare',
+    'award-winner','founder-story','review-card','trust-bar','news-frame',
+    'video-thumbnail','community-quote','stat-study','caption-style','chat-thread',
+    'meme-format','comment-reply','poll-card','hot-take','leaderboard',
+    'checklist-viral','myth-reality','event-card','three-reasons','timeline-journey',
+    'brutalist','collage-cutout','aurora-gradient','duotone-photo','mono-editorial',
+    'risograph-print','chart-reveal','steps-infographic','vs-table','flat-lay',
+    'app-mockup','photo-grid','brand-awareness','tweet-screenshot','tiktok-native',
+    'reddit-thread','email-mockup','receipt-style','bundle-stack',
+  ]);
+  if (NEW_TEMPLATE_IDS.has(id)) {
+    return <Fallback id={id} tone={tone} />;
+  }
+
   const style    = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
   const txt      = style.light ? '#1e293b' : '#ffffff';
   const muted    = style.light ? 'rgba(30,41,59,0.4)' : 'rgba(255,255,255,0.4)';
@@ -3462,7 +4016,6 @@ function LibraryBody({
                 width: '100%', textAlign: 'left',
               }}
             >
-              <span style={{ fontSize: 13, opacity: isActive ? 1 : 0.6 }}>{cat.icon}</span>
               <span style={{ flex: 1 }}>{cat.label}</span>
               <span style={{ fontSize: 10, color: isActive ? '#6366f1' : 'rgba(255,255,255,0.2)', fontWeight: 600 }}>{catCount}</span>
             </button>
