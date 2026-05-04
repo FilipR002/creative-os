@@ -426,13 +426,13 @@ function NewPersonaForm({ onCreated }: { onCreated: (p: Persona) => void }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-type Tab = 'product' | 'brand' | 'personas';
+type Tab = 'product' | 'brand' | 'personas' | 'photos';
 
 function ResourcesPageInner() {
   const searchParams = useSearchParams();
   const [tab, setTab] = useState<Tab>(() => {
     const t = searchParams.get('tab');
-    if (t === 'brand' || t === 'personas') return t;
+    if (t === 'brand' || t === 'personas' || t === 'photos') return t;
     return 'product';
   });
   const [resource, setResource] = useState<Resource | null>(null);
@@ -444,6 +444,9 @@ function ResourcesPageInner() {
   const [productDescription, setProductDescription] = useState('');
   const [productBenefits,    setProductBenefits]    = useState<string[]>([]);
   const [referenceImages,    setReferenceImages]    = useState<string[]>([]);
+
+  // Media library state (separate from brand reference images)
+  const [mediaImages, setMediaImages] = useState<string[]>([]);
 
   // Brand form state
   const [brandTone,  setBrandTone]  = useState('');
@@ -470,11 +473,21 @@ function ResourcesPageInner() {
         const saved = localStorage.getItem('cos_ref_images');
         if (saved) setReferenceImages(JSON.parse(saved));
       } catch { /* ignore */ }
+      // Load media library images
+      try {
+        const savedMedia = localStorage.getItem('cos_media_images');
+        if (savedMedia) setMediaImages(JSON.parse(savedMedia));
+      } catch { /* ignore */ }
     } catch { /* first visit — empty state */ }
     setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Auto-save media images whenever they change
+  useEffect(() => {
+    try { localStorage.setItem('cos_media_images', JSON.stringify(mediaImages)); } catch { /* ignore */ }
+  }, [mediaImages]);
 
   async function saveProduct() {
     setSaving(true);
@@ -611,9 +624,9 @@ function ResourcesPageInner() {
               display: 'flex', gap: 4, background: '#0d0d0d', borderRadius: 10, padding: 4,
               marginBottom: 28, border: '1px solid #1a1a1a', width: 'fit-content',
             }}>
-              {(['product', 'brand', 'personas'] as Tab[]).map(t => (
+              {(['product', 'brand', 'personas', 'photos'] as Tab[]).map(t => (
                 <button key={t} onClick={() => setTab(t)} style={tab === t ? activeTab : inactiveTab}>
-                  {t === 'product' ? '📦 Product' : t === 'brand' ? '🎨 Brand' : '👤 Personas'}
+                  {t === 'product' ? 'Product' : t === 'brand' ? 'Brand' : t === 'personas' ? 'Personas' : 'Photos'}
                 </button>
               ))}
             </div>
@@ -646,10 +659,6 @@ function ResourcesPageInner() {
                       value={productBenefits}
                       onChange={setProductBenefits}
                       placeholder="e.g. 10x faster creative output"
-                    />
-                    <ImageReferences
-                      images={referenceImages}
-                      onChange={setReferenceImages}
                     />
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <button onClick={saveProduct} disabled={saving} style={btnStyle('primary')}>
@@ -684,6 +693,24 @@ function ResourcesPageInner() {
                         {saving ? 'Saving…' : 'Save Brand Voice'}
                       </button>
                     </div>
+                  </div>
+                )}
+
+                {/* ── Photos Tab ── */}
+                {tab === 'photos' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
+                      Upload photos to use in your carousels and ads. These are available when building a Photo Reveal carousel in Create.
+                    </div>
+                    <ImageReferences
+                      images={mediaImages}
+                      onChange={setMediaImages}
+                    />
+                    {mediaImages.length > 0 && (
+                      <div style={{ fontSize: 12, color: '#444', marginTop: -8 }}>
+                        {mediaImages.length} photo{mediaImages.length !== 1 ? 's' : ''} saved — auto-saved to your library
+                      </div>
+                    )}
                   </div>
                 )}
 
