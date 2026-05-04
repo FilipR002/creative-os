@@ -3210,7 +3210,7 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
   );
 
   if (id === 'photo-reveal') return (
-    <div style={{ ...s, background: '#111', justifyContent: 'flex-end', alignItems: 'stretch', padding: 0, gap: 0 }}>
+    <div style={{ ...wrap, background: '#111', justifyContent: 'flex-end', alignItems: 'stretch', padding: 0, gap: 0 }}>
       {/* Simulated photo */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#1c1917 0%,#292524 40%,#44403c 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ width: 56, height: 56, borderRadius: 8, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
