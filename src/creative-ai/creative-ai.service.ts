@@ -23,13 +23,47 @@ import type {
   GenerateBackgroundDto, BackgroundResult,
 } from './creative-ai.types';
 
-const MODEL   = 'claude-opus-4-5';
-const MAX_TOK = 1800;
-const AI_TIMEOUT_MS = 30_000;   // raised: overloaded retries need more headroom
+const MODEL          = 'claude-opus-4-5';
+const FALLBACK_MODEL = 'claude-haiku-4-5';   // faster, less-loaded fallback after N retries
+const MAX_TOK        = 1800;
+const AI_TIMEOUT_MS  = 50_000;   // raised for longer backoff headroom
 
-// Retry config for Anthropic overloaded / rate-limit errors
-const MAX_RETRIES   = 3;
-const RETRY_DELAYS  = [2_000, 5_000, 10_000]; // ms between attempts
+// Retry config — exponential backoff with jitter
+const MAX_RETRIES    = 6;
+const BASE_DELAY_MS  = 3_000;    // first retry ~3 s
+const MAX_DELAY_MS   = 30_000;   // cap at 30 s
+// Switch to the faster fallback model on attempt 3+ to escape an overloaded queue
+const FALLBACK_AT_ATTEMPT = 3;
+
+// ── Concurrency limiter ────────────────────────────────────────────────────────
+// Caps simultaneous Anthropic API calls so bursts don't amplify overload errors.
+const MAX_CONCURRENT  = 2;
+let   _activeRequests = 0;
+const _requestQueue: Array<() => void> = [];
+
+function _acquireSlot(): Promise<void> {
+  return new Promise(resolve => {
+    if (_activeRequests < MAX_CONCURRENT) {
+      _activeRequests++;
+      resolve();
+    } else {
+      _requestQueue.push(() => { _activeRequests++; resolve(); });
+    }
+  });
+}
+
+function _releaseSlot(): void {
+  _activeRequests = Math.max(0, _activeRequests - 1);
+  const next = _requestQueue.shift();
+  if (next) next();
+}
+
+/** Jittered exponential backoff delay in ms. */
+function _backoffDelay(attempt: number): number {
+  const exp    = BASE_DELAY_MS * Math.pow(2, attempt - 1);
+  const jitter = Math.random() * 1_500;
+  return Math.min(exp + jitter, MAX_DELAY_MS);
+}
 
 // ── Fallback shapes — returned when AI output cannot be parsed ────────────────
 const FALLBACK_AD_COPY: AdCopyResult = {
@@ -274,87 +308,103 @@ Return JSON exactly:
     const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
 
+    // Wait for a concurrency slot before hitting the API
+    await _acquireSlot();
+
     const startMs = Date.now();
     let lastErr: unknown;
 
-    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      // Back off before retrying
-      if (attempt > 0) {
-        const delay = RETRY_DELAYS[attempt - 1] ?? 10_000;
-        this.logger.warn(`Claude [${operation}] overloaded — retry ${attempt}/${MAX_RETRIES} in ${delay}ms`);
-        await new Promise(r => setTimeout(r, delay));
-      }
+    try {
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        // Exponential back-off with jitter before each retry
+        if (attempt > 0) {
+          const delay = _backoffDelay(attempt);
+          const model = attempt >= FALLBACK_AT_ATTEMPT ? FALLBACK_MODEL : MODEL;
+          this.logger.warn(
+            `Claude [${operation}] overloaded — retry ${attempt}/${MAX_RETRIES} in ${Math.round(delay)}ms (model: ${model})`,
+          );
+          await new Promise(r => setTimeout(r, delay));
+        }
 
-      try {
-        const response = await axios.post(
-          'https://api.anthropic.com/v1/messages',
-          {
-            model:      MODEL,
-            max_tokens: MAX_TOK,
-            system:     systemPrompt,
-            messages:   [{ role: 'user', content: userPrompt }],
-          },
-          {
-            headers: {
-              'Content-Type':      'application/json',
-              'x-api-key':         apiKey,
-              'anthropic-version': '2023-06-01',
+        // Use lighter fallback model on later attempts to escape overload queues
+        const model = attempt >= FALLBACK_AT_ATTEMPT ? FALLBACK_MODEL : MODEL;
+
+        try {
+          const response = await axios.post(
+            'https://api.anthropic.com/v1/messages',
+            {
+              model,
+              max_tokens: MAX_TOK,
+              system:     systemPrompt,
+              messages:   [{ role: 'user', content: userPrompt }],
             },
-            timeout: AI_TIMEOUT_MS,
-          },
-        );
+            {
+              headers: {
+                'Content-Type':      'application/json',
+                'x-api-key':         apiKey,
+                'anthropic-version': '2023-06-01',
+              },
+              timeout: AI_TIMEOUT_MS,
+            },
+          );
 
-        const latencyMs = Date.now() - startMs;
-        const content   = response.data?.content?.[0]?.text ?? '';
-
-        // Fire-and-forget cost log
-        this.apiLog?.log({
-          provider:   'claude',
-          operation,
-          userId,
-          costUsd:    estimateCost('claude', operation),
-          latencyMs,
-          statusCode: response.status,
-          success:    true,
-        });
-
-        // Strip any accidental markdown fencing
-        const cleaned = content
-          .trim()
-          .replace(/^```(?:json)?\s*/i, '')
-          .replace(/\s*```$/,           '');
-
-        this.logger.debug(`Claude [${operation}] attempt ${attempt + 1} — ${latencyMs}ms (${cleaned.length} chars)`);
-        return cleaned;
-
-      } catch (err: unknown) {
-        lastErr = err;
-
-        const statusCode  = (err as any)?.response?.status;
-        const errType     = (err as any)?.response?.data?.error?.type ?? '';
-        const isOverloaded = statusCode === 529 || statusCode === 400 && errType === 'overloaded_error'
-                          || String((err as Error)?.message).includes('overloaded');
-
-        // Only retry on overload — fail immediately on auth / bad request errors
-        if (!isOverloaded || attempt === MAX_RETRIES) {
           const latencyMs = Date.now() - startMs;
-          const errMsg    = (err as Error)?.message ?? String(err);
+          const content   = response.data?.content?.[0]?.text ?? '';
 
+          // Fire-and-forget cost log
           this.apiLog?.log({
-            provider:     'claude',
+            provider:   'claude',
             operation,
             userId,
-            costUsd:      0,
+            costUsd:    estimateCost('claude', operation),
             latencyMs,
-            statusCode,
-            success:      false,
-            errorMessage: errMsg.slice(0, 200),
+            statusCode: response.status,
+            success:    true,
           });
 
-          this.logger.error(`Claude [${operation}] failed after ${latencyMs}ms (attempt ${attempt + 1}): ${errMsg}`);
-          throw err;
+          // Strip any accidental markdown fencing
+          const cleaned = content
+            .trim()
+            .replace(/^```(?:json)?\s*/i, '')
+            .replace(/\s*```$/,           '');
+
+          this.logger.debug(`Claude [${operation}] attempt ${attempt + 1} (${model}) — ${latencyMs}ms (${cleaned.length} chars)`);
+          return cleaned;
+
+        } catch (err: unknown) {
+          lastErr = err;
+
+          const statusCode   = (err as any)?.response?.status;
+          const errType      = (err as any)?.response?.data?.error?.type ?? '';
+          const isOverloaded = statusCode === 529
+                            || statusCode === 503
+                            || errType === 'overloaded_error'
+                            || String((err as Error)?.message).toLowerCase().includes('overload');
+
+          // Only retry on overload — fail immediately on auth / bad request errors
+          if (!isOverloaded || attempt === MAX_RETRIES) {
+            const latencyMs = Date.now() - startMs;
+            const errMsg    = (err as Error)?.message ?? String(err);
+
+            this.apiLog?.log({
+              provider:     'claude',
+              operation,
+              userId,
+              costUsd:      0,
+              latencyMs,
+              statusCode,
+              success:      false,
+              errorMessage: errMsg.slice(0, 200),
+            });
+
+            this.logger.error(`Claude [${operation}] failed after ${latencyMs}ms (attempt ${attempt + 1}): ${errMsg}`);
+            throw err;
+          }
         }
       }
+    } finally {
+      // Always release the concurrency slot
+      _releaseSlot();
     }
 
     throw lastErr; // unreachable, satisfies TS

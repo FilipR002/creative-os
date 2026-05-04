@@ -805,20 +805,29 @@ export function PreviewStage({
 
   // ── ERROR ──────────────────────────────────────────────────────────────────
   if (status === 'error') {
+    const isOverloadErr = (error ?? '').toLowerCase().includes('overload')
+                       || (error ?? '').toLowerCase().includes('529')
+                       || (error ?? '').toLowerCase().includes('capacity');
+    const errorTitle   = isOverloadErr ? 'AI is busy — retrying automatically' : 'Generation failed';
+    const errorMessage = isOverloadErr
+      ? 'The AI model is under high demand right now. The system will retry automatically with a fallback model. Click "Try again" if this persists.'
+      : (error ?? 'An unknown error occurred.');
+
     return (
       <div style={stageWrap}>
         <div style={centreStack}>
-          <div style={{ fontSize: 36, opacity: 0.5 }}>⚠</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--rose)', marginTop: 12 }}>
-            Generation failed
+          <div style={{ fontSize: 36, opacity: 0.5 }}>{isOverloadErr ? '⏳' : '⚠'}</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: isOverloadErr ? 'var(--text)' : 'var(--rose)', marginTop: 12 }}>
+            {errorTitle}
           </div>
           <div style={{
             fontSize: 12, color: 'var(--muted)', marginTop: 8,
             maxWidth: 320, textAlign: 'center', lineHeight: 1.6,
-            background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+            background: isOverloadErr ? 'rgba(251,191,36,0.06)' : 'rgba(239,68,68,0.06)',
+            border: `1px solid ${isOverloadErr ? 'rgba(251,191,36,0.2)' : 'rgba(239,68,68,0.15)'}`,
             borderRadius: 8, padding: '10px 14px',
           }}>
-            {error ?? 'An unknown error occurred.'}
+            {errorMessage}
           </div>
           {onRetry && (
             <button onClick={onRetry} style={{
@@ -827,7 +836,7 @@ export function PreviewStage({
               color: 'var(--text)', fontSize: 13, fontWeight: 600,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>
-              ↺ Try again
+              Try again
             </button>
           )}
         </div>
