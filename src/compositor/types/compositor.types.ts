@@ -51,7 +51,9 @@ export type TemplateId =
   | 'empathy-card'        // empathy: warm gradient, feeling-first statement
   | 'validation-card'     // empathy: "you're not alone", community validation
   | 'do-dont'             // engagement: two-column right-vs-wrong comparison
-  | 'transform-split';    // engagement: top=before / bottom=after transformation
+  | 'transform-split'     // engagement: top=before / bottom=after transformation
+  // ── Photo-reveal (user-photo carousel) ───────────────────────────────────────
+  | 'photo-reveal';       // full-bleed real photo + bold bottom label — @wealth style
 
 export type AdSize =
   | '1080x1080'   // square — Instagram, Facebook

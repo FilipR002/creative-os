@@ -138,6 +138,24 @@ function CreatePageInner() {
   const [templateId,       setTemplateId]       = useState('');
   const [templates,        setTemplates]         = useState<TemplateMetadata[]>([]);
 
+  // ── Photo Reveal ──────────────────────────────────────────────────────────
+  const [prHook,        setPrHook]        = useState('');           // slide 1 headline
+  const [prItems,       setPrItems]       = useState<string[]>([]); // reveal labels
+  const [prImages,      setPrImages]      = useState<Record<number, string>>({}); // index → dataUrl or unsplash url
+  const [prAccent,      setPrAccent]      = useState('#f59e0b');    // yellow like @wealth
+  const [prUnsplashQ,   setPrUnsplashQ]   = useState<Record<number, string>>({});
+  const [prUnsplashLoading, setPrUnsplashLoading] = useState<Record<number, boolean>>({});
+  const [mediaLibrary,  setMediaLibrary]  = useState<string[]>([]);
+  const [prMediaOpen,   setPrMediaOpen]   = useState<number | null>(null); // which slide has picker open
+
+  // Load media library from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('cos_media_images');
+      if (saved) setMediaLibrary(JSON.parse(saved));
+    } catch { /* ignore */ }
+  }, []);
+
   // Fetch template catalog immediately on mount (needed for gallery)
   useEffect(() => {
     if (templates.length > 0) return;
@@ -562,7 +580,235 @@ function CreatePageInner() {
           )}
         </div>
 
-        <div className="page-content" style={mode === 'quick' ? { padding: 0, overflow: 'hidden' } : undefined}>
+        {/* ══════════════════════════════════════════════════════════════════
+            PHOTO REVEAL — full custom form, bypasses normal brief flow
+            ════════════════════════════════════════════════════════════════ */}
+        {templateId === 'photo-reveal' && (
+          <div style={{ padding: '32px', maxWidth: 860, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
+
+            {/* Header */}
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)', marginBottom: 6 }}>Photo Reveal Carousel</div>
+              <div style={{ fontSize: 13, color: 'var(--muted)' }}>Add your photos + reveal labels. Each slide = one photo + one bold label. Slide 1 is your hook.</div>
+            </div>
+
+            {/* Hook headline */}
+            <div>
+              <div className="form-label">Hook Headline (Slide 1)</div>
+              <input
+                value={prHook}
+                onChange={e => setPrHook(e.target.value)}
+                placeholder="e.g. BEFORE PASSING AWAY, HE SHARED HIS ORIGINAL CONCEPTS"
+                style={{ width: '100%', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8, padding: '10px 14px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit', boxSizing: 'border-box' as const }}
+              />
+            </div>
+
+            {/* Accent color */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div className="form-label" style={{ margin: 0 }}>Label Accent Color</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                {['#f59e0b','#ffffff','#ef4444','#22c55e','#3b82f6','#a855f7','#f97316'].map(c => (
+                  <button key={c} onClick={() => setPrAccent(c)}
+                    style={{ width: 24, height: 24, borderRadius: '50%', background: c, border: prAccent === c ? '3px solid var(--text)' : '2px solid var(--border)', cursor: 'pointer', flexShrink: 0 }} />
+                ))}
+                <input type="color" value={prAccent} onChange={e => setPrAccent(e.target.value)}
+                  style={{ width: 24, height: 24, borderRadius: '50%', border: '2px solid var(--border)', cursor: 'pointer', padding: 0, background: 'none' }} />
+              </div>
+            </div>
+
+            {/* Reveal slides */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <div className="form-label" style={{ margin: 0 }}>Reveal Slides</div>
+                <button onClick={() => setPrItems(p => [...p, ''])}
+                  style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', background: 'rgba(0,201,122,0.08)', border: '1px solid rgba(0,201,122,0.2)', borderRadius: 6, padding: '5px 12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  + Add Slide
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {prItems.map((item, idx) => (
+                  <div key={idx} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {/* Slide label */}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', minWidth: 20 }}>{idx + 2}</div>
+                      <input
+                        value={item}
+                        onChange={e => setPrItems(p => p.map((v, i) => i === idx ? e.target.value : v))}
+                        placeholder="e.g. SPONGE BOY, ORIGINAL PATENT, KRUSTY KRAB"
+                        style={{ flex: 1, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 7, padding: '8px 12px', color: 'var(--text)', fontSize: 13, fontFamily: 'inherit' }}
+                      />
+                      <button onClick={() => {
+                        setPrItems(p => p.filter((_, i) => i !== idx));
+                        setPrImages(p => { const n = {...p}; delete n[idx]; return n; });
+                      }}
+                        style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid var(--border)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        ×
+                      </button>
+                    </div>
+
+                    {/* Image picker for this slide */}
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                      {/* Preview if image set */}
+                      {prImages[idx] ? (
+                        <div style={{ position: 'relative', width: 80, height: 56, borderRadius: 7, overflow: 'hidden', flexShrink: 0 }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={prImages[idx]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button onClick={() => setPrImages(p => { const n = {...p}; delete n[idx]; return n; })}
+                            style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                        </div>
+                      ) : (
+                        <div style={{ width: 80, height: 56, borderRadius: 7, background: 'var(--surface-2)', border: '1px dashed var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <span style={{ fontSize: 18, color: 'var(--muted)' }}>◻</span>
+                        </div>
+                      )}
+
+                      {/* Upload button */}
+                      <label style={{ cursor: 'pointer' }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--sub)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px', whiteSpace: 'nowrap' as const }}>
+                          Upload
+                        </div>
+                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => setPrImages(p => ({ ...p, [idx]: ev.target?.result as string }));
+                            reader.readAsDataURL(file);
+                          }} />
+                      </label>
+
+                      {/* From media library */}
+                      {mediaLibrary.length > 0 && (
+                        <div style={{ position: 'relative' }}>
+                          <button onClick={() => setPrMediaOpen(prMediaOpen === idx ? null : idx)}
+                            style={{ fontSize: 11, fontWeight: 600, color: 'var(--sub)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 10px', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' as const }}>
+                            Library ({mediaLibrary.length})
+                          </button>
+                          {prMediaOpen === idx && (
+                            <div style={{ position: 'absolute', top: '110%', left: 0, zIndex: 100, background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: 10, display: 'grid', gridTemplateColumns: 'repeat(4, 64px)', gap: 6, boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+                              {mediaLibrary.map((src, mi) => (
+                                <div key={mi} style={{ cursor: 'pointer', borderRadius: 6, overflow: 'hidden', border: '2px solid transparent' }}
+                                  onClick={() => { setPrImages(p => ({ ...p, [idx]: src })); setPrMediaOpen(null); }}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={src} alt="" style={{ width: 64, height: 48, objectFit: 'cover', display: 'block' }} />
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Unsplash search */}
+                      <div style={{ display: 'flex', gap: 6, flex: 1, minWidth: 160 }}>
+                        <input
+                          value={prUnsplashQ[idx] ?? (item || '')}
+                          onChange={e => setPrUnsplashQ(p => ({ ...p, [idx]: e.target.value }))}
+                          placeholder="Unsplash keyword…"
+                          style={{ flex: 1, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '5px 8px', color: 'var(--text)', fontSize: 11, fontFamily: 'inherit' }}
+                          onKeyDown={async e => {
+                            if (e.key !== 'Enter') return;
+                            const q = prUnsplashQ[idx] ?? item;
+                            if (!q) return;
+                            setPrUnsplashLoading(p => ({ ...p, [idx]: true }));
+                            try {
+                              const res = await fetch(`/api/unsplash?q=${encodeURIComponent(q)}`);
+                              if (res.ok) {
+                                const data = await res.json() as { url: string };
+                                if (data.url) setPrImages(p => ({ ...p, [idx]: data.url }));
+                              }
+                            } finally { setPrUnsplashLoading(p => ({ ...p, [idx]: false })); }
+                          }}
+                        />
+                        <button
+                          disabled={prUnsplashLoading[idx]}
+                          onClick={async () => {
+                            const q = prUnsplashQ[idx] ?? item;
+                            if (!q) return;
+                            setPrUnsplashLoading(p => ({ ...p, [idx]: true }));
+                            try {
+                              const res = await fetch(`/api/unsplash?q=${encodeURIComponent(q)}`);
+                              if (res.ok) {
+                                const data = await res.json() as { url: string };
+                                if (data.url) setPrImages(p => ({ ...p, [idx]: data.url }));
+                              }
+                            } finally { setPrUnsplashLoading(p => ({ ...p, [idx]: false })); }
+                          }}
+                          style={{ fontSize: 11, fontWeight: 600, color: prUnsplashLoading[idx] ? 'var(--muted)' : 'var(--accent)', background: 'rgba(0,201,122,0.08)', border: '1px solid rgba(0,201,122,0.2)', borderRadius: 6, padding: '5px 10px', cursor: prUnsplashLoading[idx] ? 'not-allowed' : 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' as const }}>
+                          {prUnsplashLoading[idx] ? '...' : 'Search'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {prItems.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--muted)', fontSize: 13 }}>
+                    No slides yet. Click <strong>+ Add Slide</strong> to start building your reveal.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Live preview */}
+            {(prHook || prItems.length > 0) && (
+              <div>
+                <div className="form-label">Preview</div>
+                <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 8 }}>
+                  {/* Slide 1 — hook */}
+                  <div style={{ flexShrink: 0, width: 160, height: 220, borderRadius: 10, overflow: 'hidden', position: 'relative', background: '#111', border: '1px solid var(--border)' }}>
+                    {prImages[-1] && <img src={prImages[-1]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }} />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 10px 10px' }}>
+                      <div style={{ fontSize: 10, fontWeight: 900, color: prAccent, textTransform: 'uppercase', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+                        {prHook || 'YOUR HOOK HEADLINE'}
+                      </div>
+                    </div>
+                    <div style={{ position: 'absolute', top: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+                      <label style={{ cursor: 'pointer' }}>
+                        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 6px' }}>+ photo</div>
+                        <input type="file" accept="image/*" style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => setPrImages(p => ({ ...p, [-1]: ev.target?.result as string }));
+                            reader.readAsDataURL(file);
+                          }} />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Reveal slides */}
+                  {prItems.map((label, idx) => (
+                    <div key={idx} style={{ flexShrink: 0, width: 160, height: 220, borderRadius: 10, overflow: 'hidden', position: 'relative', background: '#111', border: '1px solid var(--border)' }}>
+                      {prImages[idx] && <img src={prImages[idx]} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />}
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)' }} />
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 10px 10px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 900, color: prAccent, textTransform: 'uppercase', lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+                          {label || `SLIDE ${idx + 2}`}
+                        </div>
+                      </div>
+                      {!prImages[idx] && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: 24, color: 'rgba(255,255,255,0.1)' }}>◻</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Export note */}
+            <div style={{ background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.18)', borderRadius: 10, padding: '14px 18px', fontSize: 12, color: 'var(--indigo-l)', lineHeight: 1.6 }}>
+              Download each slide as a PNG — right-click any slide preview image and save, or screenshot the preview strip above. Full export coming soon.
+            </div>
+
+          </div>
+        )}
+
+        <div className="page-content" style={templateId === 'photo-reveal' ? { display: 'none' } : mode === 'quick' ? { padding: 0, overflow: 'hidden' } : undefined}>
 
           {/* ═══════════════════════════════════════════════════════════════
               QUICK MODE — 2-column: control panel | live preview

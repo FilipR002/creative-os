@@ -488,4 +488,12 @@ export const TEMPLATE_CATALOG: TemplateMetadata[] = [
     tones:         ['bold', 'energetic', 'friendly'],
     requiresImage: false,
   },
+  {
+    id:            'photo-reveal',
+    name:          'Photo Reveal',
+    description:   'Full-bleed real photo with bold bottom label — the @wealth carousel style. Each slide reveals one item with your own photo or Unsplash.',
+    bestFor:       ['storytelling', 'brand history', 'product launches', 'educational series', 'any topic-reveal campaign'],
+    tones:         ['bold', 'premium', 'minimal'],
+    requiresImage: true,
+  },
 ];

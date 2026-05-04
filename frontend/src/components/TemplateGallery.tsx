@@ -57,7 +57,7 @@ const CATEGORY_IDS: Record<Category, string[]> = {
   trust:        ['testimonial','social-proof-grid','stats-hero','story-hook','magazine-editorial','feature-list','case-study','insight-frame'],
   empathy:      ['ugc-style','full-bleed','overlay-card','dark-luxury','pain-diagnostic','mistake-alert','empathy-card','validation-card'],
   engagement:   ['number-list','side-by-side','split-panel','floating-card','product-demo','product-center','do-dont','transform-split'],
-  'scroll-stop':['text-only-bold','neon-dark','retro-bold','headline-badge','brand-manifesto','color-block','bright-minimal','minimal'],
+  'scroll-stop':['photo-reveal','text-only-bold','neon-dark','retro-bold','headline-badge','brand-manifesto','color-block','bright-minimal'],
 };
 
 // ─── Per-template mini preview fallbacks ─────────────────────────────────────
@@ -3209,6 +3209,26 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
     </div>
   );
 
+  if (id === 'photo-reveal') return (
+    <div style={{ ...s, background: '#111', justifyContent: 'flex-end', alignItems: 'stretch', padding: 0, gap: 0 }}>
+      {/* Simulated photo */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#1c1917 0%,#292524 40%,#44403c 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: 8, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 24, height: 18, border: '2px solid rgba(255,255,255,0.2)', borderRadius: 3 }} />
+        </div>
+      </div>
+      {/* Bottom gradient + label */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)', padding: '22px 12px 12px' }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: accent, textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: 1.1, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+          PHOTO REVEAL
+        </div>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          your photo · bold label
+        </div>
+      </div>
+    </div>
+  );
+
   // fallback for any unmapped id
   return (
     <div style={{ ...wrap, gap: 8 }}>
@@ -3222,6 +3242,11 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
 function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const [paused, setPaused] = useState(false);
   const { slide, fading }   = useGlobalSlide(paused);
+
+  // photo-reveal uses static Fallback preview (user photos, not Unsplash)
+  if (id === 'photo-reveal') {
+    return <Fallback id={id} tone={tone} />;
+  }
 
   const style    = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
   const txt      = style.light ? '#1e293b' : '#ffffff';

@@ -30,7 +30,31 @@ const cache = new Map<string, CachedPhoto>();
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const id    = searchParams.get('id') ?? '';
+  const id         = searchParams.get('id') ?? '';
+  const customQuery = searchParams.get('q') ?? '';   // free-text query for photo-reveal
+
+  // Free-text query mode (photo-reveal per-slide search) — no caching
+  if (customQuery) {
+    const accessKey = process.env.UNSPLASH_ACCESS_KEY;
+    if (!accessKey) return NextResponse.json({ error: 'UNSPLASH_ACCESS_KEY not configured' }, { status: 503 });
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/photos/random?query=${encodeURIComponent(customQuery)}&orientation=landscape&content_filter=high&client_id=${accessKey}`,
+        { headers: { 'Accept-Version': 'v1' } },
+      );
+      if (!res.ok) return NextResponse.json({ error: `Unsplash ${res.status}` }, { status: 502 });
+      const data = await res.json() as { urls: { regular: string }; links: { download_location: string }; user: { name: string; links: { html: string } } };
+      return NextResponse.json({
+        url:              `${data.urls.regular}&w=700&q=80&fit=crop&auto=format`,
+        credit:           data.user.name,
+        creditUrl:        `${data.user.links.html}?utm_source=creative_os&utm_medium=referral`,
+        downloadLocation: data.links.download_location,
+      });
+    } catch (err) {
+      return NextResponse.json({ error: String(err) }, { status: 500 });
+    }
+  }
+
   const query = PHOTO_QUERIES[id];
 
   if (!query) {
