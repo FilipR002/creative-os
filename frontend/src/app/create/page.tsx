@@ -180,8 +180,13 @@ function CreatePageInner() {
   const STORAGE_KEY     = 'cos_preview_result';
   const ACTIVE_JOB_KEY  = 'cos_active_job';
 
-  // Restore completed result OR resume an active video job on mount
+  // Restore completed result OR resume an active video job on mount.
+  // Only restores when ?resume=1 is in the URL — a plain /create link always
+  // starts at the gallery so the user isn't dropped into a stale session.
   useEffect(() => {
+    const isResume = searchParams.get('resume') === '1';
+    if (!isResume) return; // fresh navigation — stay at gallery
+
     try {
       // 1. Check for an in-progress video job first
       const activeJob = sessionStorage.getItem(ACTIVE_JOB_KEY);
