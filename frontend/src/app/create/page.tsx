@@ -506,11 +506,16 @@ function CreatePageInner() {
   // ─── Render ───────────────────────────────────────────────────────────────
   if (step === 'gallery') {
     return (
-      <TemplateGallery
-        templates={templates.length > 0 ? templates : []}
-        onSelect={handleGallerySelect}
-        defaultFormat={format as GalleryFormat}
-      />
+      <div className="app-shell">
+        <Sidebar />
+        <main className="app-main" style={{ display: 'flex', flexDirection: 'column' }}>
+          <TemplateGallery
+            templates={templates.length > 0 ? templates : []}
+            onSelect={handleGallerySelect}
+            defaultFormat={format as GalleryFormat}
+          />
+        </main>
+      </div>
     );
   }
 

@@ -3535,23 +3535,23 @@ export function TemplateGallery({ templates, onSelect, defaultFormat = 'carousel
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg, #0f1117)', color: 'var(--text, #f1f5f9)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, color: 'var(--text, #f1f5f9)' }}>
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div style={{
-        padding: '12px 32px', borderBottom: '1px solid rgba(255,255,255,0.07)',
+        padding: '10px 32px', borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 20,
-        background: 'rgba(10,11,18,0.85)', backdropFilter: 'blur(14px)',
-        position: 'sticky', top: 0, zIndex: 10,
+        background: 'var(--surface)', backdropFilter: 'blur(14px)',
+        position: 'sticky', top: 0, zIndex: 10, flexShrink: 0,
       }}>
-        <span style={{ fontSize: 15, fontWeight: 900, letterSpacing: '-0.02em', flexShrink: 0 }}>✦ Creative OS</span>
-        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)', flexShrink: 0 }} />
+        <span style={{ fontSize: 14, fontWeight: 800, letterSpacing: '-0.01em', color: 'var(--text)', flexShrink: 0 }}>Template Library</span>
+        <div style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} />
 
         {/* Format tabs */}
-        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 9, padding: 3, gap: 2 }}>
+        <div style={{ display: 'flex', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 9, padding: 3, gap: 2 }}>
           {(['carousel','image','video'] as GalleryFormat[]).map(f => (
             <button key={f} onClick={() => handleFormatChange(f)}
-              style={{ padding: '5px 15px', borderRadius: 6, border: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.13s', background: format === f ? '#4f46e5' : 'transparent', color: format === f ? '#fff' : 'rgba(255,255,255,0.4)' }}>
+              style={{ padding: '5px 15px', borderRadius: 6, border: 'none', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer', transition: 'all 0.13s', background: format === f ? 'var(--indigo)' : 'transparent', color: format === f ? '#fff' : 'var(--muted)' }}>
               {f === 'carousel' ? '⊞ Carousel' : f === 'image' ? '⬜ Banner' : '▶ Video'}
             </button>
           ))}
