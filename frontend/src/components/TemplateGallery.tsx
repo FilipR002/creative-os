@@ -1260,12 +1260,10 @@ const PHOTO_TEMPLATE_IDS = new Set([
   // ── Original 8 ──────────────────────────────────────────────────────────────
   'full-bleed','dark-luxury','overlay-card','ugc-style',
   'magazine-editorial','story-hook','product-center','neon-dark',
-  // ── Batch 5 – photo-suitable templates ──────────────────────────────────────
+  // ── Batch 5 – dark-design templates (white text, safe for photo bgs) ────────
   'caption-style','tiktok-native','video-thumbnail','duotone-photo',
-  'founder-story','flat-lay','bundle-stack','hot-take',
-  'poll-card','offer-announce','collage-cutout','limited-drop',
-  'event-card','award-winner','mono-editorial','brutalist',
-  'aurora-gradient','community-quote','news-frame','risograph-print',
+  'hot-take','poll-card','offer-announce','limited-drop',
+  'event-card','award-winner','aurora-gradient',
 ]);
 
 const PHOTO_OVERLAYS: Record<string, string> = {
@@ -1283,22 +1281,13 @@ const PHOTO_OVERLAYS: Record<string, string> = {
   'tiktok-native':      'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.80) 100%)',
   'video-thumbnail':    'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.70) 100%)',
   'duotone-photo':      'linear-gradient(135deg, rgba(99,102,241,0.55) 0%, rgba(236,72,153,0.45) 100%)',
-  'founder-story':      'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.0) 100%)',
-  'flat-lay':           'linear-gradient(to bottom, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.62) 100%)',
-  'bundle-stack':       'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.52) 100%)',
   'hot-take':           'linear-gradient(135deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.55) 100%)',
   'poll-card':          'linear-gradient(to bottom, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.68) 100%)',
   'offer-announce':     'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.65) 100%)',
-  'collage-cutout':     'linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.72) 100%)',
   'limited-drop':       'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.80) 100%)',
   'event-card':         'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.82) 100%)',
   'award-winner':       'linear-gradient(135deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.42) 100%)',
-  'mono-editorial':     'linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.75) 100%)',
-  'brutalist':          'linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.28) 100%)',
   'aurora-gradient':    'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.55) 100%)',
-  'community-quote':    'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.65) 100%)',
-  'news-frame':         'linear-gradient(to bottom, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.72) 100%)',
-  'risograph-print':    'linear-gradient(135deg, rgba(236,72,153,0.38) 0%, rgba(251,191,36,0.30) 100%)',
 };
 
 interface PhotoMeta {
@@ -3343,7 +3332,8 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     if (id === 'caption-style') {
       if (slide === 0) return (
         <div style={{ ...z }}>
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:'55%', background:'linear-gradient(135deg,#1f2937,#374151)' }} />
+          {/* Only render the CSS gradient when no real photo is available */}
+          {!photoMeta?.url && <div style={{ position:'absolute', top:0, left:0, right:0, height:'55%', background:'linear-gradient(135deg,#1f2937,#374151)' }} />}
           <div style={{ position:'absolute', bottom:14, left:12, right:12 }}>
             <T s={9} color="#fff" weight={700} spacing="-0.01em"><span style={{textShadow:'0 1px 3px rgba(0,0,0,0.8)'}}>When I tried X for 30 days...</span></T>
           </div>

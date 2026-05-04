@@ -18,27 +18,18 @@ const PHOTO_QUERIES: Record<string, string> = {
   'story-hook':         'dramatic moody landscape mountain cinematic',
   'product-center':     'product photography studio clean white minimal',
   'neon-dark':          'neon lights cyberpunk city night',
-  // ── Batch 5 ──────────────────────────────────────────────────────────────────
+  // ── Batch 5 (dark-design templates only) ─────────────────────────────────────
   'caption-style':      'lifestyle portrait outdoor social media candid',
   'tiktok-native':      'person dancing street style youth urban lifestyle',
   'video-thumbnail':    'cinematic dramatic action portrait thumbnail bold',
   'duotone-photo':      'fashion portrait studio editorial bold color',
-  'founder-story':      'entrepreneur founder portrait professional office confident',
-  'flat-lay':           'product flat lay minimal overhead photography clean',
-  'bundle-stack':       'product collection lifestyle photography colorful',
   'hot-take':           'dramatic bold neon abstract city night lights',
   'poll-card':          'crowd people street lifestyle diverse urban',
   'offer-announce':     'shopping sale retail colorful gift seasonal',
-  'collage-cutout':     'fashion street style editorial magazine colorful',
   'limited-drop':       'luxury exclusive sneaker streetwear hype product',
   'event-card':         'concert festival crowd lights music event night',
   'award-winner':       'trophy award success achievement celebration gold',
-  'mono-editorial':     'black white portrait dramatic editorial photography',
-  'brutalist':          'architecture concrete brutalist urban raw industrial',
   'aurora-gradient':    'northern lights aurora borealis nature sky landscape',
-  'community-quote':    'diverse people community smile portrait group',
-  'news-frame':         'journalism documentary street photography urban city',
-  'risograph-print':    'colorful retro abstract art print graphic design',
 };
 
 interface CachedPhoto {
