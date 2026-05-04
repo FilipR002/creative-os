@@ -6,6 +6,33 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { TemplateMetadata } from '@/lib/api/creator-client';
 
+// ─── Global synchronized carousel clock ──────────────────────────────────────
+// One interval drives ALL carousel cards simultaneously so they transition
+// in unison instead of each firing at a random offset (epilepsy prevention).
+let _globalSlide = 0;
+const _slideListeners = new Set<(s: number) => void>();
+if (typeof window !== 'undefined') {
+  setInterval(() => {
+    _globalSlide = (_globalSlide + 1) % 3;
+    _slideListeners.forEach(fn => fn(_globalSlide));
+  }, 3000);
+}
+
+function useGlobalSlide(paused: boolean): { slide: number; fading: boolean } {
+  const [slide,  setSlide]  = useState(_globalSlide);
+  const [fading, setFading] = useState(false);
+  useEffect(() => {
+    if (paused) return;
+    const listener = (next: number) => {
+      setFading(true);
+      setTimeout(() => { setSlide(next); setFading(false); }, 220);
+    };
+    _slideListeners.add(listener);
+    return () => { _slideListeners.delete(listener); };
+  }, [paused]);
+  return { slide, fading };
+}
+
 export type GalleryFormat = 'carousel' | 'image' | 'video';
 type Category = 'all' | 'conversion' | 'trust' | 'empathy' | 'engagement' | 'scroll-stop';
 
@@ -3184,10 +3211,8 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
 }
 
 function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
-  const [slide,  setSlide]  = useState(0);
-  const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { slide, fading }   = useGlobalSlide(paused);
 
   const style    = TEMPLATE_STYLES[id] ?? { bg: 'linear-gradient(135deg,#1c1917,#292524)', light: false };
   const txt      = style.light ? '#1e293b' : '#ffffff';
@@ -3196,19 +3221,10 @@ function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const dotBase  = style.light ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.25)';
   const photoMeta = useTemplatePhoto(id);
 
-  useEffect(() => {
-    if (paused) return;
-    timerRef.current = setInterval(() => {
-      setFading(true);
-      setTimeout(() => { setSlide(s => (s + 1) % 3); setFading(false); }, 200);
-    }, 2200);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [paused]);
-
   return (
     <div
       style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}
-      onMouseEnter={() => { setPaused(true); if (timerRef.current) clearInterval(timerRef.current); }}
+      onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
       {/* Full-bleed slide — crossfades */}
