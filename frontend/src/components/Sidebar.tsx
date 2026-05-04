@@ -187,10 +187,10 @@ export function Sidebar() {
     <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
 
       {/* Logo */}
-      <div className="sidebar-header" style={{ flexShrink: 0 }}>
+      <Link href="/dashboard" className="sidebar-header" style={{ flexShrink: 0, textDecoration: 'none', cursor: 'pointer' }}>
         <Image src="/logo-icon.png" alt="" width={28} height={28} className="sidebar-logo-img" style={{ objectFit: 'contain' }} />
         <span className="sidebar-logo-text">Creative OS</span>
-      </div>
+      </Link>
 
       {/* Scrollable nav — fills available space between logo and footer */}
       <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
