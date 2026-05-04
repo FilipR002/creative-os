@@ -125,7 +125,7 @@ export async function generateBlueprint(
   const response = await axios.post<{ content: Array<{ type: string; text: string }> }>(
     'https://api.anthropic.com/v1/messages',
     {
-      model:       'claude-sonnet-4-5',
+      model:       'claude-sonnet-4-6',
       max_tokens:  1024,
       system:      SYSTEM_PROMPT,
       messages:    [{ role: 'user', content: userPrompt }],
@@ -163,7 +163,7 @@ export async function generateBlueprint(
   blueprint.format      = format;
   blueprint._meta       = {
     generated_at: new Date().toISOString(),
-    model:        'claude-sonnet-4-5',
+    model:        'claude-sonnet-4-6',
     version:      '1.0',
   };
 

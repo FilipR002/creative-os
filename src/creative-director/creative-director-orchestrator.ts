@@ -351,7 +351,7 @@ Return ONLY the JSON object. No wrapper text.`;
   const response = await axios.post<{ content: Array<{ type: string; text: string }> }>(
     'https://api.anthropic.com/v1/messages',
     {
-      model:      'claude-sonnet-4-5',
+      model:      'claude-sonnet-4-6',
       max_tokens: 4096,
       system:     SYSTEM_PROMPT,
       messages:   [{ role: 'user', content: userPrompt }],
@@ -386,7 +386,7 @@ Return ONLY the JSON object. No wrapper text.`;
     ...plan,
     _meta: {
       generated_at:  new Date().toISOString(),
-      model:         'claude-sonnet-4-5',
+      model:         'claude-sonnet-4-6',
       campaign_id:   input.campaignId,
       concept_id:    input.conceptId,
       duration_tier: concept.durationTier,

@@ -1,5 +1,5 @@
 // ─── AI Creative Generation Layer — Service ──────────────────────────────────
-// Uses Claude claude-opus-4-5 via Anthropic API to generate:
+// Uses Claude claude-sonnet-4-6 via Anthropic API to generate:
 //   • Ad copy   (headline + body + CTA + A/B variants)
 //   • Hook variations (5 opening lines, typed by hook style)
 //   • Video scripts  (scene-by-scene with timing)
@@ -23,8 +23,8 @@ import type {
   GenerateBackgroundDto, BackgroundResult,
 } from './creative-ai.types';
 
-const MODEL          = 'claude-opus-4-5';
-const FALLBACK_MODEL = 'claude-haiku-4-5';   // faster, less-loaded fallback after N retries
+const MODEL          = 'claude-sonnet-4-6';
+const FALLBACK_MODEL = 'claude-sonnet-4-6';   // same model — retry logic still applies
 const MAX_TOK        = 1800;
 const AI_TIMEOUT_MS  = 50_000;   // raised for longer backoff headroom
 

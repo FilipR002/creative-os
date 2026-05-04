@@ -219,7 +219,7 @@ export class AdminToolsService {
           label: 'Hook / Body / CTA Generation',
           data: {
             hook_strategy: this.hookStrategy,
-            model: 'claude-3-opus',
+            model: 'claude-sonnet-4-6',
             tokens_used: 1240,
           },
           durationMs: 1820,

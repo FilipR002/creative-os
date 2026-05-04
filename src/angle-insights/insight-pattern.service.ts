@@ -11,7 +11,7 @@ import { ConfigService }      from '@nestjs/config';
 import axios                  from 'axios';
 import { AngleInsightsService } from './angle-insights.service';
 
-const MODEL          = 'claude-opus-4-5';
+const MODEL          = 'claude-sonnet-4-6';
 const CACHE_TTL_MS   = 24 * 60 * 60 * 1000;   // 24h — patterns rarely change
 const MAX_BOOST      = 0.05;                   // cap — insight boost never dominates
 const BOOST_PER_ITEM = 0.01;                   // each insight adds 1% confidence

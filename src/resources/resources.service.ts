@@ -246,7 +246,7 @@ Rules:
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
         {
-          model:      'claude-sonnet-4-5',
+          model:      'claude-sonnet-4-6',
           max_tokens: 600,
           system:     systemPrompt,
           messages:   [{ role: 'user', content: userPrompt }],
@@ -367,7 +367,7 @@ Rules:
       const response = await axios.post(
         'https://api.anthropic.com/v1/messages',
         {
-          model:      'claude-sonnet-4-5',
+          model:      'claude-sonnet-4-6',
           max_tokens: 700,
           system:     systemPrompt,
           messages:   [{ role: 'user', content: userPrompt }],
