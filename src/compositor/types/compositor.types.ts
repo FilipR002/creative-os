@@ -40,7 +40,18 @@ export type TemplateId =
   | 'number-list'         // ordered 01/02/03 benefit list, editorial numerals
   | 'brand-manifesto'     // full-frame centered typographic statement
   | 'product-demo'        // browser/app screenshot in bezel frame
-  | 'retro-bold';         // chunky vintage typography, halftone dots, retro palette
+  | 'retro-bold'          // chunky vintage typography, halftone dots, retro palette
+  // ── Angle-strategy batch (31–40) ─────────────────────────────────────────────
+  | 'offer-stack'         // conversion: stacked discount offer, big % number
+  | 'value-math'          // conversion: price comparison formula, savings math
+  | 'case-study'          // trust: mini case study, before/after result numbers
+  | 'insight-frame'       // trust: educational framework, numbered insight steps
+  | 'pain-diagnostic'     // empathy: dark diagnostic, "sound familiar?" pattern
+  | 'mistake-alert'       // empathy: warning-label aesthetic, numbered mistakes
+  | 'empathy-card'        // empathy: warm gradient, feeling-first statement
+  | 'validation-card'     // empathy: "you're not alone", community validation
+  | 'do-dont'             // engagement: two-column right-vs-wrong comparison
+  | 'transform-split';    // engagement: top=before / bottom=after transformation
 
 export type AdSize =
   | '1080x1080'   // square — Instagram, Facebook

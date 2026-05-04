@@ -832,6 +832,7 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
       <img
         src={photoMeta.url} alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78 }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
       <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))' }} />
       <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.025 }} />
@@ -2602,6 +2603,7 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
       <img
         src={photoMeta!.url} alt=""
         style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78, zIndex: 0 }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
       />
       <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))', zIndex: 1 }} />
       {/* Unsplash attribution — required by TOS */}
