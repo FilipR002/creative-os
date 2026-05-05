@@ -913,32 +913,34 @@ function CreatePageInner() {
               {/* ── RIGHT: control panel ─────────────────────────────────── */}
               <div style={{ position: 'sticky', top: 49, height: 'calc(100vh - 49px)', overflowY: 'auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 0 }}>
 
-                {/* Format */}
-                <div style={{ marginBottom: 20 }}>
-                  <div className="form-label">Format</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
-                    {([
-                      ['video',    '▶',  'Video'],
-                      ['carousel', '⊞',  'Carousel'],
-                      ['image',    '⬜', 'Image'],
-                    ] as [AdFormat, string, string][]).map(([id, icon, label]) => {
-                      const locked = id === 'video' && !isAdmin;
-                      return (
-                        <button key={id}
-                          onClick={() => { if (!locked) setFormat(id); }}
-                          disabled={generating || locked}
-                          className={`format-btn${!locked && format === id ? ' active' : ''}`}
-                          style={{ flexDirection: 'column', gap: 4, padding: '12px 8px', opacity: locked ? 0.55 : 1, cursor: locked ? 'not-allowed' : 'pointer', position: 'relative' }}>
-                          <span style={{ fontSize: 20 }}>{locked ? '🔒' : icon}</span>
-                          <span>{label}</span>
-                          {locked && (
-                            <span style={{ position: 'absolute', bottom: 4, left: 0, right: 0, fontSize: 8, color: 'var(--amber)', fontWeight: 700, letterSpacing: '0.05em', textAlign: 'center' }}>
-                              ADMIN ONLY
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
+                {/* Selected template + format pill — read-only, click goes back */}
+                <div
+                  onClick={() => !generating && setStep('gallery')}
+                  style={{
+                    marginBottom: 20, padding: '10px 12px', borderRadius: 8,
+                    background: 'var(--surface-2)', border: '1px solid var(--border)',
+                    display: 'flex', alignItems: 'center', gap: 10, cursor: generating ? 'default' : 'pointer',
+                    transition: 'border-color 0.15s',
+                  }}
+                >
+                  {templateId && (
+                    <img
+                      src={`/templates/${templateId}.png`}
+                      alt=""
+                      onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      style={{ width: 32, height: 32, borderRadius: 5, objectFit: 'cover', flexShrink: 0 }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {templateId
+                        ? (templates.find(t => t.id === templateId)?.name ?? templateId)
+                        : 'AI Auto-Select'}
+                    </div>
+                    <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 1 }}>
+                      {format === 'carousel' ? '⊞ Carousel' : format === 'image' ? '⬜ Image' : '▶ Video'}
+                      {!generating && <span style={{ color: 'var(--indigo-l)', marginLeft: 8 }}>← change</span>}
+                    </div>
                   </div>
                 </div>
 
@@ -1108,52 +1110,6 @@ function CreatePageInner() {
                           {n}
                         </button>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Template chip — shows selected template, click to go back to gallery */}
-                {(format === 'carousel' || format === 'image') && (
-                  <div style={{ marginBottom: 20 }}>
-                    <div className="form-label">🎨 Template</div>
-                    <div
-                      onClick={() => !generating && setStep('gallery')}
-                      style={{
-                        padding: '10px 12px', borderRadius: 8, cursor: generating ? 'default' : 'pointer',
-                        background: templateId ? 'rgba(79,70,229,0.1)' : 'var(--surface-2)',
-                        border: `1.5px solid ${templateId ? 'var(--indigo)' : 'var(--border)'}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        {/* Thumbnail preview */}
-                        {templateId && (
-                          <img
-                            src={`/templates/${templateId}.png`}
-                            alt=""
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            style={{ width: 36, height: 36, borderRadius: 5, objectFit: 'cover', border: '1px solid rgba(79,70,229,0.3)' }}
-                          />
-                        )}
-                        <div>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: templateId ? 'var(--indigo-l)' : 'var(--muted)' }}>
-                            {templateId
-                              ? (templates.find(t => t.id === templateId)?.name ?? templateId)
-                              : 'AI Auto-Select'}
-                          </div>
-                          <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 1 }}>
-                            {templateId
-                              ? templates.find(t => t.id === templateId)?.description
-                              : 'Best template picked per slide by AI'}
-                          </div>
-                        </div>
-                      </div>
-                      {!generating && (
-                        <span style={{ fontSize: 11, color: 'var(--indigo-l)', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                          Change →
-                        </span>
-                      )}
                     </div>
                   </div>
                 )}
