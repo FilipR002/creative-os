@@ -1,12 +1,13 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { CarouselController } from './carousel.controller';
-import { CarouselService } from './carousel.service';
-import { CampaignModule } from '../campaign/campaign.module';
-import { ImageModule } from '../image/image.module';
-import { CompositorModule } from '../compositor/compositor.module';
+import { CarouselController }    from './carousel.controller';
+import { CarouselService }       from './carousel.service';
+import { CampaignModule }        from '../campaign/campaign.module';
+import { ImageModule }           from '../image/image.module';
+import { CompositorModule }      from '../compositor/compositor.module';
+import { UserStyleModule }       from '../user-style/user-style.module';
 
 @Module({
-  imports:     [forwardRef(() => CampaignModule), ImageModule, CompositorModule],
+  imports:     [forwardRef(() => CampaignModule), ImageModule, CompositorModule, UserStyleModule],
   controllers: [CarouselController],
   providers:   [CarouselService],
   exports:     [CarouselService],

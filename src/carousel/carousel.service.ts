@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { ImageService } from '../image/image.service';
 import { CompositorService } from '../compositor/compositor.service';
+import { StyleTranslatorService } from '../user-style/style-translator.service';
 import { GenerateCarouselDto } from './carousel.dto';
 import { buildPersonaBlock }   from '../resources/persona-prompt';
 import { autoSelectTemplate }  from '../compositor/templates/template-engine';
@@ -58,12 +59,13 @@ export class CarouselService {
   private readonly logger = new Logger(CarouselService.name);
 
   constructor(
-    private readonly prisma:      PrismaService,
-    private readonly config:      ConfigService,
-    private readonly images:      ImageService,
-    private readonly compositor:  CompositorService,
+    private readonly prisma:           PrismaService,
+    private readonly config:           ConfigService,
+    private readonly images:           ImageService,
+    private readonly compositor:       CompositorService,
+    private readonly styleTranslator:  StyleTranslatorService,
     @Inject(forwardRef(() => CampaignService))
-    private readonly campaigns:   CampaignService,
+    private readonly campaigns:        CampaignService,
   ) {}
 
   // ── GENERATE SLIDES ─────────────────────────────────────────────────────────
@@ -253,13 +255,19 @@ For the LAST slide (slide ${dto.slideCount}) only:
     // ── Step 2: Compositor pass — render final pixel-perfect PNG per slide ──────
     const platform = metadata.platform;
     const adSize   = platformToAdSize(platform);
-    const tone     = angleToTone(metadata.angle);
+    const baseTone = angleToTone(metadata.angle);
+
+    // Resolve style from learned profile + DNA — replaces single naive colorScheme rule
+    const resolvedStyle = await this.styleTranslator.resolveCompositorStyle(
+      userId,
+      baseTone,
+      metadata.primaryColor || undefined,
+    );
 
     const compositorInputs: CompositorInput[] = slides.map((slide, i) => {
       const slideType  = slideTypeForCompositor(slide.type);
-      // Phase 6: use user-selected templateId override, fallback to AI auto-selection
       const templateId = (metadata.templateId as CompositorInput['templateId'] | null)
-        ?? autoSelectTemplate(tone, platform, !!results[i]?.imageUrl, false, slideType);
+        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl, false, slideType);
       return {
         templateId,
         size: adSize,
@@ -271,10 +279,12 @@ For the LAST slide (slide ${dto.slideCount}) only:
         },
         imageUrl: results[i]?.imageUrl || undefined,
         style: {
-          tone,
+          tone:          resolvedStyle.tone,
           platform,
-          colorScheme:  tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
-          primaryColor: metadata.primaryColor || undefined,
+          colorScheme:   resolvedStyle.colorScheme,
+          fontPairingId: resolvedStyle.fontPairingId,
+          primaryColor:  metadata.primaryColor || undefined,
+          accentColor:   resolvedStyle.accentColor,
         },
       };
     });

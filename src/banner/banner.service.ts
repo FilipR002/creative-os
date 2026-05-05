@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CampaignService } from '../campaign/campaign.service';
 import { ImageService } from '../image/image.service';
 import { CompositorService } from '../compositor/compositor.service';
+import { StyleTranslatorService } from '../user-style/style-translator.service';
 import { buildBannerImagePrompt } from '../image/utils/prompt-builder';
 import { GenerateBannerDto } from './banner.dto';
 import { buildPersonaBlock }  from '../resources/persona-prompt';
@@ -46,12 +47,13 @@ export class BannerService {
   private readonly logger = new Logger(BannerService.name);
 
   constructor(
-    private readonly prisma:     PrismaService,
-    private readonly config:     ConfigService,
-    private readonly images:     ImageService,
-    private readonly compositor: CompositorService,
+    private readonly prisma:          PrismaService,
+    private readonly config:          ConfigService,
+    private readonly images:          ImageService,
+    private readonly compositor:      CompositorService,
+    private readonly styleTranslator: StyleTranslatorService,
     @Inject(forwardRef(() => CampaignService))
-    private readonly campaigns:  CampaignService,
+    private readonly campaigns:       CampaignService,
   ) {}
 
   async generate(dto: GenerateBannerDto, userId: string) {
@@ -222,14 +224,20 @@ Rules:
     }
 
     // ── Step 2: Compositor pass ─────────────────────────────────────────────────
-    const tone = angleToTone(content.angle || 'bold');
+    const baseTone = angleToTone(content.angle || 'bold');
+
+    // Resolve style from learned profile + DNA — replaces single naive colorScheme rule
+    const resolvedStyle = await this.styleTranslator.resolveCompositorStyle(
+      userId,
+      baseTone,
+      metadata.primaryColor || undefined,
+    );
 
     const compositorInputs: CompositorInput[] = banners.map((banner, i) => {
       const adSize     = toAdSize(banner.size);
       const platform   = adSize === '1200x628' ? 'display' : 'instagram';
-      // Phase 6: use user-selected templateId override, fallback to AI auto-selection
       const templateId = (metadata.templateId as CompositorInput['templateId'] | null)
-        ?? autoSelectTemplate(tone, platform, !!results[i]?.imageUrl);
+        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl);
       return {
         templateId,
         size: adSize,
@@ -240,10 +248,12 @@ Rules:
         },
         imageUrl: results[i]?.imageUrl || undefined,
         style: {
-          tone,
+          tone:          resolvedStyle.tone,
           platform,
-          colorScheme:  tone === 'premium' || tone === 'minimal' ? 'light' : 'dark',
-          primaryColor: metadata.primaryColor || undefined,
+          colorScheme:   resolvedStyle.colorScheme,
+          fontPairingId: resolvedStyle.fontPairingId,
+          primaryColor:  metadata.primaryColor || undefined,
+          accentColor:   resolvedStyle.accentColor,
         },
       };
     });
