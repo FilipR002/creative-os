@@ -414,6 +414,7 @@ For the LAST slide (slide ${dto.slideCount}) only:
       templateId:    result.templateId,
       fontPairing:   result.fontPairing.id,
       renderTimeMs:  result.renderTimeMs,
+      critique:      result.critique ?? null,
     };
   }
 

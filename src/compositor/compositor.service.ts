@@ -14,13 +14,17 @@ import { selectFontPairing }  from './fonts/font-library';
 import { getColorPalette }    from './design/design-system';
 import { renderTemplate, autoSelectTemplate } from './templates/template-engine';
 import { SatoriRendererService } from './satori/satori-renderer.service';
+import { VisualCriticService }   from './critic/visual-critic.service';
 
 @Injectable()
 export class CompositorService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CompositorService.name);
   private browser: Browser | null = null;
 
-  constructor(private readonly satoriRenderer: SatoriRendererService) {}
+  constructor(
+    private readonly satoriRenderer: SatoriRendererService,
+    private readonly visualCritic:   VisualCriticService,
+  ) {}
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -68,11 +72,12 @@ export class CompositorService implements OnModuleInit, OnModuleDestroy {
 
   // ─── Main render ───────────────────────────────────────────────────────────
 
-  async render(input: CompositorInput): Promise<CompositorOutput> {
+  async render(input: CompositorInput, skipCritic = false): Promise<CompositorOutput> {
     // ── Fast path: Satori (text-only templates, ~30-80ms, no browser) ─────────
     if (this.satoriRenderer.canRender(input)) {
       try {
-        return await this.satoriRenderer.render(input);
+        const satoriOut = await this.satoriRenderer.render(input);
+        return await this.applyCritic(satoriOut, input, skipCritic);
       } catch (err: any) {
         this.logger.warn(`Satori render failed, falling back to Puppeteer: ${err?.message}`);
       }
@@ -114,20 +119,34 @@ export class CompositorService implements OnModuleInit, OnModuleDestroy {
       `Render complete | template=${templateId} size=${input.size} fonts=${fonts.id} ${renderTimeMs}ms`,
     );
 
-    return {
+    const output: CompositorOutput = {
       imageDataUrl,
       templateId,
       fontPairing: fonts,
       renderTimeMs,
       size: input.size,
     };
+
+    return this.applyCritic(output, input, skipCritic);
+  }
+
+  // ─── Visual critic pass (non-blocking) ────────────────────────────────────
+
+  private async applyCritic(
+    output:     CompositorOutput,
+    input:      CompositorInput,
+    skip:       boolean,
+  ): Promise<CompositorOutput> {
+    if (skip) return output;
+    const critique = await this.visualCritic.critique(output, input);
+    return { ...output, critique };
   }
 
   // ─── Batch render (carousel: multiple slides) ──────────────────────────────
 
   async renderBatch(inputs: CompositorInput[]): Promise<CompositorOutput[]> {
-    // Render in parallel (each gets its own page)
-    return Promise.all(inputs.map(input => this.render(input)));
+    // Render in parallel (each gets its own page); skip critic in batch to avoid rate limiting
+    return Promise.all(inputs.map(input => this.render(input, true)));
   }
 
   // ─── Re-render single slide with updated copy ──────────────────────────────

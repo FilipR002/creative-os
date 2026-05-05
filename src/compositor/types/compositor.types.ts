@@ -163,6 +163,8 @@ export interface CompositorOutput {
   fontPairing:    FontPairing;
   renderTimeMs:   number;
   size:           AdSize;
+  // Visual critic score — present when critic runs, absent on error / batch skips
+  critique?: import('../critic/visual-critic.service').CritiqueResult | null;
 }
 
 // ─── Render request ───────────────────────────────────────────────────────────
