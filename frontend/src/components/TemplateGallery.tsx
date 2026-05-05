@@ -4913,7 +4913,7 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
       if (slide === 0) return (
         <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px 32px', justifyContent:'center', gap:5 }}>
           <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.16em">Word of the day</T>
-          <T s={20} color="#ffffff" weight={900} spacing="-0.02em" align="left" style={{ fontStyle:'italic' } as any}>feature.</T>
+          <div style={{ fontStyle:'italic' }}><T s={20} color="#ffffff" weight={900} spacing="-0.02em" align="left">feature.</T></div>
           <T s={7} color="rgba(255,255,255,0.5)" align="left">noun | FEE-cher</T>
           <div style={{ height:1, background:'rgba(255,255,255,0.12)', width:'100%', marginTop:2 }} />
           <T s={8} color="rgba(255,255,255,0.8)" align="left" weight={400}>a distinctive or notable aspect of a product or service worth highlighting.</T>
