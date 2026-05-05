@@ -38,6 +38,16 @@ import {
   renderProductDemo,
   renderRetroBold,
 } from './extended-templates-2';
+import {
+  renderTestimonialCard,
+  renderVersusSlide,
+  renderBeforeAfterSlide,
+  renderPressSlide,
+  renderPointOutSlide,
+  renderGallerySlide,
+  renderChatNative,
+  renderOfferDrop,
+} from './extended-templates-3';
 
 // ─── Route to template renderer ───────────────────────────────────────────────
 
@@ -81,6 +91,15 @@ export function renderTemplate(
     case 'brand-manifesto':    return renderBrandManifesto(input, size, fonts, palette);
     case 'product-demo':       return renderProductDemo(input, size, fonts, palette);
     case 'retro-bold':         return renderRetroBold(input, size, fonts, palette);
+    // ── Creative Satori / Puppeteer batch 3 ──────────────────────────────────
+    case 'testimonial-card':   return renderTestimonialCard(input, size, fonts, palette);
+    case 'versus-slide':       return renderVersusSlide(input, size, fonts, palette);
+    case 'before-after-slide': return renderBeforeAfterSlide(input, size, fonts, palette);
+    case 'press-slide':        return renderPressSlide(input, size, fonts, palette);
+    case 'point-out-slide':    return renderPointOutSlide(input, size, fonts, palette);
+    case 'gallery-slide':      return renderGallerySlide(input, size, fonts, palette);
+    case 'chat-native':        return renderChatNative(input, size, fonts, palette);
+    case 'offer-drop':         return renderOfferDrop(input, size, fonts, palette);
     default:                   return renderFullBleed(input, size, fonts, palette);
   }
 }
