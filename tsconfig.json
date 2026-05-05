@@ -19,5 +19,5 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
   },
-  "exclude": ["node_modules", "dist", "frontend", "stitch-service"]
+  "exclude": ["node_modules", "dist", "frontend", "stitch-service", "scripts", "prisma.config.ts"]
 }
