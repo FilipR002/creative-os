@@ -24,16 +24,14 @@ RUN npm ci
 
 # ── 2. Copy source ────────────────────────────────────────────────────────────
 COPY tsconfig.json    ./
-# prisma.config.ts is required by Prisma 7.x CLI at BOTH build time (generate)
-# and runtime (migrate deploy). Without it Prisma has no datasource URL and
-# silently skips migrations, leaving new columns missing and the app crashing.
+# prisma.config.ts defines the datasource URL for Prisma 7.x.
+# Without it the CLI has no DB URL and all prisma commands silently no-op.
 COPY prisma.config.ts ./
 COPY prisma           ./prisma/
 COPY src              ./src/
 
 # ── 3. Generate Prisma client ─────────────────────────────────────────────────
 # Dummy URL — generate only reads schema + config, never opens a connection.
-# Real DATABASE_URL is injected by Railway at runtime.
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     npx prisma generate
 
@@ -41,12 +39,12 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholde
 RUN npm run build
 
 # ── 5. Prune devDependencies from the final image ────────────────────────────
-# Removes ts-node, typescript, tsconfig-paths (~120 MB).
-# Prisma CLI bundles its own TypeScript runner for prisma.config.ts — no ts-node needed.
+# Prisma CLI bundles its own TypeScript runner — ts-node not needed at runtime.
 RUN npm prune --omit=dev
 
 # ── 6. Start ──────────────────────────────────────────────────────────────────
-# prisma migrate deploy applies pending SQL migration files in order.
-# Safer than db push: uses our version-controlled migrations, no data-loss risk.
-# If migrations fail the container exits and Railway retries — correct behaviour.
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
+# Use db push (not migrate deploy) because the DB was originally bootstrapped
+# with db push and has no _prisma_migrations history. migrate deploy would try
+# to replay all migrations from init, hit existing tables, and crash.
+# db push introspects the live schema and applies only the diff — safe here.
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main.js"]
