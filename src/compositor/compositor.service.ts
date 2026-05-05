@@ -34,6 +34,9 @@ export class CompositorService implements OnModuleInit, OnModuleDestroy {
     try {
       this.browser = await puppeteer.launch({
         headless: true,
+        // Use system Chromium when PUPPETEER_EXECUTABLE_PATH is set (Railway/Alpine).
+        // Falls back to Puppeteer's bundled Chrome in local dev.
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -41,6 +44,7 @@ export class CompositorService implements OnModuleInit, OnModuleDestroy {
           '--disable-accelerated-2d-canvas',
           '--no-first-run',
           '--no-zygote',
+          '--single-process',   // required in Alpine/container environments
           '--disable-gpu',
           '--font-render-hinting=none',  // crisp font rendering
         ],

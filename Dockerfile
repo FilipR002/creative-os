@@ -2,6 +2,22 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# ── 0. System deps for Puppeteer headless Chrome ─────────────────────────────
+# Alpine uses musl libc; Puppeteer's bundled Chrome is glibc-only and hangs on
+# startup. Install Alpine's native Chromium instead and point Puppeteer at it.
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-emoji
+
+# Tell Puppeteer: skip downloading the bundled Chrome and use the system one
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 # ── 1. Install ALL deps (devDeps needed for tsc at build time) ────────────────
 COPY package*.json ./
 RUN npm ci
@@ -18,15 +34,12 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholde
     npx prisma generate
 
 # ── 4. Compile TypeScript → dist/ at BUILD TIME ───────────────────────────────
-# This is the key change: tsc runs once here instead of ts-node compiling
-# everything in-memory on every startup, which was exhausting the 1 GB heap.
 RUN npm run build
 
 # ── 5. Prune devDependencies from the final image ────────────────────────────
-# Removes ts-node, typescript, tsconfig-paths (~120 MB) — not needed at runtime.
 RUN npm prune --omit=dev
 
 # ── 6. Start ──────────────────────────────────────────────────────────────────
-# Run pending migrations, then start the pre-compiled app with plain node.
-# No in-memory TypeScript compilation — cold start is now ~2s instead of ~30s.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main.js"]
+# Run migrations (with 30s timeout so a hung DB never blocks app start),
+# then start the pre-compiled app with plain node.
+CMD ["sh", "-c", "timeout 30 npx prisma db push --accept-data-loss || echo 'prisma db push skipped'; node dist/main.js"]
