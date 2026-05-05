@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Sidebar } from '@/components/Sidebar';
 
 // Routes that should NOT have the sidebar (public / auth pages)
-const PUBLIC_PREFIXES = ['/', '/login', '/signup', '/onboarding', '/auth'];
+const PUBLIC_PREFIXES = ['/', '/login', '/signup', '/onboarding', '/auth', '/api-docs'];
 
 function isPublicRoute(pathname: string) {
   if (pathname === '/') return true;
