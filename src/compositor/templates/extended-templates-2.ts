@@ -8,6 +8,7 @@
 import type { CompositorInput, ParsedSize, FontPairing } from '../types/compositor.types';
 import type { ColorPalette } from '../design/design-system';
 import { getTypographyScale, getPadding } from '../design/design-system';
+import { glowLayer, cornerArc, dotGridLayer, heatRadialBg, circleBleed, diagonalLayer, burstSvg } from './bg-layers';
 
 // ── 16: Product Center ────────────────────────────────────────────────────────
 // Product image is the hero — large, centered, clean surround.
@@ -38,6 +39,8 @@ export function renderProductCenter(
     .cta-row{display:flex;gap:${pad.gap}px;justify-content:center;}
     .cta{background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*0.88)}px;font-weight:700;padding:${Math.round(typo.cta*0.5)}px ${Math.round(typo.cta*1.6)}px;border-radius:${Math.round(typo.cta*0.45)}px;}
   </style></head><body><div class="frame">
+    ${dotGridLayer(accent, size.width, 0.06)}
+    ${glowLayer(accent, 'top-right', size.width, size.height, 0.12)}
     <div class="top">
       ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : '<div></div>'}
       ${copy.eyebrow ? `<div class="tag">${copy.eyebrow}</div>` : '<div></div>'}
@@ -129,6 +132,8 @@ export function renderMagazineEditorial(
     .cta::after{content:'';display:block;flex:1;height:1px;background:${accent}55;}
     .brand{margin-top:auto;font-family:'Playfair Display',serif;font-size:${Math.round(typo.eyebrow*1.2)}px;font-weight:400;color:${palette.eyebrow};letter-spacing:0.2em;text-transform:uppercase;font-style:italic;}
   </style></head><body><div class="frame">
+    ${dotGridLayer(accent, size.width, 0.05)}
+    ${cornerArc(accent, 'bottom-right', size.width, size.height, 0.08, 0.35)}
     <div class="img-col">
       ${imageUrl ? `<img src="${imageUrl}" alt=""/>` : `<div class="img-placeholder">✦</div>`}
     </div>
@@ -172,8 +177,10 @@ export function renderColorBlock(
     .brand-bar{position:absolute;top:${pad.outer}px;left:50%;transform:translateX(-50%);font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.75)}px;font-weight:800;color:rgba(255,255,255,0.4);letter-spacing:0.15em;text-transform:uppercase;}
     .divider-label{font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.headline*0.4)}px;font-weight:900;color:${accent};text-align:center;margin-bottom:${pad.gap}px;letter-spacing:-0.01em;}
   </style></head><body><div class="frame">
+    ${diagonalLayer(`${accent}cc`, size.width, size.height, 'tr-bl', 0.50)}
     <div class="top-block">
       ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+      ${circleBleed('#fff', 'top-right', size.width, size.height, 0.07, 0.60)}
       ${branding?.brandName ? `<div class="brand-bar">${branding.brandName}</div>` : ''}
       ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
       <div class="headline-top">${copy.headline}</div>
@@ -216,6 +223,8 @@ export function renderFloatingCard(
   </style></head><body>
     <div class="bg-layer">
       ${imageUrl ? `<img class="bg-img" src="${imageUrl}" alt=""/>` : ''}
+      ${glowLayer(accent, 'top-right', size.width, size.height, 0.18)}
+      ${cornerArc(accent, 'bottom-left', size.width, size.height, 0.14, 0.45)}
     </div>
     <div class="frame">
       <div class="card">
@@ -248,7 +257,7 @@ export function renderCountdownUrgency(
     @import url('${fonts.googleUrl}');
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     html,body{width:${size.width}px;height:${size.height}px;overflow:hidden;}
-    .frame{position:relative;width:${size.width}px;height:${size.height}px;background:#0a0a0a;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:${pad.outer}px;text-align:center;}
+    .frame{position:relative;width:${size.width}px;height:${size.height}px;background:radial-gradient(ellipse at 50% 0%,${accent}22 0%,#0a0a0a 55%),#0a0a0a;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:${pad.outer}px;text-align:center;}
     ${imageUrl ? `.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.15;}` : ''}
     .top-stripe{position:absolute;top:0;left:0;right:0;height:${Math.round(size.width*0.018)}px;background:${accent};}
     .brand{position:absolute;top:${Math.round(pad.outer*1.6)}px;left:50%;transform:translateX(-50%);font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:rgba(255,255,255,0.35);letter-spacing:0.15em;text-transform:uppercase;}
@@ -263,6 +272,8 @@ export function renderCountdownUrgency(
     .cta{background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*1.05)}px;font-weight:800;padding:${Math.round(typo.cta*0.6)}px ${Math.round(typo.cta*2)}px;border-radius:${Math.round(typo.cta*0.4)}px;position:relative;z-index:1;box-shadow:0 0 ${Math.round(size.width*0.04)}px ${accent}66;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${glowLayer(accent, 'center', size.width, size.height, 0.12, 0.60)}
+    ${circleBleed(accent, 'bottom-left', size.width, size.height, 0.06, 0.55)}
     <div class="top-stripe"></div>
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     ${copy.eyebrow ? `<div class="alert-badge">⚡ ${copy.eyebrow}</div>` : '<div class="alert-badge">⚡ LIMITED TIME</div>'}
@@ -317,6 +328,8 @@ export function renderSocialProofGrid(
     .q-stars{color:#f59e0b;font-size:${Math.round(typo.eyebrow*0.75)}px;}
     .brand{text-align:center;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.75)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
+    ${dotGridLayer(accent, size.width, 0.05)}
+    ${cornerArc(accent, 'top-right', size.width, size.height, 0.07, 0.35)}
     <div class="header">
       <div class="stars">★★★★★</div>
       <div class="headline">${copy.headline}</div>
@@ -368,6 +381,8 @@ export function renderHeadlineBadge(
     .brand{position:absolute;top:${pad.outer}px;right:${pad.outer}px;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${burstSvg(accent, 'top-right', size.width, size.height, 0.12)}
+    ${cornerArc(accent, 'bottom-left', size.width, size.height, 0.09, 0.40)}
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     <div class="badge-wrap">
       <div class="badge">${copy.eyebrow ?? copy.cta ?? 'NEW'}</div>
@@ -416,6 +431,8 @@ export function renderSideBySide(
     .brand{font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.08em;text-transform:uppercase;}
     .cta{background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*0.85)}px;font-weight:700;padding:${Math.round(typo.cta*0.45)}px ${Math.round(typo.cta*1.3)}px;border-radius:${Math.round(typo.cta*0.4)}px;}
   </style></head><body><div class="frame">
+    ${dotGridLayer(accent, size.width, 0.05)}
+    ${cornerArc(accent, 'top-right', size.width, size.height, 0.10, 0.38)}
     <div class="header">
       ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
       <div class="headline">${copy.headline}</div>
@@ -566,6 +583,8 @@ export function renderNumberList(
     .cta{background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*0.82)}px;font-weight:700;padding:${Math.round(typo.cta*0.45)}px ${Math.round(typo.cta*1.2)}px;border-radius:${Math.round(typo.cta*0.4)}px;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${dotGridLayer(accent, size.width, 0.05)}
+    ${cornerArc(accent, 'top-right', size.width, size.height, 0.10, 0.38)}
     ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
     <div class="headline">${copy.headline}</div>
     <div class="list">
@@ -616,6 +635,8 @@ export function renderBrandManifesto(
     .brand{font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.15em;text-transform:uppercase;position:relative;z-index:1;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${glowLayer(accent, 'top-right', size.width, size.height, 0.12, 0.80)}
+    ${circleBleed(accent, 'bottom-left', size.width, size.height, 0.07, 0.65)}
     <div class="bg-text">${(branding?.brandName ?? copy.headline.split(' ')[0]).toUpperCase()}</div>
     <div class="top-rule"></div>
     ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
@@ -661,6 +682,8 @@ export function renderProductDemo(
     .body{font-size:${Math.round(typo.body*0.78)}px;color:${palette.body};line-height:1.5;margin-bottom:${pad.gap}px;}
     .cta{display:inline-block;background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*0.85)}px;font-weight:700;padding:${Math.round(typo.cta*0.48)}px ${Math.round(typo.cta*1.4)}px;border-radius:${Math.round(typo.cta*0.4)}px;}
   </style></head><body><div class="frame">
+    ${dotGridLayer(accent, size.width, 0.05)}
+    ${cornerArc(accent, 'bottom-right', size.width, size.height, 0.08, 0.35)}
     <div class="header">
       ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : '<div></div>'}
       ${copy.eyebrow ? `<div class="tag">${copy.eyebrow}</div>` : '<div></div>'}
@@ -717,6 +740,8 @@ export function renderRetroBold(
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
     <div class="dots"></div>
     <div class="border-frame"></div>
+    ${burstSvg(dark, 'top-right', size.width, size.height, 0.18, 10, 0.28)}
+    ${burstSvg(dark, 'bottom-left', size.width, size.height, 0.12, 8, 0.22)}
     ${copy.eyebrow ? `<div class="eyebrow-wrap"><div class="eyebrow">★ ${copy.eyebrow} ★</div></div>` : ''}
     <div class="headline">${copy.headline}</div>
     <div class="rule"></div>

@@ -6,6 +6,7 @@
 import type { CompositorInput, ParsedSize, FontPairing } from '../types/compositor.types';
 import type { ColorPalette } from '../design/design-system';
 import { getTypographyScale, getPadding } from '../design/design-system';
+import { glowLayer, cornerArc, dotGridLayer, circleBleed, burstSvg } from './bg-layers';
 
 // ── 6: Testimonial ────────────────────────────────────────────────────────────
 // Customer quote as the hero. Big quotation mark, name below.
@@ -36,6 +37,8 @@ export function renderTestimonial(
     .brand{position:absolute;top:${pad.outer}px;right:${pad.outer}px;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${glowLayer(palette.cta, 'top-right', size.width, size.height, 0.14)}
+    ${cornerArc(palette.cta, 'bottom-left', size.width, size.height, 0.10)}
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     <div class="quote-mark">"</div>
     <div class="stars">★★★★★</div>
@@ -84,6 +87,8 @@ export function renderStatsHero(
     .brand{position:absolute;top:${pad.outer}px;left:50%;transform:translateX(-50%);font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${dotGridLayer(palette.cta, size.width, 0.06)}
+    ${circleBleed(palette.cta, 'top-right', size.width, size.height, 0.10)}
     <div class="accent-circle"></div>
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     ${copy.eyebrow ? `<div class="tag">${copy.eyebrow}</div>` : ''}
@@ -131,6 +136,8 @@ export function renderFeatureList(
     .brand{position:absolute;top:${pad.outer}px;right:${pad.outer}px;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${dotGridLayer(palette.cta, size.width, 0.06)}
+    ${cornerArc(palette.cta, 'top-right', size.width, size.height, 0.10)}
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     <div class="accent-bar"></div>
     <div class="headline">${copy.headline}</div>
@@ -172,6 +179,8 @@ export function renderCtaFinal(
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
     <div class="glow"></div>
+    ${cornerArc('rgba(255,255,255,0.25)', 'top-left', size.width, size.height, 1, 0.38)}
+    ${burstSvg('#fff', 'bottom-right', size.width, size.height, 0.10)}
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
     <div class="headline">${copy.headline}</div>
@@ -208,6 +217,7 @@ export function renderGradientPop(
     .brand{position:absolute;top:${pad.outer}px;left:${pad.outer}px;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${circleBleed('#fff', 'bottom-right', size.width, size.height, 0.07)}
     <div class="shapes"><div class="circle1"></div><div class="circle2"></div></div>
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
@@ -292,6 +302,7 @@ export function renderBrightMinimal(
     .brand{font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:#0a0a0a;letter-spacing:0.08em;text-transform:uppercase;}
     .cta{background:${accent};color:#fff;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.cta*0.85)}px;font-weight:700;padding:${Math.round(typo.cta*0.5)}px ${Math.round(typo.cta*1.3)}px;border-radius:${Math.round(typo.cta*0.4)}px;}
   </style></head><body><div class="frame">
+    ${cornerArc(accent, 'top-right', size.width, size.height, 0.08, 0.40)}
     ${imageUrl ? `<div class="img-wrap"><img src="${imageUrl}" alt=""/></div>` : ''}
     ${copy.eyebrow ? `<div class="tag">${copy.eyebrow}</div>` : ''}
     <div class="headline">${copy.headline}</div>
@@ -331,7 +342,8 @@ export function renderStoryHook(
     .swipe-hint{font-family:'${fonts.body}',sans-serif;font-size:${Math.round(typo.eyebrow*0.9)}px;color:rgba(255,255,255,0.45);letter-spacing:0.08em;margin-bottom:${pad.gap}px;}
     .brand{font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:${pad.gap}px;}
   </style></head><body><div class="frame">
-    ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : circleBleed(palette.cta, 'top-right', size.width, size.height, 0.22)}
+    ${!imageUrl ? circleBleed(palette.cta, 'bottom-left', size.width, size.height, 0.14) : ''}
     <div class="overlay-top"></div>
     <div class="overlay-bot"></div>
     <div class="top-content">
@@ -373,6 +385,7 @@ export function renderProblemSlide(
     .brand{position:absolute;top:${pad.outer}px;right:${pad.outer}px;font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.85)}px;font-weight:800;color:rgba(255,255,255,0.2);letter-spacing:0.1em;text-transform:uppercase;}
   </style></head><body><div class="frame">
     ${imageUrl ? `<img class="bg" src="${imageUrl}" alt=""/>` : ''}
+    ${glowLayer('#ef4444', 'top-right', size.width, size.height, 0.09, 0.70)}
     <div class="red-bar"></div>
     ${branding?.brandName ? `<div class="brand">${branding.brandName}</div>` : ''}
     <div class="content">
@@ -417,6 +430,7 @@ export function renderTextOnlyBold(
     .brand{position:absolute;bottom:${pad.outer}px;left:50%;transform:translateX(-50%);font-family:'${fonts.headline}',sans-serif;font-size:${Math.round(typo.eyebrow*0.8)}px;font-weight:800;color:${palette.eyebrow};letter-spacing:0.15em;text-transform:uppercase;opacity:0.5;}
   </style></head><body><div class="frame">
     <div class="grid"></div>
+    ${circleBleed(accent, 'top-right', size.width, size.height, 0.08)}
     ${copy.eyebrow ? `<div class="eyebrow">${copy.eyebrow}</div>` : ''}
     <div class="headline">${colored}</div>
     ${copy.body ? `<div class="body">${copy.body}</div>` : ''}
