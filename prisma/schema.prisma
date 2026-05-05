@@ -602,6 +602,13 @@ model AngleCreativeInsight {
   visualElements String[] @map("visual_elements")
   insight        String
 
+  // ── Visual metadata (Phase 9.2.1 — Visual DNA) ──────────────────────────
+  colorPalette       String[] @default([])       @map("color_palette")        // e.g. ["#0A0A0A","#F97316","#FFFFFF"]
+  layoutComplexity   String   @default("balanced") @map("layout_complexity")  // minimal | balanced | dense
+  compositionNotes   String   @default("")        @map("composition_notes")   // freeform composition description
+  dominantColors     String[] @default([])        @map("dominant_colors")     // colour mood descriptors e.g. ["dark","warm"]
+  textDensity        String   @default("balanced") @map("text_density")       // sparse | balanced | heavy
+
   sourceFolder   String?  @map("source_folder")  // original folder name
   model          String   @default("claude-opus-4-5")
 
@@ -638,16 +645,27 @@ model CreativeDNA {
   hookPattern      String   @map("hook_pattern")
   emotionalTone    String   @map("emotional_tone")
   structureType    String   @map("structure_type")
-  visualContext    String   @map("visual_context")
+  visualContext    String   @map("visual_context")     // legacy loose string — kept for backward compat
   angleSlug        String   @map("angle_slug")
   performanceScore Float    @map("performance_score")
   survivalRate     Float    @default(0.5) @map("survival_rate")
   usageCount       Int      @default(1)   @map("usage_count")
+
+  // ── Structured visual fields (Phase 9.2.1 — Visual DNA) ─────────────────
+  // These replace the loose `visualContext` string with learnable, actionable dimensions.
+  layoutComplexity  String  @default("balanced")   @map("layout_complexity")   // minimal | balanced | dense
+  imageTextRatio    String  @default("balanced")   @map("image_text_ratio")    // image-dominant | balanced | text-dominant
+  contrastLevel     String  @default("medium")     @map("contrast_level")      // high | medium | low
+  colorMood         String  @default("dark")       @map("color_mood")          // dark | light | vibrant | muted | brand
+  typographyStyle   String  @default("clean-sans") @map("typography_style")    // bold-display | clean-sans | editorial | mixed
+  compositionStyle  String  @default("centered")   @map("composition_style")   // centered | rule-of-thirds | full-bleed | split | layered
+
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt     @map("updated_at")
 
   @@index([angleSlug])
   @@index([performanceScore])
+  @@index([colorMood, typographyStyle])   // fast lookup for visual-style queries
   @@map("creative_dna")
 }
 
