@@ -27,6 +27,7 @@ const EMOTION_COLOR: Record<string, string> = {
 function PlatformCard({ pa }: { pa: PlatformAnalysis }) {
   const pm = PLATFORM_META[pa.platform];
   return (
+    <>
     <div className="intel-panel" style={{ border: `1px solid ${pm.color}33` }}>
       <div className="intel-panel-header">
         <span style={{ fontSize: 20 }}>{pm.icon}</span>
@@ -71,6 +72,7 @@ function PlatformCard({ pa }: { pa: PlatformAnalysis }) {
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -78,6 +80,7 @@ function AdRow({ ad }: { ad: NormalizedAd }) {
   const pm = PLATFORM_META[ad.platform];
   const ec = EMOTION_COLOR[ad.emotionalTrigger] ?? '#6b7280';
   return (
+    <>
     <div style={{ padding: '8px 0', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
       <span style={{ fontSize: 16, flexShrink: 0 }}>{pm.icon}</span>
       <div style={{ flex: 1 }}>
@@ -95,6 +98,7 @@ function AdRow({ ad }: { ad: NormalizedAd }) {
         <div style={{ fontSize: 9, color: 'var(--muted)', textTransform: 'uppercase' }}>Score</div>
       </div>
     </div>
+    </>
   );
 }
 
@@ -155,6 +159,7 @@ export default function AdIntelligencePage() {
   const platforms5: AdPlatform[] = ['meta', 'tiktok', 'google', 'youtube', 'web'];
 
   return (
+    <>
         {/* Nav */}
         <div className="tab-bar" style={{ padding: '0 32px', background: 'var(--surface)', margin: 0, borderBottom: '1px solid var(--border)' }}>
           {(['overview', 'platforms', 'patterns', 'generator'] as const).map(t => (
@@ -464,5 +469,6 @@ export default function AdIntelligencePage() {
             </>
           )}
         </div>
+    </>
   );
 }

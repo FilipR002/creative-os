@@ -45,14 +45,17 @@ const LEVEL_META = [
 
 function ProgressBar({ value, color = 'var(--indigo)' }: { value: number; color?: string }) {
   return (
+    <>
     <div style={{ background: 'var(--border)', borderRadius: 99, height: 4, overflow: 'hidden' }}>
       <div style={{ width: `${value}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.4s ease' }} />
     </div>
+    </>
   );
 }
 
 function ScoreBar({ label, value }: { label: string; value: number }) {
   return (
+    <>
     <div style={{ marginBottom: 6 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
         <span style={{ fontSize: 10, color: 'var(--muted)' }}>{label}</span>
@@ -60,6 +63,7 @@ function ScoreBar({ label, value }: { label: string; value: number }) {
       </div>
       <ProgressBar value={value * 100} color={value > 0.65 ? 'var(--emerald)' : value > 0.35 ? 'var(--amber)' : 'var(--rose)'} />
     </div>
+    </>
   );
 }
 
@@ -67,6 +71,7 @@ function AdCard({ ad, selected, onToggle }: { ad: CIAdItem; selected: boolean; o
   const [expanded, setExpanded] = useState(false);
   const ec = EMOTION_COLOR[ad.emotionalTrigger] ?? '#6b7280';
   return (
+    <>
     <div style={{
       background: 'var(--surface)', border: `1px solid ${selected ? 'var(--indigo)' : 'var(--border)'}`,
       borderRadius: 10, padding: 14, cursor: 'pointer',
@@ -119,6 +124,7 @@ function AdCard({ ad, selected, onToggle }: { ad: CIAdItem; selected: boolean; o
         </div>
       )}
     </div>
+    </>
   );
 }
 
@@ -132,6 +138,7 @@ function ClusterCard({ cluster, ads, onExport }: {
   const topHook = myAds.sort((a, b) => b.performanceSignal - a.performanceSignal)[0]?.hook ?? '';
 
   return (
+    <>
     <div className="intel-panel" style={{ border: `1px solid ${meta.color}33` }}>
       <div className="intel-panel-header">
         <span style={{ fontSize: 16 }}>{meta.icon}</span>
@@ -156,6 +163,7 @@ function ClusterCard({ cluster, ads, onExport }: {
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -309,6 +317,7 @@ export default function CompetitorIntelligencePage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
+    <>
         {/* Top bar */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 2 }}>
           {(['analyze', 'results', 'exports', 'monitoring'] as const).map(t => (
@@ -789,5 +798,6 @@ export default function CompetitorIntelligencePage() {
             </>
           )}
         </div>
+    </>
   );
 }

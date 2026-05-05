@@ -33,12 +33,14 @@ function fmtMeta(fmt: string) {
 function scoreBar(s: number) {
   const c = s >= 0.65 ? '#10b981' : s >= 0.40 ? '#f59e0b' : '#6b7280';
   return (
+    <>
     <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
       <div style={{ flex: 1, height: 2, background: 'var(--border)', borderRadius: 99 }}>
         <div style={{ height: '100%', width: `${s * 100}%`, background: c, borderRadius: 99 }} />
       </div>
       <span style={{ fontSize: 9, color: c, fontWeight: 700, flexShrink: 0 }}>{(s * 100).toFixed(0)}%</span>
     </div>
+    </>
   );
 }
 
@@ -67,6 +69,7 @@ function CreativeCard({
   const { icon, color, label } = fmtMeta(creative.format);
 
   return (
+    <>
     <div
       draggable
       onDragStart={e => onDragStart(e, creative)}
@@ -102,6 +105,7 @@ function CreativeCard({
       )}
       {creative.score && scoreBar(creative.score.totalScore)}
     </div>
+    </>
   );
 }
 
@@ -109,6 +113,7 @@ function CreativeCard({
 
 function DropLine({ active }: { active: boolean }) {
   return (
+    <>
     <div style={{
       height: active ? 3 : 2,
       borderRadius: 99,
@@ -117,6 +122,7 @@ function DropLine({ active }: { active: boolean }) {
       transition: 'all 0.1s',
       boxShadow: active ? '0 0 6px var(--indigo)' : 'none',
     }} />
+    </>
   );
 }
 
@@ -153,6 +159,7 @@ function AdGroupColumn({
   const isEmpty      = group.creatives.length === 0;
 
   return (
+    <>
     <div
       style={{
         minWidth: 240,
@@ -255,6 +262,7 @@ function AdGroupColumn({
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -465,6 +473,7 @@ export default function CampaignWorkspacePage() {
   const campName = campaign?.name || campaign?.concept?.coreMessage?.slice(0, 50) || 'Campaign';
 
   return (
+    <>
         {/* Top bar */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <Link href="/campaigns" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>← Campaigns</Link>
@@ -555,5 +564,6 @@ export default function CampaignWorkspacePage() {
             </div>
           )}
         </div>
+    </>
   );
 }

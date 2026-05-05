@@ -148,6 +148,7 @@ function deriveInsights(result: RunResult): Insight[] {
 function VersionBar({ state, onRevert }: { state: EditorState; onRevert: (n: number) => void }) {
   if (state.versions.length <= 1) return null;
   return (
+    <>
     <div className="version-bar">
       <span className="version-bar-label">History</span>
       {state.versions.map(v => (
@@ -162,6 +163,7 @@ function VersionBar({ state, onRevert }: { state: EditorState; onRevert: (n: num
         </button>
       ))}
     </div>
+    </>
   );
 }
 
@@ -795,7 +797,6 @@ export default function ResultPage() {
 
   if (!result || !copy || !editor) {
     return (
-              <main className="app-main" style={{ alignItems: 'center', justifyContent: 'center' }}>
           <div className="loading-spinner" />
     );
   }
@@ -818,7 +819,7 @@ export default function ResultPage() {
   }
 
   return (
-          <main className="app-main" style={{ position: 'relative' }}>
+    <>
         {rerunning && (
           <div className="loading-overlay">
             <div className="loading-inner">
@@ -1814,6 +1815,7 @@ export default function ResultPage() {
             onClose={handleImproveClose}
           />
         )}
+    </>
   );
 }
 

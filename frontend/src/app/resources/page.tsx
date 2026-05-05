@@ -733,6 +733,7 @@ function ResourcesPageInner() {
             )}
           </div>
         </div>
+    </div>
   );
 }
 

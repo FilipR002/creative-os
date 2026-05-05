@@ -65,6 +65,7 @@ function TabButton({
   onClick: () => void;
 }) {
   return (
+    <>
     <button
       onClick={onClick}
       style={{
@@ -85,6 +86,7 @@ function TabButton({
     >
       {label}
     </button>
+    </>
   );
 }
 
@@ -98,6 +100,7 @@ function StrategySidebar({
   onSelect: (id: string) => void;
 }) {
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{
         fontSize:      10,
@@ -165,6 +168,7 @@ function StrategySidebar({
         );
       })}
     </div>
+    </>
   );
 }
 
@@ -179,6 +183,7 @@ function ProductionSidebar({ result }: { result: RunResult }) {
   ];
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{
         fontSize:      10,
@@ -213,12 +218,14 @@ function ProductionSidebar({ result }: { result: RunResult }) {
         </div>
       ))}
     </div>
+    </>
   );
 }
 
 function SystemSidebar({ result }: { result: RunResult }) {
   const winner = result.winner;
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       <div style={{
         fontSize:      10,
@@ -275,6 +282,7 @@ function SystemSidebar({ result }: { result: RunResult }) {
         </div>
       ))}
     </div>
+    </>
   );
 }
 
@@ -458,7 +466,7 @@ export default function StudioPage() {
   const format = content?.format ?? runResult?.creatives[0]?.format ?? 'video';
 
   return (
-          <main className="app-main" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <>
 
         {/* ── Top bar ───────────────────────────────────────────────────────── */}
         <div style={{
@@ -615,5 +623,6 @@ export default function StudioPage() {
           </div>
 
         </div>
+    </>
   );
 }

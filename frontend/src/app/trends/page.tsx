@@ -26,6 +26,7 @@ const EMOTION_COLOR: Record<string, string> = {
 function LifecycleTrack({ stage }: { stage: TrendStage }) {
   const stages: TrendStage[] = ['early', 'emerging', 'rising', 'peak', 'saturating'];
   return (
+    <>
     <div style={{ position: 'relative', height: 28, margin: '8px 0' }}>
       {/* Track */}
       <div style={{ position: 'absolute', top: '50%', left: 0, right: 0, height: 3, background: 'var(--border)', borderRadius: 99, transform: 'translateY(-50%)' }}>
@@ -46,6 +47,7 @@ function LifecycleTrack({ stage }: { stage: TrendStage }) {
         }} />
       ))}
     </div>
+    </>
   );
 }
 
@@ -56,6 +58,7 @@ function TrendCard({ trend, onUse }: { trend: PredictedTrend; onUse: (t: Predict
   const isHot = trend.currentStage === 'early' || trend.currentStage === 'emerging';
 
   return (
+    <>
     <div className="intel-panel" style={{ border: `1px solid ${sm.color}33`, cursor: 'pointer' }}
       onClick={() => setExpanded(e => !e)}>
       <div className="intel-panel-header">
@@ -113,6 +116,7 @@ function TrendCard({ trend, onUse }: { trend: PredictedTrend; onUse: (t: Predict
         )}
       </div>
     </div>
+    </>
   );
 }
 
@@ -130,9 +134,11 @@ function MiniSparkline({ snapshots }: { snapshots: { viralityScore: number }[] }
   const prev  = snapshots[snapshots.length - 2]?.viralityScore ?? last;
   const color = last >= prev ? '#10b981' : '#ef4444';
   return (
+    <>
     <svg width={w} height={h} style={{ overflow: 'visible' }}>
       <polyline points={pts} fill="none" stroke={color} strokeWidth={1.5} />
     </svg>
+    </>
   );
 }
 
@@ -176,6 +182,7 @@ export default function TrendsPage() {
   const stages: TrendStage[] = ['early', 'emerging', 'rising', 'peak', 'saturating'];
 
   return (
+    <>
         {/* Nav */}
         <div className="tab-bar" style={{ padding: '0 32px', background: 'var(--surface)', margin: 0, borderBottom: '1px solid var(--border)' }}>
           {(['feed', 'lifecycle', 'history'] as const).map(t => (
@@ -381,5 +388,6 @@ export default function TrendsPage() {
             </>
           )}
         </div>
+    </>
   );
 }

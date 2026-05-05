@@ -285,6 +285,7 @@ export default function CampaignsPage() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
+    <>
         <div className="page-content">
 
           {/* Header */}
@@ -385,7 +386,6 @@ export default function CampaignsPage() {
           )}
 
         </div>
-      </main>
 
       {/* Delete modal */}
       {deleteTarget && (
@@ -406,6 +406,6 @@ export default function CampaignsPage() {
           loading={grouping}
         />
       )}
-    </div>
+    </>
   );
 }

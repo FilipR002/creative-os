@@ -215,9 +215,9 @@ export default function SystemAuditPage() {
   });
 
   if (loading) return (
-          <main className="app-main"><div className="page-content" style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
-        <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
-      </div>
+    <div className="page-content" style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+      <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
+    </div>
   );
 
   const orphans   = auditReport?.orphanEndpoints   ?? [];

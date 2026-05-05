@@ -55,6 +55,7 @@ export default function ObservatoryPage() {
   }
 
   return (
+    <>
         <div className="page-content">
           <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div>
@@ -137,9 +138,8 @@ export default function ObservatoryPage() {
               : <EvolutionLockedState onEnable={togglePro} />
           )}
         </div>
-      </main>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-    </div>
+    </>
   );
 }
 
