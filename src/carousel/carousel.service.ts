@@ -6,7 +6,8 @@ import { ImageService } from '../image/image.service';
 import { CompositorService } from '../compositor/compositor.service';
 import { StyleTranslatorService } from '../user-style/style-translator.service';
 import { GenerateCarouselDto } from './carousel.dto';
-import { buildPersonaBlock }   from '../resources/persona-prompt';
+import { buildPersonaBlock }          from '../resources/persona-prompt';
+import { buildCarouselFormatBlock }   from '../resources/carousel-formats';
 import { autoSelectTemplate }  from '../compositor/templates/template-engine';
 import type { CompositorInput, AdTone, AdSize } from '../compositor/types/compositor.types';
 import { ResourcesService }    from '../resources/resources.service';
@@ -107,11 +108,13 @@ export class CarouselService {
     const slideSequence = buildSlideSequence(dto.slideCount);
     const platform      = dto.platform || concept.platform || 'instagram';
 
-    const personaBlock = buildPersonaBlock(dto.resourceCtx);
+    const personaBlock      = buildPersonaBlock(dto.resourceCtx);
+    const carouselFormatBlock = buildCarouselFormatBlock(angleLabel);
 
     const systemPrompt = [
-      `You are an expert carousel ad copywriter for social media.`,
-      `You write slide-by-slide carousel scripts that stop scroll, teach value, and drive action.`,
+      `You are an expert carousel copywriter for Instagram, TikTok, and Facebook.`,
+      `You write slide-by-slide carousel scripts that stop scroll, teach real value, and drive action.`,
+      `You know exactly which carousel FORMAT works for each angle and you use it.`,
       `Return ONLY valid JSON array. No markdown. No explanation. No backticks.`,
       dto.styleContext ? `\n${dto.styleContext}` : '',
       personaBlock || '',
@@ -132,16 +135,18 @@ CONCEPT:
 ${objectionLine}
 ${valuePropLine}
 
+${carouselFormatBlock}
+
 SLIDE SEQUENCE: ${slideSequence.join(' → ')}
 
 RULES:
-- First slide = hook only (make them swipe)
-- Middle slides = teach value, one idea per slide
-- Last slide = CTA only (the only slide with a call-to-action button)
-- hook field: short punchy opener connected to the brief (max 8 words)
-- headline: bold statement or insight (max 10 words)
-- body: 1-2 sentences of value or insight
-- cta field: ONLY on the last slide, leave empty string "" on all others
+- First slide = hook only — use one of the proven hook patterns from the format above, adapted to this niche
+- Middle slides = one clear idea per slide, short and easy to read while swiping
+- Last slide = CTA only
+- hook field: only on slide 1, max 8 words, must make the reader want to swipe
+- headline: bold statement or insight, max 10 words
+- body: 1-2 sentences max, plain language, real value
+- cta field: ONLY on the last slide, empty string "" on all others
 
 Return a JSON array of exactly ${dto.slideCount} slide objects:
 [
