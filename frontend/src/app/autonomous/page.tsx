@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getAutonomousDashboard, pauseAutonomousSystem, resumeAutonomousSystem,
   stepAutonomousSystem, lockAutonomousSystem, setAutonomousMode,
@@ -101,9 +100,6 @@ export default function AutonomousPage() {
   const healthColor = health === 'HEALTHY' ? '#10b981' : health === 'WARNING' ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Header */}
@@ -201,7 +197,5 @@ export default function AutonomousPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getProfitZones,
   executeProfitAction,
@@ -84,9 +83,6 @@ export default function ProfitZonesPage() {
   const ZONE_ORDER: Array<'SCALE' | 'FIX' | 'KILL'> = ['SCALE', 'FIX', 'KILL'];
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24 }}>
@@ -150,7 +146,5 @@ export default function ProfitZonesPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
 
 interface InsightItem { icon: string; title: string; sub: string; }
@@ -71,9 +70,6 @@ export default function InsightsPage() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <div className="page-header">
             <h1 className="page-title">What works best for you</h1>
@@ -96,7 +92,5 @@ export default function InsightsPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
   );
 }

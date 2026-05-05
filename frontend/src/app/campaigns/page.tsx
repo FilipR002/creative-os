@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Sidebar } from '@/components/Sidebar';
 import {
   listCampaigns,
   deleteCampaign,
@@ -286,9 +285,6 @@ export default function CampaignsPage() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Header */}

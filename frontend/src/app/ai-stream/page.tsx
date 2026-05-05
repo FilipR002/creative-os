@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   connectAutonomousStream, pauseAutonomousSystem, resumeAutonomousSystem,
   type AIBrainEvent,
@@ -39,9 +38,6 @@ export default function AIStreamPage() {
   const filtered = filter === 'ALL' ? events : events.filter(e => e.type === filter);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Header */}
@@ -128,7 +124,5 @@ export default function AIStreamPage() {
             <span>Session: {totalReceived}</span>
           </div>
         </div>
-      </main>
-    </div>
   );
 }

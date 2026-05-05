@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getProfitZones,
   type ProfitProfile,
@@ -48,9 +47,6 @@ export default function CostOptimizerPage() {
   const wasteList = campaigns.filter(c => c.efficiencyScore < 20);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24 }}>
@@ -174,7 +170,5 @@ export default function CostOptimizerPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

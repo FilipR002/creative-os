@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { getPortfolioRevenueForecast } from '@/lib/api/creator-client';
 
 interface PortfolioForecast {
@@ -33,9 +32,6 @@ export default function RevenuePage() {
   }, [days]);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 20 }}>
@@ -114,7 +110,5 @@ export default function RevenuePage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

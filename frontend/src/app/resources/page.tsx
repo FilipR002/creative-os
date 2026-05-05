@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getResource,
   upsertResource,
@@ -557,9 +556,6 @@ function ResourcesPageInner() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', background: '#080808', overflow: 'hidden' }}>
-      <Sidebar />
-
-      <main className="app-main">
         {/* Header */}
         <div style={{ borderBottom: '1px solid #111', padding: '20px 32px', flexShrink: 0 }}>
           <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.5px', color: '#e2e8f0' }}>Resources</div>
@@ -737,8 +733,6 @@ function ResourcesPageInner() {
             )}
           </div>
         </div>
-      </main>
-    </div>
   );
 }
 

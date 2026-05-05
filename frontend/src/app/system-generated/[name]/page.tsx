@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sidebar } from '@/components/Sidebar';
 import { getGeneratedTool, type GeneratedToolConfig } from '@/lib/api/creator-client';
 
 const METHOD_HEX: Record<string, string> = {
@@ -176,9 +175,6 @@ export default function GeneratedToolPage() {
   }, [name]);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Breadcrumb */}
@@ -250,7 +246,5 @@ export default function GeneratedToolPage() {
           ) : null}
 
         </div>
-      </main>
-    </div>
   );
 }

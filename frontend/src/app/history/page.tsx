@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Sidebar } from '@/components/Sidebar';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
 
 function formatIcon(fmt: string) {
@@ -38,9 +37,6 @@ export default function HistoryPage() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <div className="page-header">
             <h1 className="page-title">History</h1>
@@ -78,7 +74,5 @@ export default function HistoryPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
   );
 }

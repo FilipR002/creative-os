@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getProfitModel,
   triggerProfitLearning,
@@ -42,9 +41,6 @@ export default function SelfLearningPage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -147,7 +143,5 @@ export default function SelfLearningPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

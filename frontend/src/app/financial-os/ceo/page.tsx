@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getCeoPortfolio,
   getCeoStrategy,
@@ -31,9 +30,6 @@ export default function AICEOPage() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24 }}>
@@ -167,7 +163,5 @@ export default function AICEOPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

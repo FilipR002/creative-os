@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { getSupabase } from '@/lib/supabase';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
 import { listCampaigns } from '@/lib/api/creator-client';
@@ -124,10 +123,6 @@ export default function DashboardPage() {
   const readyToLaunch  = apiStats?.ready ?? generated;
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-
-      <main className="app-main">
         <div className="mx-auto max-w-6xl px-8 py-8">
 
           {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -236,7 +231,5 @@ export default function DashboardPage() {
           </div>
 
         </div>
-      </main>
-    </div>
   );
 }

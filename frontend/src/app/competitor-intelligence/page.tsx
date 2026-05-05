@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getCIAutonomy, setCIAutonomy,
   listCompetitorJobs, getCompetitorResult, exportIntelToBuilder,
@@ -310,10 +309,6 @@ export default function CompetitorIntelligencePage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
-
         {/* Top bar */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '0 32px', display: 'flex', alignItems: 'center', gap: 2 }}>
           {(['analyze', 'results', 'exports', 'monitoring'] as const).map(t => (
@@ -794,7 +789,5 @@ export default function CompetitorIntelligencePage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

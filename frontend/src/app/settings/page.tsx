@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 
 const ENGINE_CONTEXT = [
   ['Goal Type',      'Sales'],
@@ -22,9 +21,6 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <div className="page-header">
             <h1 className="page-title">Settings</h1>
@@ -73,7 +69,5 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
   );
 }

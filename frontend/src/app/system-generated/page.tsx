@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Sidebar } from '@/components/Sidebar';
 import { getGeneratedTools, type GeneratedToolConfig } from '@/lib/api/creator-client';
 
 const METHOD_HEX: Record<string, string> = {
@@ -19,9 +18,6 @@ export default function SystemGeneratedIndexPage() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24 }}>
@@ -74,7 +70,5 @@ export default function SystemGeneratedIndexPage() {
           )}
 
         </div>
-      </main>
-    </div>
   );
 }

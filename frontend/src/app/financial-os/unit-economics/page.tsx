@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getFeatureProfits,
   getUnitEconomics,
@@ -48,9 +47,6 @@ export default function UnitEconomicsPage() {
   ];
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Header */}
@@ -222,7 +218,5 @@ export default function UnitEconomicsPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

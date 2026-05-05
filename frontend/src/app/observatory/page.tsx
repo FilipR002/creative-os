@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getEvolutionStatus,
   getEvolutionHealth,
@@ -56,9 +55,6 @@ export default function ObservatoryPage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div>

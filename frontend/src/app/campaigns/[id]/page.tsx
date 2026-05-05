@@ -465,10 +465,6 @@ export default function CampaignWorkspacePage() {
   const campName = campaign?.name || campaign?.concept?.coreMessage?.slice(0, 50) || 'Campaign';
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
-
         {/* Top bar */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <Link href="/campaigns" style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'none' }}>← Campaigns</Link>
@@ -559,8 +555,5 @@ export default function CampaignWorkspacePage() {
             </div>
           )}
         </div>
-
-      </main>
-    </div>
   );
 }

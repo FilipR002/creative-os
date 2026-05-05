@@ -531,24 +531,16 @@ function CreatePageInner() {
   // ─── Render ───────────────────────────────────────────────────────────────
   if (step === 'gallery') {
     return (
-      <div className="app-shell">
-        <Sidebar />
-        <main className="app-main" style={{ display: 'flex', flexDirection: 'column' }}>
+              <main className="app-main" style={{ display: 'flex', flexDirection: 'column' }}>
           <TemplateGallery
             templates={templates.length > 0 ? templates : []}
             onSelect={handleGallerySelect}
             defaultFormat={format as GalleryFormat}
           />
-        </main>
-      </div>
     );
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
-
         {/* ── Top bar ──────────────────────────────────────────────────────── */}
         <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
           <button
@@ -1525,8 +1517,6 @@ function CreatePageInner() {
           )}
 
         </div>
-      </main>
-    </div>
   );
 }
 

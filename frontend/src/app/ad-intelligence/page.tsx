@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   aggregateAdIntel, getAdPlatformAnalysis, getUnifiedAdInsights, getAllNormalizedAds,
   generateMultiPlatformAd,
@@ -156,9 +155,6 @@ export default function AdIntelligencePage() {
   const platforms5: AdPlatform[] = ['meta', 'tiktok', 'google', 'youtube', 'web'];
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         {/* Nav */}
         <div className="tab-bar" style={{ padding: '0 32px', background: 'var(--surface)', margin: 0, borderBottom: '1px solid var(--border)' }}>
           {(['overview', 'platforms', 'patterns', 'generator'] as const).map(t => (
@@ -468,7 +464,5 @@ export default function AdIntelligencePage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

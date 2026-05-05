@@ -120,7 +120,12 @@
       "Bash(curl -s http://localhost:4000/api/evolution/status -H 'x-user-id: 00000000-0000-0000-0000-000000000001')",
       "Bash(lsof -ti :4000 -sTCP:LISTEN)",
       "Bash(awk '{print \"   PID=\" $2, \"STATUS=UP\"}')",
-      "Bash(curl -s http://localhost:4000/api/outcomes/weights -H 'x-user-id: 00000000-0000-0000-0000-000000000777')"
+      "Bash(curl -s http://localhost:4000/api/outcomes/weights -H 'x-user-id: 00000000-0000-0000-0000-000000000777')",
+      "mcp__plugin_claude-mem_mcp-search__search",
+      "mcp__plugin_claude-mem_mcp-search__get_observations",
+      "mcp__plugin_claude-mem_mcp-search__timeline",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

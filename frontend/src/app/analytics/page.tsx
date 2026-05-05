@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { loadHistory } from '@/lib/api/run-client';
 
 const SYSTEMS = ['AI Campaign Engine', 'Concept Generator', 'Angle Intelligence', 'Outcome Learning Loop', 'Angle Evolution Engine'];
@@ -19,9 +18,6 @@ export default function AnalyticsPage() {
   const total     = history.length;
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
             <div>
@@ -94,7 +90,5 @@ export default function AnalyticsPage() {
             ))}
           </div>
         </div>
-      </main>
-    </div>
   );
 }

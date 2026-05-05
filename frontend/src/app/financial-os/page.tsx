@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getCostSummary,
   getProfitZones,
@@ -27,9 +26,6 @@ export default function FinancialOsOverviewPage() {
   }, []);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24 }}>
@@ -106,7 +102,5 @@ export default function FinancialOsOverviewPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

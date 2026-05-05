@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   runTrendPrediction, getPredictedTrends, getTrendSummary, getTrendHistory,
   type PredictedTrend, type TrendSummary, type TrendStage, type TrendHistoryEntry,
@@ -177,9 +176,6 @@ export default function TrendsPage() {
   const stages: TrendStage[] = ['early', 'emerging', 'rising', 'peak', 'saturating'];
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         {/* Nav */}
         <div className="tab-bar" style={{ padding: '0 32px', background: 'var(--surface)', margin: 0, borderBottom: '1px solid var(--border)' }}>
           {(['feed', 'lifecycle', 'history'] as const).map(t => (
@@ -385,7 +381,5 @@ export default function TrendsPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

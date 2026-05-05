@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getOrchestratorRules, getMemoryWeights, getHookStrategy,
   getAdminAuditLog, getSelfLearningLog, getEvolutionLog, getFatigueAll,
@@ -92,9 +91,6 @@ export default function ProModePage() {
   }, [probe]);
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
           <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>🔬 Pro Diagnostics</h1>
           <p style={{ fontSize: 13, color: 'var(--sub)', marginBottom: 24 }}>All internal subsystems. Real API calls only.</p>
@@ -195,7 +191,5 @@ export default function ProModePage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
   );
 }

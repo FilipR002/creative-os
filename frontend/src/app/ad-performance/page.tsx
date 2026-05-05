@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 
 export default function AdPerformancePage() {
   const [campaignId,   setCampaignId]   = useState('');
@@ -23,9 +22,6 @@ export default function AdPerformancePage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content" style={{ display: 'flex', gap: 20, padding: '28px 32px' }}>
           {/* Left form col */}
           <div className="adperf-form-col">
@@ -100,7 +96,5 @@ export default function AdPerformancePage() {
             </div>
           </div>
         </div>
-      </main>
-    </div>
   );
 }

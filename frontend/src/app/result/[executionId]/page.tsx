@@ -784,28 +784,19 @@ export default function ResultPage() {
 
   if (notFound) {
     return (
-      <div className="app-shell">
-        <Sidebar />
-        <main className="app-main">
           <div className="empty-page">
             <div className="empty-page-icon">🔍</div>
             <div className="empty-page-title">Result not found</div>
             <div className="empty-page-sub">This session may have expired.</div>
             <Link href="/campaigns/new" className="empty-page-cta">← New Campaign</Link>
           </div>
-        </main>
-      </div>
     );
   }
 
   if (!result || !copy || !editor) {
     return (
-      <div className="app-shell">
-        <Sidebar />
-        <main className="app-main" style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <main className="app-main" style={{ alignItems: 'center', justifyContent: 'center' }}>
           <div className="loading-spinner" />
-        </main>
-      </div>
     );
   }
 
@@ -827,9 +818,7 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main" style={{ position: 'relative' }}>
+          <main className="app-main" style={{ position: 'relative' }}>
         {rerunning && (
           <div className="loading-overlay">
             <div className="loading-inner">
@@ -1825,10 +1814,6 @@ export default function ResultPage() {
             onClose={handleImproveClose}
           />
         )}
-
-
-      </main>
-    </div>
   );
 }
 

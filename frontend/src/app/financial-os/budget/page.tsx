@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getBudgetStatus,
   triggerRebalance,
@@ -50,9 +49,6 @@ export default function BudgetPage() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 24, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
@@ -178,7 +174,5 @@ export default function BudgetPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

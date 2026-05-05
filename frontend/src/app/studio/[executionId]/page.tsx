@@ -458,10 +458,7 @@ export default function StudioPage() {
   const format = content?.format ?? runResult?.creatives[0]?.format ?? 'video';
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-
-      <main className="app-main" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <main className="app-main" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
         {/* ── Top bar ───────────────────────────────────────────────────────── */}
         <div style={{
@@ -618,7 +615,5 @@ export default function StudioPage() {
           </div>
 
         </div>
-      </main>
-    </div>
   );
 }

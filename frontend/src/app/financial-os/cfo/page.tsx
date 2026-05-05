@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getCfoForecast,
   getCfoInsights,
@@ -41,9 +40,6 @@ export default function AICFOPage() {
   function fmtPct(n: number | undefined | null) { return `${((n ?? 0) * 100).toFixed(1)}%`; }
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           <div style={{ marginBottom: 20 }}>
@@ -159,7 +155,5 @@ export default function AICFOPage() {
             </>
           )}
         </div>
-      </main>
-    </div>
   );
 }

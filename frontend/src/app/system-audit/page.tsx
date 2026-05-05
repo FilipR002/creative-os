@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { Sidebar } from '@/components/Sidebar';
 import {
   getRegistryEndpoints, runSystemAudit, resolveEndpoint, resolveAllOrphans,
   type RegistryEndpoint, type RegistryResponse,
@@ -216,11 +215,9 @@ export default function SystemAuditPage() {
   });
 
   if (loading) return (
-    <div className="app-shell"><Sidebar />
-      <main className="app-main"><div className="page-content" style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
+          <main className="app-main"><div className="page-content" style={{ display: 'flex', justifyContent: 'center', padding: 60 }}>
         <div className="spin" style={{ width: 32, height: 32, border: '3px solid var(--border)', borderTopColor: 'var(--indigo)', borderRadius: '50%' }} />
-      </div></main>
-    </div>
+      </div>
   );
 
   const orphans   = auditReport?.orphanEndpoints   ?? [];
@@ -229,9 +226,6 @@ export default function SystemAuditPage() {
   const stats     = auditReport?.stats;
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <main className="app-main">
         <div className="page-content">
 
           {/* Header */}
@@ -470,7 +464,5 @@ export default function SystemAuditPage() {
           )}
 
         </div>
-      </main>
-    </div>
   );
 }
