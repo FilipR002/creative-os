@@ -109,7 +109,11 @@ model Angle {
   isActive      Boolean       @default(true)  @map("is_active")
   // Evolution lineage — null for seed angles
   parentSlug    String?       @map("parent_slug")
-  mutationDepth Int           @default(0) @map("mutation_depth")
+  mutationDepth   Int           @default(0) @map("mutation_depth")
+  // Visual overrides written by visual-type evolution mutations.
+  // Shape: { tone?, colorMood?, typographyStyle?, compositionStyle?, layoutComplexity? }
+  // Banner/carousel services merge these into the compositor style params.
+  visualOverrides Json?         @map("visual_overrides")
   creatives     Creative[]
   angleStats    AngleStats?
   angleWeights  AngleWeight[]

@@ -22,6 +22,7 @@ import type { AdTone, ColorScheme } from '../compositor/types/compositor.types';
 import { UserStyleService }        from './user-style.service';
 import { CreativeDNAService }      from '../creative-dna/creative-dna.service';
 import type { StyleProfileResponse } from './user-style.types';
+import type { AngleVisualOverrides }  from '../evolution/evolution.types';
 
 const THRESHOLD = 0.63; // weight above which a preference is "active"
 
@@ -43,14 +44,23 @@ export class StyleTranslatorService {
 
   /**
    * Resolve full compositor style params for a userId.
-   * @param userId      - the user whose style profile to read
-   * @param baseTone    - the angle-derived tone (caller's current naive pick)
-   * @param primaryColor - optional brand hex already on the campaign
+   *
+   * Priority chain (highest → lowest):
+   *   1. angleOverrides  — set by visual-type evolution mutations on Angle.visualOverrides
+   *   2. dnaHints        — CreativeDNA top visual dimensions (what performed best)
+   *   3. profile         — learned EWMA style weights
+   *   4. baseTone        — angle-label tone (naive fallback)
+   *
+   * @param userId          - the user whose style profile to read
+   * @param baseTone        - the angle-derived tone (caller's current naive pick)
+   * @param primaryColor    - optional brand hex already on the campaign
+   * @param angleOverrides  - optional visual overrides from a visually-mutated angle
    */
   async resolveCompositorStyle(
-    userId:        string,
-    baseTone:      AdTone,
-    primaryColor?: string,
+    userId:          string,
+    baseTone:        AdTone,
+    primaryColor?:   string,
+    angleOverrides?: AngleVisualOverrides | null,
   ): Promise<CompositorStyleParams> {
     // Fetch both sources in parallel
     const [profile, dnaHints] = await Promise.all([
@@ -58,16 +68,20 @@ export class StyleTranslatorService {
       this.dna.getCompositorHints().catch(() => null),
     ]);
 
-    // 1. Tone — refine from style weights, keep baseTone as fallback
-    const tone = profile ? this.deriveTone(profile, baseTone) : baseTone;
+    // 1. Tone — angle override wins, then style weights, then baseTone
+    const tone: AdTone =
+      (angleOverrides?.tone as AdTone | undefined) ??
+      (profile ? this.deriveTone(profile, baseTone) : baseTone);
 
-    // 2. Color scheme — DNA wins, then style profile, then tone-based fallback
-    const colorScheme =
+    // 2. Color scheme — angle override wins (via colorMood), then DNA, then profile, then fallback
+    const colorScheme: ColorScheme =
+      (angleOverrides?.colorMood ? this.colorMoodToScheme(angleOverrides.colorMood) : undefined) ??
       dnaHints?.colorScheme ??
       (profile ? this.deriveColorScheme(profile, tone) : this.toneToColorScheme(tone));
 
-    // 3. Font pairing — DNA wins, then style profile, then tone-based fallback
-    const fontPairingId =
+    // 3. Font pairing — angle override wins (via typographyStyle), then DNA, then profile, then fallback
+    const fontPairingId: string =
+      (angleOverrides?.typographyStyle ? this.typographyStyleToFontPairing(angleOverrides.typographyStyle, tone) : undefined) ??
       dnaHints?.fontPairingId ??
       (profile ? this.deriveFontPairingId(profile, tone, colorScheme) : this.toneToFontPairing(tone, colorScheme));
 
@@ -79,10 +93,42 @@ export class StyleTranslatorService {
     this.logger.debug(
       `[StyleTranslator] userId=${userId} ` +
       `baseTone=${baseTone} → tone=${tone} scheme=${colorScheme} font=${fontPairingId} ` +
-      `(dnaHints=${!!dnaHints} profile=${!!profile})`,
+      `(angleOverrides=${!!angleOverrides} dnaHints=${!!dnaHints} profile=${!!profile})`,
     );
 
     return { tone, colorScheme, fontPairingId, accentColor };
+  }
+
+  // ── colorMood → ColorScheme (for visual mutation overrides) ─────────────────
+
+  private colorMoodToScheme(colorMood: string): ColorScheme | undefined {
+    switch (colorMood) {
+      case 'dark':       return 'dark';
+      case 'light':      return 'light';
+      case 'vibrant':    return 'gradient';
+      case 'muted':      return 'light';
+      case 'monochrome': return 'dark';
+      case 'warm':       return 'brand';
+      case 'cool':       return 'dark';
+      default:           return undefined;
+    }
+  }
+
+  // ── typographyStyle → fontPairingId (for visual mutation overrides) ──────────
+
+  private typographyStyleToFontPairing(typographyStyle: string, tone: AdTone): string | undefined {
+    switch (typographyStyle) {
+      case 'display-serif':   return 'editorial-serif';
+      case 'editorial':       return 'luxury-editorial';
+      case 'modern-sans':     return 'modern-clean';
+      case 'geometric-bold':  return 'impact-modern';
+      case 'punchy':          return 'punchy';
+      case 'tech-saas':       return 'tech-saas';
+      case 'heavy-condensed': return 'heavy-condensed';
+      case 'warm-soft':       return 'warm-soft';
+      case 'sharp-modern':    return 'sharp-modern';
+      default:                return undefined;
+    }
   }
 
   // ── Tone derivation ──────────────────────────────────────────────────────────

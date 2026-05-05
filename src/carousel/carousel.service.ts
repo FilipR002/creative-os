@@ -180,6 +180,8 @@ For the LAST slide (slide ${dto.slideCount}) only:
             templateId:   dto.templateId   ?? null,
             // Brand color — passed through to compositor
             primaryColor: dto.primaryColor ?? null,
+            // Persist visual overrides from evolved angles so generateImages can apply them
+            angleVisualOverrides: (angleRecord as any)?.visualOverrides ?? null,
           },
         },
       });
@@ -257,11 +259,15 @@ For the LAST slide (slide ${dto.slideCount}) only:
     const adSize   = platformToAdSize(platform);
     const baseTone = angleToTone(metadata.angle);
 
-    // Resolve style from learned profile + DNA — replaces single naive colorScheme rule
+    // Read visual overrides from the angle (set by visual-type evolution mutations)
+    const angleVisualOverrides = (creative.content as any)?.angleVisualOverrides ?? null;
+
+    // Resolve style — angle overrides win over DNA + profile
     const resolvedStyle = await this.styleTranslator.resolveCompositorStyle(
       userId,
       baseTone,
       metadata.primaryColor || undefined,
+      angleVisualOverrides,
     );
 
     const compositorInputs: CompositorInput[] = slides.map((slide, i) => {

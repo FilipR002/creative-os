@@ -158,7 +158,14 @@ Rules:
           angleId: angleRecord?.id || null,
           format: 'BANNER',
           variant: dto.variant || 'A',
-          content: { banners, angle: angleLabel, templateId: dto.templateId ?? null, primaryColor: dto.primaryColor ?? null },
+          content: {
+            banners,
+            angle: angleLabel,
+            templateId:         dto.templateId  ?? null,
+            primaryColor:       dto.primaryColor ?? null,
+            // Persist visual overrides from evolved angles so generateImages can apply them
+            angleVisualOverrides: (angleRecord as any)?.visualOverrides ?? null,
+          },
         },
       });
 
@@ -226,11 +233,15 @@ Rules:
     // ── Step 2: Compositor pass ─────────────────────────────────────────────────
     const baseTone = angleToTone(content.angle || 'bold');
 
-    // Resolve style from learned profile + DNA — replaces single naive colorScheme rule
+    // Read visual overrides from the angle (set by visual-type evolution mutations)
+    const angleVisualOverrides = (creative.content as any)?.angleVisualOverrides ?? null;
+
+    // Resolve style — angle overrides win over DNA + profile
     const resolvedStyle = await this.styleTranslator.resolveCompositorStyle(
       userId,
       baseTone,
       metadata.primaryColor || undefined,
+      angleVisualOverrides,
     );
 
     const compositorInputs: CompositorInput[] = banners.map((banner, i) => {
