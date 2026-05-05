@@ -13,11 +13,14 @@ import { parseSize }          from './design/design-system';
 import { selectFontPairing }  from './fonts/font-library';
 import { getColorPalette }    from './design/design-system';
 import { renderTemplate, autoSelectTemplate } from './templates/template-engine';
+import { SatoriRendererService } from './satori/satori-renderer.service';
 
 @Injectable()
 export class CompositorService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(CompositorService.name);
   private browser: Browser | null = null;
+
+  constructor(private readonly satoriRenderer: SatoriRendererService) {}
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -66,6 +69,15 @@ export class CompositorService implements OnModuleInit, OnModuleDestroy {
   // ─── Main render ───────────────────────────────────────────────────────────
 
   async render(input: CompositorInput): Promise<CompositorOutput> {
+    // ── Fast path: Satori (text-only templates, ~30-80ms, no browser) ─────────
+    if (this.satoriRenderer.canRender(input)) {
+      try {
+        return await this.satoriRenderer.render(input);
+      } catch (err: any) {
+        this.logger.warn(`Satori render failed, falling back to Puppeteer: ${err?.message}`);
+      }
+    }
+
     const startMs = Date.now();
 
     // 1. Resolve size
