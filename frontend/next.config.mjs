@@ -21,7 +21,8 @@ const securityHeaders = [
       "font-src 'self' https://fonts.gstatic.com",
       // Allow Supabase and Railway API calls
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.railway.app",
-      "img-src 'self' data: blob:",
+      // Allow Unsplash photos (template gallery backgrounds)
+      "img-src 'self' data: blob: https://images.unsplash.com https://plus.unsplash.com",
       "frame-ancestors 'none'",
     ].join('; '),
   },
