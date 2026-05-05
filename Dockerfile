@@ -29,4 +29,4 @@ RUN npm prune --omit=dev
 # ── 6. Start ──────────────────────────────────────────────────────────────────
 # Run pending migrations, then start the pre-compiled app with plain node.
 # No in-memory TypeScript compilation — cold start is now ~2s instead of ~30s.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/main.js"]
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/src/main.js"]
