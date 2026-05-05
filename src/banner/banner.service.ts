@@ -275,7 +275,7 @@ Rules:
       const adSize     = toAdSize(banner.size);
       const platform   = adSize === '1200x628' ? 'display' : 'instagram';
       const templateId = (metadata.templateId as CompositorInput['templateId'] | null)
-        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl);
+        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl, false, undefined, angleLabel);
       return {
         templateId,
         size: adSize,
@@ -292,6 +292,7 @@ Rules:
           fontPairingId: resolvedStyle.fontPairingId,
           primaryColor:  metadata.primaryColor || undefined,
           accentColor:   resolvedStyle.accentColor,
+          angle:         angleLabel,
         },
       };
     });

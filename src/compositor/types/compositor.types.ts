@@ -98,7 +98,16 @@ export type TemplateId =
   | 'reddit-thread'
   | 'email-mockup'
   | 'receipt-style'
-  | 'bundle-stack';
+  | 'bundle-stack'
+  // ── Creative Satori templates (angle-routed) ──────────────────────────────────
+  | 'testimonial-card'    // stars + quote + author row + trustpilot badge
+  | 'versus-slide'        // left (without) vs right (with us) split panel
+  | 'before-after-slide'  // top=before dark / bottom=after accent with arrow divider
+  | 'press-slide'         // media logo bar + pull quote + CTA
+  | 'point-out-slide'     // product zone + feature callout labels
+  | 'gallery-slide'       // 2×2 color grid + footer headline bar
+  | 'chat-native'         // iMessage-style conversation bubbles
+  | 'offer-drop';         // large circular offer badge + CTA
 
 export type AdSize =
   | '1080x1080'   // square — Instagram, Facebook
@@ -146,6 +155,7 @@ export interface CompositorInput {
     fontPairingId?: string;         // override auto-selection
     primaryColor?:  string;         // brand hex color
     accentColor?:   string;
+    angle?:         string;         // marketing angle label — drives template auto-selection
   };
 
   // Branding

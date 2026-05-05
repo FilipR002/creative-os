@@ -302,7 +302,7 @@ For the LAST slide (slide ${dto.slideCount}) only:
     const compositorInputs: CompositorInput[] = slides.map((slide, i) => {
       const slideType  = slideTypeForCompositor(slide.type);
       const templateId = (metadata.templateId as CompositorInput['templateId'] | null)
-        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl, false, slideType);
+        ?? autoSelectTemplate(resolvedStyle.tone, platform, !!results[i]?.imageUrl, false, slideType, angleLabel);
       return {
         templateId,
         size: adSize,
@@ -320,6 +320,7 @@ For the LAST slide (slide ${dto.slideCount}) only:
           fontPairingId: resolvedStyle.fontPairingId,
           primaryColor:  metadata.primaryColor || undefined,
           accentColor:   resolvedStyle.accentColor,
+          angle:         angleLabel,
         },
       };
     });

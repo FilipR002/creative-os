@@ -23,6 +23,7 @@ import { buildSatoriElement } from './satori-templates';
 // ─── Templates routed to Satori (no imageUrl required) ───────────────────────
 
 export const SATORI_TEMPLATE_IDS = new Set<TemplateId>([
+  // ── Redesigned 15 ──────────────────────────────────────────────────────────
   'minimal',
   'text-only-bold',
   'gradient-pop',
@@ -30,14 +31,23 @@ export const SATORI_TEMPLATE_IDS = new Set<TemplateId>([
   'bright-minimal',
   'cta-final',
   'stats-hero',
-  'bold-headline',    // text-over-gradient variant (no image)
+  'bold-headline',
   'problem-slide',
-  'story-hook',       // text variant (no image)
+  'story-hook',
   'color-block',
   'number-list',
   'brand-manifesto',
   'empathy-card',
   'hot-take',
+  // ── New 8 (angle-routed) ───────────────────────────────────────────────────
+  'testimonial-card',
+  'versus-slide',
+  'before-after-slide',
+  'press-slide',
+  'point-out-slide',
+  'gallery-slide',
+  'chat-native',
+  'offer-drop',
 ]);
 
 type SatoriFont = { name: string; data: ArrayBuffer; weight: 100|200|300|400|500|600|700|800|900; style: 'normal'|'italic' };

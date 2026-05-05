@@ -86,8 +86,8 @@ export function renderTemplate(
 }
 
 // ─── Auto-select best template based on context ───────────────────────────────
-// slideType mirrors carousel slide roles: cover | problem | proof | feature | cta
-// For banners, platform + tone drive selection.
+// Priority: angle → slideType → platform → tone
+// angle param drives the new creative-format Satori templates.
 
 export function autoSelectTemplate(
   tone:        AdTone,
@@ -95,12 +95,45 @@ export function autoSelectTemplate(
   hasImage:    boolean,
   isVideoMode?: boolean,
   slideType?:  'cover' | 'problem' | 'proof' | 'feature' | 'cta' | 'hook' | string,
+  angle?:      string,
 ): TemplateId {
   const p = platform.toLowerCase();
 
   if (isVideoMode) return 'bold-headline';
 
-  // ── Slide-type-aware selection (carousel) ──────────────────────────────────
+  // ── Angle-based routing (highest specificity) ─────────────────────────────
+  // Maps marketing angle labels → creative Satori templates
+  if (angle) {
+    const a = angle.toLowerCase();
+    if (a.match(/testimonial|review|social.proof|customer.said|verified/))
+      return 'testimonial-card';
+    if (a.match(/versus|comparison|vs\b|compare|alternative|switch/))
+      return 'versus-slide';
+    if (a.match(/transform|before.after|result|change|journey|glow.up/))
+      return 'before-after-slide';
+    if (a.match(/press|media|featured.in|authority|credib|as.seen/))
+      return 'press-slide';
+    if (a.match(/urgency|scarcity|flash|limited.time|offer|deal|discount|sale|save|promo/))
+      return 'offer-drop';
+    if (a.match(/chat|dm|message|conversation|native/))
+      return 'chat-native';
+    if (a.match(/point.out|feature|annotate|callout|showcase/))
+      return 'point-out-slide';
+    if (a.match(/gallery|collection|range|lookbook|grid/))
+      return 'gallery-slide';
+    if (a.match(/curiosity|discover|secret|reveal|what.if|hook|surprising/))
+      return 'story-hook';
+    if (a.match(/problem|pain|struggle|frustrat|broken|wrong|diagnos/))
+      return 'problem-slide';
+    if (a.match(/stat|number|proof|data|study|percent|results/))
+      return 'stats-hero';
+    if (a.match(/empathy|feel|understand|relat|you.re.not.alone/))
+      return 'empathy-card';
+    if (a.match(/manifesto|mission|believe|bold.claim|hot.take|opinion/))
+      return 'hot-take';
+  }
+
+  // ── Slide-type-aware selection (carousel) ─────────────────────────────────
   if (slideType) {
     switch (slideType) {
       case 'cover':
@@ -115,8 +148,7 @@ export function autoSelectTemplate(
         return 'problem-slide';
 
       case 'proof':
-        // Stats or testimonial — pick based on whether headline looks like a number
-        return 'testimonial'; // can be overridden by service logic
+        return 'testimonial-card';
 
       case 'feature':
         return 'feature-list';
@@ -126,12 +158,12 @@ export function autoSelectTemplate(
     }
   }
 
-  // ── Platform-first heuristics ──────────────────────────────────────────────
-  if (p.includes('tiktok')) return 'story-hook';
+  // ── Platform-first heuristics ─────────────────────────────────────────────
+  if (p.includes('tiktok'))                           return 'story-hook';
   if (p.includes('instagram') && tone === 'friendly') return 'ugc-style';
-  if (p.includes('display') || p.includes('google')) return 'bright-minimal';
+  if (p.includes('display')   || p.includes('google'))return 'bright-minimal';
 
-  // ── Tone-first fallbacks ───────────────────────────────────────────────────
+  // ── Tone-first fallbacks ──────────────────────────────────────────────────
   switch (tone) {
     case 'bold':
     case 'urgent':
@@ -148,7 +180,6 @@ export function autoSelectTemplate(
       return hasImage ? 'full-bleed' : 'ugc-style';
   }
 
-  // Default
   return hasImage ? 'full-bleed' : 'minimal';
 }
 
@@ -541,4 +572,13 @@ export const TEMPLATE_CATALOG: TemplateMetadata[] = [
   { id: 'email-mockup',     name: 'Email Mockup',     description: 'Brand email preview with header, subject, and primary CTA.',                           bestFor: ['email-style hooks', 'social-native'],   tones: ['minimal', 'friendly'],      requiresImage: false },
   { id: 'receipt-style',    name: 'Receipt Style',    description: 'Dotted-border receipt listing items and total value.',                                 bestFor: ['offers', 'value-stack'],                tones: ['minimal', 'bold'],          requiresImage: false },
   { id: 'bundle-stack',     name: 'Bundle Stack',     description: 'Cascading product stack with old/new price.',                                          bestFor: ['ecommerce', 'bundles'],                 tones: ['bold', 'minimal'],          requiresImage: false },
+  // ── Creative Satori templates (angle-routed) ────────────────────────────────
+  { id: 'testimonial-card',   name: 'Testimonial Card',   description: 'Stars → quote → author avatar + Trustpilot badge. Reeeads social-proof pattern.',        bestFor: ['social proof', 'reviews', 'trust-building'],           tones: ['friendly', 'minimal', 'premium'], requiresImage: false },
+  { id: 'versus-slide',       name: 'Versus Slide',       description: 'Dark "Without" left vs accent "With Us" right. VS divider circle on seam.',              bestFor: ['comparison ads', 'positioning', 'switching'],          tones: ['bold', 'urgent', 'energetic'],    requiresImage: false },
+  { id: 'before-after-slide', name: 'Before / After',     description: 'Dark BEFORE top half, accent AFTER bottom half with arrow circle on divider.',           bestFor: ['transformation', 'results', 'fitness', 'coaching'],    tones: ['bold', 'energetic', 'friendly'],  requiresImage: false },
+  { id: 'press-slide',        name: 'Press Slide',        description: '"As seen in" Forbes/TechCrunch logo bar + pull quote + CTA.',                           bestFor: ['authority', 'PR plays', 'credibility', 'B2B'],        tones: ['minimal', 'premium', 'bold'],     requiresImage: false },
+  { id: 'point-out-slide',    name: 'Point-Out Slide',    description: 'Central product placeholder + 3 annotation callouts with dash connectors.',             bestFor: ['feature highlights', 'product showcases', 'SaaS'],    tones: ['minimal', 'friendly', 'bold'],    requiresImage: false },
+  { id: 'gallery-slide',      name: 'Gallery Slide',      description: '2×2 tinted colour grid simulating product shots + headline footer bar.',                 bestFor: ['product range', 'lookbooks', 'collections'],           tones: ['minimal', 'premium', 'friendly'], requiresImage: false },
+  { id: 'chat-native',        name: 'Chat Native',        description: 'iMessage-style conversation. Customer asks, brand answers. Native-ad feel.',             bestFor: ['social-native', 'empathy', 'UGC-style'],               tones: ['friendly', 'minimal'],            requiresImage: false },
+  { id: 'offer-drop',         name: 'Offer Drop',         description: 'Large bordered offer circle with SAVE label + eyebrow pill + CTA.',                     bestFor: ['flash sales', 'discount campaigns', 'urgency'],        tones: ['bold', 'urgent', 'energetic'],    requiresImage: false },
 ];
