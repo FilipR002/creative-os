@@ -9,27 +9,46 @@
 import { NextResponse } from 'next/server';
 
 const PHOTO_QUERIES: Record<string, string> = {
-  // ── Original 8 ──────────────────────────────────────────────────────────────
-  'full-bleed':         'cinematic lifestyle dramatic portrait outdoor',
-  'dark-luxury':        'dark marble luxury product black minimal',
-  'overlay-card':       'cityscape bokeh night lights urban',
-  'ugc-style':          'authentic person phone lifestyle selfie',
-  'magazine-editorial': 'editorial fashion beauty cosmetics flat lay',
-  'story-hook':         'dramatic moody landscape mountain cinematic',
-  'product-center':     'product photography studio clean white minimal',
-  'neon-dark':          'neon lights cyberpunk city night',
-  // ── Batch 5 (dark-design templates only) ─────────────────────────────────────
-  'caption-style':      'lifestyle portrait outdoor social media candid',
-  'tiktok-native':      'person dancing street style youth urban lifestyle',
-  'video-thumbnail':    'cinematic dramatic action portrait thumbnail bold',
-  'duotone-photo':      'fashion portrait studio editorial bold color',
-  'hot-take':           'dramatic bold neon abstract city night lights',
-  'poll-card':          'crowd people street lifestyle diverse urban',
-  'offer-announce':     'shopping sale retail colorful gift seasonal',
-  'limited-drop':       'luxury exclusive sneaker streetwear hype product',
-  'event-card':         'concert festival crowd lights music event night',
-  'award-winner':       'trophy award success achievement celebration gold',
-  'aurora-gradient':    'northern lights aurora borealis nature sky landscape',
+  // ── Original 8 — matched to template story ───────────────────────────────────
+  // full-bleed: "Stop Scrolling. This changes your game." — bold brand moment
+  'full-bleed':         'confident person brand lifestyle product modern marketing',
+  // dark-luxury: premium product dark background
+  'dark-luxury':        'luxury watch perfume jewelry product dark background minimal',
+  // overlay-card: urban brand ad vibe
+  'overlay-card':       'brand store shopping urban street style retail',
+  // ugc-style: authentic customer using product
+  'ugc-style':          'authentic person smiling using product phone happy customer',
+  // magazine-editorial: premium brand editorial layout
+  'magazine-editorial': 'magazine editorial brand beauty skincare product flatlay',
+  // story-hook: founder/entrepreneur story — person with purpose
+  'story-hook':         'entrepreneur founder confident business person working startup',
+  // product-center: clean product shot
+  'product-center':     'product studio white background clean minimal packshot',
+  // neon-dark: tech / app brand in dark environment
+  'neon-dark':          'tech startup app developer laptop neon dark office',
+  // ── Batch 5 — matched to template story ──────────────────────────────────────
+  // caption-style: "When I tried X for 30 days…" — personal transformation
+  'caption-style':      'person transformation result before after lifestyle progress',
+  // tiktok-native: "@brand · Discover what actually works" — creator/product
+  'tiktok-native':      'content creator filming product review phone trendy',
+  // video-thumbnail: "Watch the demo · 2.4M views" — presenter or product screen
+  'video-thumbnail':    'presenter speaking product demo screen tutorial confident',
+  // duotone-photo: "A new kind of brand. Bold by design." — fashion/brand editorial
+  'duotone-photo':      'fashion brand editorial bold design portrait creative',
+  // hot-take: "Most experts are just guessing." — debate / bold opinion
+  'hot-take':           'bold debate social media discussion opinion engagement people',
+  // poll-card: social poll — community / diverse audience
+  'poll-card':          'diverse group people community vote choice social poll',
+  // offer-announce: "40% Off Everything · Today Only" — shopping / sale
+  'offer-announce':     'shopping bags sale discount retail store happy customer',
+  // limited-drop: "Only 47 Left · Ships today · No restock" — exclusive product
+  'limited-drop':       'exclusive limited edition product sneaker streetwear hype drop',
+  // event-card: "Free Masterclass · 2PM EST · Live" — event / webinar
+  'event-card':         'conference event speaker stage audience professional seminar',
+  // award-winner: "Voted #1 · Best in Category 2026" — award / success
+  'award-winner':       'award trophy winner success celebration achievement business',
+  // aurora-gradient: "The future is here. AI-Powered." — tech / innovation
+  'aurora-gradient':    'technology innovation futuristic AI software product modern',
 };
 
 interface CachedPhoto {

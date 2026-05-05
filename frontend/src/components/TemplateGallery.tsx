@@ -1301,7 +1301,7 @@ function useTemplatePhoto(id: string): PhotoMeta | null {
   const [meta, setMeta] = React.useState<PhotoMeta | null>(null);
   React.useEffect(() => {
     if (!PHOTO_TEMPLATE_IDS.has(id)) return;
-    const cacheKey = `__tmpl_photo_v2_${id}`;
+    const cacheKey = `__tmpl_photo_v3_${id}`;
     try {
       const cached = sessionStorage.getItem(cacheKey);
       if (cached) {
