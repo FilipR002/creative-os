@@ -58,16 +58,16 @@ const CATEGORIES: { id: Category; label: string }[] = [
 
 const CATEGORY_IDS: Record<Category, string[]> = {
   all:            [],
-  conversion:     ['countdown-urgency','cta-final','offer-stack','value-math','bold-headline','diagonal-split','gradient-pop','guarantee-badge','free-trial','limited-drop','offer-announce','price-compare','bundle-stack','problem-slide','story-hook'],
-  trust:          ['testimonial','social-proof-grid','stats-hero','case-study','feature-list','magazine-editorial','insight-frame','award-winner','founder-story','review-card','trust-bar','news-frame','video-thumbnail','community-quote','stat-study'],
-  empathy:        ['ugc-style','empathy-card','validation-card','pain-diagnostic','mistake-alert','story-hook','problem-slide','caption-style','chat-thread','meme-format','comment-reply','full-bleed','overlay-card','photo-reveal','brand-manifesto'],
-  engagement:     ['do-dont','transform-split','poll-card','hot-take','leaderboard','checklist-viral','myth-reality','photo-reveal','side-by-side','event-card','meme-format','three-reasons','timeline-journey','reddit-thread','photo-grid'],
-  'scroll-stop':  ['bold-headline','text-only-bold','retro-bold','neon-dark','headline-badge','brand-manifesto','brutalist','collage-cutout','aurora-gradient','duotone-photo','hot-take','full-bleed','gradient-pop','color-block','mono-editorial'],
-  'social-native':['chat-thread','tweet-screenshot','tiktok-native','reddit-thread','email-mockup','receipt-style','ugc-style','caption-style','meme-format','comment-reply','photo-reveal','poll-card','video-thumbnail','story-hook','floating-card'],
-  aesthetic:      ['aurora-gradient','duotone-photo','mono-editorial','risograph-print','dark-luxury','overlay-card','gradient-pop','color-block','floating-card','collage-cutout','neon-dark','magazine-editorial','diagonal-split','full-bleed','bright-minimal'],
-  education:      ['chart-reveal','three-reasons','timeline-journey','vs-table','insight-frame','feature-list','number-list','stat-study','steps-infographic','checklist-viral','stats-hero','case-study','do-dont','myth-reality','leaderboard'],
-  product:        ['product-center','product-demo','bundle-stack','split-panel','flat-lay','app-mockup','photo-grid','side-by-side','color-block','bright-minimal','minimal','full-bleed','floating-card','overlay-card','price-compare'],
-  brand:          ['brand-manifesto','brand-awareness','founder-story','mono-editorial','magazine-editorial','minimal','bright-minimal','text-only-bold','retro-bold','diagonal-split','dark-luxury','color-block','gradient-pop','aurora-gradient','headline-badge'],
+  conversion:     ['countdown-urgency','cta-final','offer-stack','value-math','bold-headline','diagonal-split','gradient-pop','guarantee-badge','free-trial','limited-drop','offer-announce','price-compare','bundle-stack','problem-slide','story-hook','offer-drop','versus-slide','before-after-slide'],
+  trust:          ['testimonial','social-proof-grid','stats-hero','case-study','feature-list','magazine-editorial','insight-frame','award-winner','founder-story','review-card','trust-bar','news-frame','video-thumbnail','community-quote','stat-study','testimonial-card','press-slide'],
+  empathy:        ['ugc-style','empathy-card','validation-card','pain-diagnostic','mistake-alert','story-hook','problem-slide','caption-style','chat-thread','meme-format','comment-reply','full-bleed','overlay-card','photo-reveal','brand-manifesto','chat-native','before-after-slide'],
+  engagement:     ['do-dont','transform-split','poll-card','hot-take','leaderboard','checklist-viral','myth-reality','photo-reveal','side-by-side','event-card','meme-format','three-reasons','timeline-journey','reddit-thread','photo-grid','versus-slide','gallery-slide'],
+  'scroll-stop':  ['bold-headline','text-only-bold','retro-bold','neon-dark','headline-badge','brand-manifesto','brutalist','collage-cutout','aurora-gradient','duotone-photo','hot-take','full-bleed','gradient-pop','color-block','mono-editorial','offer-drop','versus-slide'],
+  'social-native':['chat-thread','tweet-screenshot','tiktok-native','reddit-thread','email-mockup','receipt-style','ugc-style','caption-style','meme-format','comment-reply','photo-reveal','poll-card','video-thumbnail','story-hook','floating-card','chat-native'],
+  aesthetic:      ['aurora-gradient','duotone-photo','mono-editorial','risograph-print','dark-luxury','overlay-card','gradient-pop','color-block','floating-card','collage-cutout','neon-dark','magazine-editorial','diagonal-split','full-bleed','bright-minimal','gallery-slide'],
+  education:      ['chart-reveal','three-reasons','timeline-journey','vs-table','insight-frame','feature-list','number-list','stat-study','steps-infographic','checklist-viral','stats-hero','case-study','do-dont','myth-reality','leaderboard','point-out-slide'],
+  product:        ['product-center','product-demo','bundle-stack','split-panel','flat-lay','app-mockup','photo-grid','side-by-side','color-block','bright-minimal','minimal','full-bleed','floating-card','overlay-card','price-compare','point-out-slide','gallery-slide'],
+  brand:          ['brand-manifesto','brand-awareness','founder-story','mono-editorial','magazine-editorial','minimal','bright-minimal','text-only-bold','retro-bold','diagonal-split','dark-luxury','color-block','gradient-pop','aurora-gradient','headline-badge','press-slide'],
 };
 
 // ─── Per-template mini preview fallbacks ─────────────────────────────────────
@@ -1135,6 +1135,140 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
     </div>
   );
 
+  // ── Creative angle-routed batch (testimonial-card … offer-drop) ─────────────
+
+  if (id === 'testimonial-card') return (
+    <div style={{ ...s, background: '#fff', gap: 8 }}>
+      <div style={{ fontSize: 14, color: '#f59e0b', letterSpacing: 2 }}>★★★★★</div>
+      <div style={{ fontSize: 22, color: '#94a3b8', lineHeight: 1, fontFamily: 'Georgia, serif' }}>"</div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+        <div style={{ height: 5, background: '#1e293b', borderRadius: 2, width: 130 }} />
+        <div style={{ height: 5, background: '#1e293b', borderRadius: 2, width: 110 }} />
+        <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: 80 }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+        <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }} />
+        <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: 60 }} />
+      </div>
+      <div style={{ marginTop: 4, background: '#00b67a', borderRadius: 4, padding: '3px 8px', fontSize: 7, color: '#fff', fontWeight: 800, letterSpacing: '0.06em' }}>★ Trustpilot</div>
+    </div>
+  );
+
+  if (id === 'versus-slide') return (
+    <div style={{ ...s, flexDirection: 'row', padding: 0, gap: 0, position: 'relative' }}>
+      <div style={{ flex: 1, height: '100%', background: '#111', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.45)', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>Without</div>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 1, width: 55 }} />
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.12)', borderRadius: 1, width: 40 }} />
+      </div>
+      <div style={{ flex: 1, height: '100%', background: accent, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <div style={{ fontSize: 8, color: '#fff', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>With Us</div>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.7)', borderRadius: 1, width: 55 }} />
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.5)', borderRadius: 1, width: 40 }} />
+      </div>
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 26, height: 26, borderRadius: '50%', background: '#fff', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 900, color: '#111', boxShadow: '0 2px 8px rgba(0,0,0,0.3)', zIndex: 2 }}>VS</div>
+    </div>
+  );
+
+  if (id === 'before-after-slide') return (
+    <div style={{ ...s, flexDirection: 'column', padding: 0, gap: 0, position: 'relative' }}>
+      <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#1e293b,#334155)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.45)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>Before</div>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.2)', borderRadius: 1, width: 70 }} />
+      </div>
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 24, height: 24, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff', fontWeight: 900, zIndex: 2, boxShadow: `0 2px 10px ${accent}88` }}>↓</div>
+      <div style={{ flex: 1, width: '100%', background: `linear-gradient(135deg,${accent}cc,${accent})`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+        <div style={{ fontSize: 8, color: '#fff', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const }}>After</div>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.75)', borderRadius: 1, width: 80 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'press-slide') return (
+    <div style={{ ...s, background: '#fff', alignItems: 'center', padding: 16, gap: 6 }}>
+      <div style={{ fontSize: 7, color: '#94a3b8', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase' as const }}>As Seen In</div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 4 }}>
+        {['Forbes','TechCrunch','Reuters'].map((name, i) => (
+          <div key={i} style={{ fontSize: i === 0 ? 10 : 8, fontWeight: 900, color: i === 0 ? '#1e293b' : '#94a3b8', letterSpacing: i === 0 ? '-0.02em' : '0.04em', fontFamily: 'serif' }}>{name}</div>
+        ))}
+      </div>
+      <div style={{ height: 1, background: '#e2e8f0', width: '90%' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+        <div style={{ height: 5, background: '#334155', borderRadius: 2, width: 120 }} />
+        <div style={{ height: 4, background: '#94a3b8', borderRadius: 2, width: 100 }} />
+      </div>
+      <div style={{ marginTop: 4, height: 20, background: accent, borderRadius: 4, padding: '0 12px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 8, fontWeight: 800 }}>Learn More</div>
+    </div>
+  );
+
+  if (id === 'point-out-slide') return (
+    <div style={{ ...s, background: '#f8fafc', flexDirection: 'row', alignItems: 'center', padding: 14, gap: 10 }}>
+      <div style={{ width: 70, height: 70, borderRadius: 12, background: 'linear-gradient(135deg,#e2e8f0,#cbd5e1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, position: 'relative' }}>
+        <div style={{ width: 30, height: 30, borderRadius: 6, background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', opacity: 0.6 }} />
+        {[{top:'12px',right:'10px'},{top:'34px',right:'6px'},{top:'54px',right:'14px'}].map((pos,i) => (
+          <div key={i} style={{ position: 'absolute', ...pos as any, width: 7, height: 7, borderRadius: '50%', background: accent, border: '1.5px solid #fff', boxShadow: `0 0 0 2px ${accent}44` }} />
+        ))}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {['Feature A','Feature B','Feature C'].map((label, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ width: 5, height: 5, borderRadius: '50%', background: accent }} />
+            <div style={{ height: 4, background: '#94a3b8', borderRadius: 1, width: [55,45,60][i] }} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (id === 'gallery-slide') return (
+    <div style={{ ...s, padding: 0, gap: 0, flexDirection: 'column' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flex: 1, width: '100%' }}>
+        {[`${accent}cc`,`${accent}99`,`${accent}77`,`${accent}55`].map((c, i) => (
+          <div key={i} style={{ background: c, display: 'flex', alignItems: 'center', justifyContent: 'center', aspectRatio: '1' }}>
+            <div style={{ width: 20, height: 20, borderRadius: 4, background: 'rgba(255,255,255,0.25)' }} />
+          </div>
+        ))}
+      </div>
+      <div style={{ height: 32, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '0 12px', width: '100%' }}>
+        <div style={{ height: 5, background: '#fff', borderRadius: 2, width: 80 }} />
+        <div style={{ height: 18, background: accent, borderRadius: 4, width: 44 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'chat-native') return (
+    <div style={{ ...s, background: '#f2f2f7', justifyContent: 'flex-start', padding: 10, gap: 7 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 6, borderBottom: '1px solid rgba(0,0,0,0.08)', width: '100%' }}>
+        <div style={{ width: 20, height: 20, borderRadius: '50%', background: accent }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ height: 4, background: '#1c1c1e', borderRadius: 1, width: 55 }} />
+          <div style={{ height: 3, background: '#8e8e93', borderRadius: 1, width: 35 }} />
+        </div>
+      </div>
+      {/* User bubble */}
+      <div style={{ alignSelf: 'flex-end', background: accent, borderRadius: '16px 16px 4px 16px', padding: '5px 9px', maxWidth: '75%' }}>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.8)', borderRadius: 1, width: 70 }} />
+      </div>
+      {/* Brand reply */}
+      <div style={{ alignSelf: 'flex-start', background: '#fff', borderRadius: '16px 16px 16px 4px', padding: '5px 9px', maxWidth: '80%', display: 'flex', flexDirection: 'column', gap: 3, boxShadow: '0 1px 4px rgba(0,0,0,0.1)' }}>
+        <div style={{ height: 4, background: '#1c1c1e', borderRadius: 1, width: 90 }} />
+        <div style={{ height: 3, background: '#8e8e93', borderRadius: 1, width: 70 }} />
+      </div>
+    </div>
+  );
+
+  if (id === 'offer-drop') return (
+    <div style={{ ...s, background: '#0f172a', gap: 8, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '120%', height: '120%', background: `radial-gradient(ellipse at 50% 40%, ${accent}33 0%, transparent 65%)`, pointerEvents: 'none' }} />
+      <div style={{ background: `${accent}22`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '3px 10px', fontSize: 8, color: accent, fontWeight: 700, letterSpacing: '0.08em', position: 'relative' }}>FLASH SALE</div>
+      <div style={{ width: 80, height: 80, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0, position: 'relative', boxShadow: `0 0 24px ${accent}44` }}>
+        <div style={{ fontSize: 8, color: accent, fontWeight: 700, letterSpacing: '0.1em' }}>SAVE</div>
+        <div style={{ fontSize: 24, color: '#fff', fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em' }}>40%</div>
+      </div>
+      <div style={{ height: 22, background: accent, borderRadius: 6, padding: '0 14px', display: 'flex', alignItems: 'center', color: '#fff', fontSize: 9, fontWeight: 800, position: 'relative', boxShadow: `0 4px 14px ${accent}55` }}>Claim Offer →</div>
+    </div>
+  );
+
   // Default gradient fallback for any unlisted template
   const bgs: Record<string, string> = {
     bold:      'linear-gradient(135deg, #1c1917 0%, #292524 100%)',
@@ -1337,6 +1471,15 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
   'app-mockup':         '#0ea5e9',  // tech sky blue
   'photo-grid':         '#ec4899',  // grid pink
   'brand-awareness':    '#6366f1',  // brand indigo
+  // ── Creative angle-routed batch ───────────────────────────────────────────────
+  'testimonial-card':   '#2563eb',  // trust blue
+  'versus-slide':       '#7c3aed',  // bold violet
+  'before-after-slide': '#0d9488',  // transformation teal
+  'press-slide':        '#dc2626',  // press red
+  'point-out-slide':    '#6366f1',  // callout indigo
+  'gallery-slide':      '#ec4899',  // gallery pink
+  'chat-native':        '#22c55e',  // iMessage green
+  'offer-drop':         '#f97316',  // urgency orange
 };
 
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
