@@ -1197,6 +1197,51 @@ const TEMPLATE_STYLES: Record<string, { bg: string; light: boolean }> = {
   'validation-card':    { bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)',           light: true  },
   'do-dont':            { bg: '#ffffff',                                            light: true  },
   'transform-split':    { bg: '#ffffff',                                            light: true  },
+  // ── Batch 5 ───────────────────────────────────────────────────────────────────
+  'guarantee-badge':    { bg: '#f0fdf4',                                            light: true  },
+  'free-trial':         { bg: '#f0f9ff',                                            light: true  },
+  'limited-drop':       { bg: 'linear-gradient(135deg,#0a0a0a,#1a0505)',           light: false },
+  'offer-announce':     { bg: 'linear-gradient(135deg,#7c1d1d,#b45309)',           light: false },
+  'price-compare':      { bg: '#ffffff',                                            light: true  },
+  'bundle-stack':       { bg: '#fafaf9',                                            light: true  },
+  'award-winner':       { bg: 'linear-gradient(160deg,#1c1400,#291e00)',           light: false },
+  'founder-story':      { bg: 'linear-gradient(135deg,#fef3c7,#fde68a)',           light: true  },
+  'review-card':        { bg: '#ffffff',                                            light: true  },
+  'trust-bar':          { bg: '#ffffff',                                            light: true  },
+  'news-frame':         { bg: '#ffffff',                                            light: true  },
+  'video-thumbnail':    { bg: '#000000',                                            light: false },
+  'community-quote':    { bg: '#f8fafc',                                            light: true  },
+  'stat-study':         { bg: '#ffffff',                                            light: true  },
+  'caption-style':      { bg: '#0a0a0a',                                            light: false },
+  'chat-thread':        { bg: '#f0fdf4',                                            light: true  },
+  'meme-format':        { bg: '#ffffff',                                            light: true  },
+  'comment-reply':      { bg: '#fff7ed',                                            light: true  },
+  'poll-card':          { bg: '#1a1a2e',                                            light: false },
+  'hot-take':           { bg: 'linear-gradient(135deg,#1c0505,#3b0a0a)',           light: false },
+  'leaderboard':        { bg: '#ffffff',                                            light: true  },
+  'checklist-viral':    { bg: '#ffffff',                                            light: true  },
+  'myth-reality':       { bg: 'linear-gradient(135deg,#0f0720,#1a0a2e)',           light: false },
+  'event-card':         { bg: 'linear-gradient(135deg,#1e0a3c,#2d1060)',           light: false },
+  'three-reasons':      { bg: '#ffffff',                                            light: true  },
+  'timeline-journey':   { bg: '#ffffff',                                            light: true  },
+  'tiktok-native':      { bg: '#000000',                                            light: false },
+  'tweet-screenshot':   { bg: '#ffffff',                                            light: true  },
+  'reddit-thread':      { bg: '#f8fafc',                                            light: true  },
+  'email-mockup':       { bg: '#ffffff',                                            light: true  },
+  'receipt-style':      { bg: '#fefce8',                                            light: true  },
+  'aurora-gradient':    { bg: 'linear-gradient(135deg,#0d0221,#1a0438,#062a0a)',  light: false },
+  'duotone-photo':      { bg: 'linear-gradient(135deg,#1e0a3c,#0d0a1e)',          light: false },
+  'mono-editorial':     { bg: '#ffffff',                                            light: true  },
+  'risograph-print':    { bg: '#fef9c3',                                            light: true  },
+  'collage-cutout':     { bg: '#f8fafc',                                            light: true  },
+  'brutalist':          { bg: '#e7e5e4',                                            light: true  },
+  'chart-reveal':       { bg: '#ffffff',                                            light: true  },
+  'steps-infographic':  { bg: '#ffffff',                                            light: true  },
+  'vs-table':           { bg: '#ffffff',                                            light: true  },
+  'flat-lay':           { bg: '#faf7f5',                                            light: true  },
+  'app-mockup':         { bg: '#f0f9ff',                                            light: true  },
+  'photo-grid':         { bg: '#ffffff',                                            light: true  },
+  'brand-awareness':    { bg: '#18181b',                                            light: false },
 };
 
 const TONE_ACCENTS: Record<string, string> = {
@@ -1247,6 +1292,51 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
   'validation-card':    '#a78bfa',  // violet-soft
   'do-dont':            '#22c55e',  // green-correct
   'transform-split':    '#14b8a6',  // teal-transformation
+  // ── Batch 5 ───────────────────────────────────────────────────────────────────
+  'guarantee-badge':    '#16a34a',  // trust green
+  'free-trial':         '#0ea5e9',  // sky blue
+  'limited-drop':       '#ef4444',  // urgency red
+  'offer-announce':     '#f97316',  // sale orange
+  'price-compare':      '#16a34a',  // savings green
+  'bundle-stack':       '#f59e0b',  // product amber
+  'award-winner':       '#d97706',  // award gold
+  'founder-story':      '#92400e',  // warm brown
+  'review-card':        '#f59e0b',  // star gold
+  'trust-bar':          '#2563eb',  // trust blue
+  'news-frame':         '#dc2626',  // news red
+  'video-thumbnail':    '#ef4444',  // YouTube red
+  'community-quote':    '#ff4500',  // Reddit orange
+  'stat-study':         '#3b82f6',  // data blue
+  'caption-style':      '#e11d48',  // Instagram rose
+  'chat-thread':        '#22c55e',  // iMessage green
+  'meme-format':        '#f59e0b',  // meme yellow
+  'comment-reply':      '#f97316',  // reply orange
+  'poll-card':          '#a855f7',  // poll purple
+  'hot-take':           '#ef4444',  // hot red
+  'leaderboard':        '#f59e0b',  // gold #1
+  'checklist-viral':    '#22c55e',  // check green
+  'myth-reality':       '#a855f7',  // myth purple
+  'event-card':         '#8b5cf6',  // event violet
+  'three-reasons':      '#3b82f6',  // reason blue
+  'timeline-journey':   '#0d9488',  // journey teal
+  'tiktok-native':      '#fe2c55',  // TikTok red
+  'tweet-screenshot':   '#1d9bf0',  // Twitter/X blue
+  'reddit-thread':      '#ff4500',  // Reddit orange
+  'email-mockup':       '#ea4335',  // Gmail red
+  'receipt-style':      '#854d0e',  // receipt brown
+  'aurora-gradient':    '#a78bfa',  // aurora violet
+  'duotone-photo':      '#c026d3',  // duotone magenta
+  'mono-editorial':     '#18181b',  // editorial black
+  'risograph-print':    '#ef4444',  // risograph red
+  'collage-cutout':     '#f97316',  // collage vivid orange
+  'brutalist':          '#000000',  // raw black
+  'chart-reveal':       '#16a34a',  // data green
+  'steps-infographic':  '#2563eb',  // step blue
+  'vs-table':           '#7c3aed',  // compare purple
+  'flat-lay':           '#92400e',  // product brown
+  'app-mockup':         '#0ea5e9',  // tech sky blue
+  'photo-grid':         '#ec4899',  // grid pink
+  'brand-awareness':    '#6366f1',  // brand indigo
 };
 
 const SLIDE_LABELS = ['COVER', 'FEATURE', 'CTA'] as const;
