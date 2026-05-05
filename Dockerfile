@@ -23,12 +23,16 @@ COPY package*.json ./
 RUN npm ci
 
 # ── 2. Copy source ────────────────────────────────────────────────────────────
-COPY tsconfig.json ./
-COPY prisma       ./prisma/
-COPY src          ./src/
+COPY tsconfig.json    ./
+# prisma.config.ts is required by Prisma 7.x CLI at BOTH build time (generate)
+# and runtime (migrate deploy). Without it Prisma has no datasource URL and
+# silently skips migrations, leaving new columns missing and the app crashing.
+COPY prisma.config.ts ./
+COPY prisma           ./prisma/
+COPY src              ./src/
 
 # ── 3. Generate Prisma client ─────────────────────────────────────────────────
-# Dummy URL — generate only reads schema.prisma, never opens a connection.
+# Dummy URL — generate only reads schema + config, never opens a connection.
 # Real DATABASE_URL is injected by Railway at runtime.
 RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder" \
     npx prisma generate
@@ -37,9 +41,12 @@ RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholde
 RUN npm run build
 
 # ── 5. Prune devDependencies from the final image ────────────────────────────
+# Removes ts-node, typescript, tsconfig-paths (~120 MB).
+# Prisma CLI bundles its own TypeScript runner for prisma.config.ts — no ts-node needed.
 RUN npm prune --omit=dev
 
 # ── 6. Start ──────────────────────────────────────────────────────────────────
-# Run migrations (with 30s timeout so a hung DB never blocks app start),
-# then start the pre-compiled app with plain node.
-CMD ["sh", "-c", "timeout 30 npx prisma db push --accept-data-loss || echo 'prisma db push skipped'; node dist/main.js"]
+# prisma migrate deploy applies pending SQL migration files in order.
+# Safer than db push: uses our version-controlled migrations, no data-loss risk.
+# If migrations fail the container exits and Railway retries — correct behaviour.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
