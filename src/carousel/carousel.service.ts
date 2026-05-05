@@ -109,7 +109,7 @@ export class CarouselService {
     const platform      = dto.platform || concept.platform || 'instagram';
 
     const personaBlock      = buildPersonaBlock(dto.resourceCtx);
-    const carouselFormatBlock = buildCarouselFormatBlock(angleLabel);
+    const carouselFormatBlock = buildCarouselFormatBlock(angleLabel, dto.templateId || undefined);
 
     const systemPrompt = [
       `You are an expert carousel copywriter for Instagram, TikTok, and Facebook.`,
