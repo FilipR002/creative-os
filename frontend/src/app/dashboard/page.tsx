@@ -6,10 +6,93 @@ import { Sidebar } from '@/components/Sidebar';
 import { getSupabase } from '@/lib/supabase';
 import { loadHistory, type HistoryEntry } from '@/lib/api/run-client';
 import { listCampaigns } from '@/lib/api/creator-client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  Sparkles, FolderOpen, TrendingUp, Bot, Brain,
+  Activity, Shield, ArrowRight, Clock, Zap,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function timeAgo(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
+
+// ── Stat card ─────────────────────────────────────────────────────────────────
+
+function StatCard({ label, value, sub, accent }: { label: string; value: string | number; sub?: string; accent?: string }) {
+  return (
+    <Card className="relative overflow-hidden">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xs">{label}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className={cn('text-3xl font-bold tracking-tight', accent ?? 'text-foreground')}>{value}</p>
+        {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
+      </CardContent>
+      {/* subtle orange glow line at top */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+    </Card>
+  );
+}
+
+// ── Quick action card ─────────────────────────────────────────────────────────
+
+function ActionCard({
+  href, icon: Icon, title, desc, primary,
+}: {
+  href: string; icon: React.ElementType; title: string; desc: string; primary?: boolean;
+}) {
+  return (
+    <Link href={href} className="group block no-underline">
+      <Card className={cn(
+        'h-full transition-all duration-200 hover:border-primary/40 hover:-translate-y-0.5',
+        primary && 'border-primary/30 bg-primary/5',
+      )}>
+        <CardContent className="p-5">
+          <div className={cn(
+            'mb-4 flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
+            primary
+              ? 'bg-primary text-white shadow-[0_0_16px_rgba(249,115,22,0.35)]'
+              : 'bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary',
+          )}>
+            <Icon className="h-5 w-5" />
+          </div>
+          <p className="mb-1 font-semibold text-foreground">{title}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+// ── Intelligence card ─────────────────────────────────────────────────────────
+
+function IntelCard({
+  href, icon: Icon, label, desc, color,
+}: {
+  href: string; icon: React.ElementType; label: string; desc: string; color: string;
+}) {
+  return (
+    <Link href={href} className="group block no-underline">
+      <Card className="h-full transition-all duration-200 hover:-translate-y-0.5" style={{ borderColor: `${color}22` }}>
+        <CardContent className="p-4">
+          <div
+            className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg"
+            style={{ background: `${color}14`, border: `1px solid ${color}30` }}
+          >
+            <Icon className="h-4 w-4" style={{ color }} />
+          </div>
+          <p className="mb-1 text-sm font-semibold text-foreground">{label}</p>
+          <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
+
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const [history,   setHistory]   = useState<HistoryEntry[]>([]);
@@ -26,128 +109,129 @@ export default function DashboardPage() {
       }
     });
 
-    // Real campaign stats from API — falls back to localStorage if unavailable
     listCampaigns()
       .then(list => setApiStats({
         total: list.length,
         ready: list.filter(c => c.status === 'SCORED' || c.status === 'DONE' || c.isActive).length,
       }))
-      .catch(() => { /* keep localStorage fallback */ });
+      .catch(() => {});
   }, []);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
   const generated = history.filter(h => (h.score ?? 0) >= 0.40).length;
-
-  const totalCampaigns  = apiStats?.total ?? history.length;
-  const readyToLaunch   = apiStats?.ready ?? generated;
+  const totalCampaigns = apiStats?.total ?? history.length;
+  const readyToLaunch  = apiStats?.ready ?? generated;
 
   return (
     <div className="app-shell">
       <Sidebar />
+
       <main className="app-main">
-        <div className="page-content">
+        <div className="mx-auto max-w-6xl px-8 py-8">
 
-          {/* Header */}
-          <div style={{ marginBottom: 28 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>{greeting}{firstName ? `, ${firstName}` : ''}</h1>
-            <p style={{ fontSize: 14, color: 'var(--sub)' }}>Here's what's happening with your campaigns.</p>
+          {/* ── Header ─────────────────────────────────────────────────────── */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              {greeting}{firstName ? `, ${firstName}` : ''} 👋
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Here's what's happening with your campaigns.
+            </p>
           </div>
 
-          {/* Stat cards */}
-          <div className="stat-cards-row" style={{ marginBottom: 28 }}>
-            <div className="stat-card">
-              <div className="stat-card-header">
-                <span className="stat-card-label">Total Campaigns</span>
-                <span className="stat-card-icon">💬</span>
-              </div>
-              <div className="stat-card-value">{totalCampaigns}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-card-header">
-                <span className="stat-card-label">Ready to Launch</span>
-                <span className="stat-card-icon">✦</span>
-              </div>
-              <div className="stat-card-value" style={{ WebkitTextFillColor: 'var(--success)', background: 'none' }}>{readyToLaunch}</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-card-header">
-                <span className="stat-card-label">Ad Formats</span>
-                <span className="stat-card-icon">🎨</span>
-              </div>
-              <div className="stat-card-value" style={{ WebkitTextFillColor: 'var(--warning)', background: 'none' }}>3</div>
-              <div className="stat-card-sub">Video · Carousel · Banner</div>
+          {/* ── Stat cards ─────────────────────────────────────────────────── */}
+          <div className="mb-8 grid grid-cols-3 gap-4">
+            <StatCard label="Total Campaigns" value={totalCampaigns} />
+            <StatCard label="Ready to Launch" value={readyToLaunch} accent="text-green-400" />
+            <StatCard label="Ad Formats" value={3} sub="Video · Carousel · Banner" accent="text-amber-400" />
+          </div>
+
+          {/* ── Quick Actions ───────────────────────────────────────────────── */}
+          <div className="mb-8">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">Quick Actions</p>
+            <div className="grid grid-cols-3 gap-4">
+              <ActionCard href="/campaigns/new"  icon={Sparkles}   title="New Campaign"    desc="Describe a product → AI builds the ad strategy" primary />
+              <ActionCard href="/campaigns"       icon={FolderOpen}  title="My Campaigns"   desc="All your generated ad creatives" />
+              <ActionCard href="/ad-performance"  icon={TrendingUp}  title="Ad Performance" desc="Report results — AI learns from them" />
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div style={{ marginBottom: 28 }}>
-            <div className="section-label">Quick Actions</div>
-            <div className="quick-actions-grid">
-              <Link href="/campaigns/new" className="action-card accent" style={{ textDecoration: 'none' }}>
-                <div className="action-card-icon">✦</div>
-                <div className="action-card-title">New Campaign</div>
-                <div className="action-card-sub">Describe a product → AI builds the ad strategy</div>
-              </Link>
-              <Link href="/campaigns" className="action-card" style={{ textDecoration: 'none' }}>
-                <div className="action-card-icon">⊞</div>
-                <div className="action-card-title">My Campaigns</div>
-                <div className="action-card-sub">All your generated ad creatives</div>
-              </Link>
-              <Link href="/ad-performance" className="action-card" style={{ textDecoration: 'none' }}>
-                <div className="action-card-icon">↗</div>
-                <div className="action-card-title">Ad Performance</div>
-                <div className="action-card-sub">Report results — AI learns from them</div>
-              </Link>
+          {/* ── Intelligence Layer ──────────────────────────────────────────── */}
+          <div className="mb-8">
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+              Intelligence Layer
+            </p>
+            <div className="grid grid-cols-4 gap-3">
+              <IntelCard href="/autonomous"   icon={Bot}      label="Autonomous System"  desc="Live cockpit — mode, decisions, stream"  color="#6366f1" />
+              <IntelCard href="/ai-stream"    icon={Brain}    label="AI Brain Stream"    desc="SSE live feed of every AI decision"       color="#8b5cf6" />
+              <IntelCard href="/pro-mode"     icon={Activity} label="Pro Diagnostics"    desc="Evolution, fatigue, memory, audit log"    color="#06b6d4" />
+              <IntelCard href="/system-audit" icon={Shield}   label="System Audit"       desc="Backend ↔ UI connectivity map"            color="#10b981" />
             </div>
           </div>
 
-          {/* Intelligence Layer */}
-          <div style={{ marginBottom: 28 }}>
-            <div className="section-label">⚡ Intelligence Layer</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
-              {[
-                { href: '/autonomous',   icon: '🤖', label: 'Autonomous System',  desc: 'Live cockpit — mode, decisions, stream',  color: '#6366f1' },
-                { href: '/ai-stream',    icon: '🧠', label: 'AI Brain Stream',    desc: 'SSE live feed of every AI decision',       color: '#8b5cf6' },
-                { href: '/pro-mode',     icon: '🔬', label: 'Pro Diagnostics',    desc: 'Evolution, fatigue, memory, audit log',    color: '#06b6d4' },
-                { href: '/system-audit', icon: '🗂', label: 'System Audit',       desc: 'Backend ↔ UI connectivity map',            color: '#10b981' },
-              ].map(item => (
-                <Link key={item.href} href={item.href} style={{ display: 'block', padding: '16px 18px', background: 'var(--surface)', border: `1px solid ${item.color}22`, borderRadius: 12, textDecoration: 'none', transition: 'border-color 0.15s' }}>
-                  <div style={{ width: 32, height: 32, background: `${item.color}14`, border: `1px solid ${item.color}33`, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, marginBottom: 10 }}>{item.icon}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 3 }}>{item.label}</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.4 }}>{item.desc}</div>
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          {/* Recent Campaigns */}
+          {/* ── Recent Campaigns ────────────────────────────────────────────── */}
           <div>
-            <div className="section-label">Recent Campaigns</div>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Recent Campaigns</p>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/campaigns">View all <ArrowRight className="ml-1 h-3 w-3" /></Link>
+              </Button>
+            </div>
+
             {history.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--muted)' }}>
-                No campaigns yet.{' '}
-                <Link href="/campaigns/new" style={{ color: 'var(--accent-l)' }}>Create your first →</Link>
-              </p>
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                    <Zap className="h-6 w-6 text-primary" />
+                  </div>
+                  <p className="mb-1 font-semibold text-foreground">No campaigns yet</p>
+                  <p className="mb-4 text-sm text-muted-foreground">Create your first AI-powered ad campaign</p>
+                  <Button asChild>
+                    <Link href="/campaigns/new">
+                      <Sparkles className="mr-2 h-4 w-4" /> New Campaign
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
             ) : (
-              history.slice(0, 5).map(entry => (
-                <div key={entry.executionId}
-                  style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, marginBottom: 8, gap: 14 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 10, background: 'linear-gradient(135deg,#00C97A,#34DFA0)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 14, flexShrink: 0 }}>✦</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', marginBottom: 4, lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.brief}</div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(46,213,115,0.12)', border: '1px solid rgba(46,213,115,0.3)', color: 'var(--success)', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 500 }}>GENERATED</span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(0,201,122,0.1)', border: '1px solid rgba(0,201,122,0.25)', color: 'var(--accent-l)', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 500 }}>{entry.format}</span>
+              <Card>
+                <CardContent className="divide-y divide-border p-0">
+                  {history.slice(0, 5).map((entry, i) => (
+                    <div key={entry.executionId} className={cn('flex items-center gap-4 px-5 py-4', i === 0 && 'rounded-t-xl')}>
+                      {/* icon */}
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </div>
+
+                      {/* text */}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-foreground">{entry.brief}</p>
+                        <div className="mt-1 flex gap-2">
+                          <Badge variant="success">Generated</Badge>
+                          <Badge variant="outline" className="text-muted-foreground">{entry.format}</Badge>
+                        </div>
+                      </div>
+
+                      {/* date */}
+                      <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        {timeAgo(entry.createdAt)}
+                      </div>
+
+                      {/* actions */}
+                      <div className="flex shrink-0 gap-2">
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/studio/${entry.executionId}`}>Preview</Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/result/${entry.executionId}`}>Details</Link>
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(entry.createdAt)}</div>
-                  <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                    <Link href={`/studio/${entry.executionId}`} style={{ fontSize: 11, fontWeight: 600, color: 'var(--accent)', background: 'rgba(0,201,122,0.08)', border: '1px solid rgba(0,201,122,0.2)', borderRadius: 6, padding: '4px 10px', textDecoration: 'none' }}>Preview</Link>
-                    <Link href={`/result/${entry.executionId}`} style={{ fontSize: 11, fontWeight: 600, color: 'var(--sub)', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 6, padding: '4px 10px', textDecoration: 'none' }}>Details</Link>
-                  </div>
-                </div>
-              ))
+                  ))}
+                </CardContent>
+              </Card>
             )}
           </div>
 

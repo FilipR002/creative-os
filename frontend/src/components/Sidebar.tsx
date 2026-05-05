@@ -4,64 +4,93 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import {
+  LayoutDashboard, Sparkles, FolderOpen, BookOpen, BarChart2,
+  TrendingUp, CreditCard, Settings, Eye, Bot, Brain, Activity,
+  Shield, Target, Lightbulb, DollarSign, PieChart, Zap,
+  ChevronRight, LogOut, Wrench, Building2, Loader2,
+} from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Separator } from '@/components/ui/separator';
 
-// ─── Nav structure ────────────────────────────────────────────────────────────
+// ─── Nav structure ─────────────────────────────────────────────────────────────
 
 const MAIN_NAV = [
-  { label: 'Dashboard',      icon: '⊙', href: '/dashboard'    },
-  { label: 'Create',         icon: '✦', href: '/create'        },
-  { label: 'My Campaigns',   icon: '⊞', href: '/campaigns'     },
-  { label: 'Resources',      icon: '◑', href: '/resources'     },
-  { label: 'Analytics',      icon: '▦', href: '/analytics'     },
-  { label: 'Ad Performance', icon: '↗', href: '/ad-performance'},
-  { label: 'Billing',        icon: '◈', href: '/billing'       },
-  { label: 'Settings',       icon: '⚙', href: '/settings'      },
-  { label: 'Observatory',    icon: '◎', href: '/observatory'   },
+  { label: 'Dashboard',      icon: LayoutDashboard, href: '/dashboard'     },
+  { label: 'Create',         icon: Sparkles,        href: '/create'         },
+  { label: 'My Campaigns',   icon: FolderOpen,      href: '/campaigns'      },
+  { label: 'Resources',      icon: BookOpen,        href: '/resources'      },
+  { label: 'Analytics',      icon: BarChart2,       href: '/analytics'      },
+  { label: 'Ad Performance', icon: TrendingUp,      href: '/ad-performance' },
+  { label: 'Billing',        icon: CreditCard,      href: '/billing'        },
+  { label: 'Settings',       icon: Settings,        href: '/settings'       },
+  { label: 'Observatory',    icon: Eye,             href: '/observatory'    },
 ];
 
 const INTELLIGENCE_NAV = [
-  { label: 'Autonomous System', href: '/autonomous'              },
-  { label: 'AI Brain Stream',   href: '/ai-stream'               },
-  { label: 'Pro Diagnostics',   href: '/pro-mode'                },
-  { label: 'System Audit',      href: '/system-audit'            },
-  { label: 'Competitor Intel',  href: '/competitor-intelligence'   },
-  { label: 'Trend Prediction',  href: '/trends'                  },
-  { label: 'Ad Intelligence',   href: '/ad-intelligence'         },
+  { label: 'Autonomous System', icon: Bot,       href: '/autonomous'               },
+  { label: 'AI Brain Stream',   icon: Brain,     href: '/ai-stream'                },
+  { label: 'Pro Diagnostics',   icon: Activity,  href: '/pro-mode'                 },
+  { label: 'System Audit',      icon: Shield,    href: '/system-audit'             },
+  { label: 'Competitor Intel',  icon: Target,    href: '/competitor-intelligence'  },
+  { label: 'Trend Prediction',  icon: TrendingUp,href: '/trends'                   },
+  { label: 'Ad Intelligence',   icon: Lightbulb, href: '/ad-intelligence'          },
 ];
 
 const FINANCIAL_NAV = [
-  { label: 'Overview',        href: '/financial-os'                  },
-  { label: 'Cost Tracking',   href: '/financial-os/cost'             },
-  { label: 'Optimizer',       href: '/financial-os/optimizer'        },
-  { label: 'Profit Zones',    href: '/financial-os/profit'           },
-  { label: 'AI CFO',          href: '/financial-os/cfo'              },
-  { label: 'Budget',          href: '/financial-os/budget'           },
-  { label: 'Revenue',         href: '/financial-os/revenue'          },
-  { label: 'Self-Learning',   href: '/financial-os/learning'         },
-  { label: 'AI CEO',          href: '/financial-os/ceo'              },
-  { label: 'Unit Economics',  href: '/financial-os/unit-economics'   },
+  { label: 'Overview',       icon: DollarSign, href: '/financial-os'               },
+  { label: 'Cost Tracking',  icon: PieChart,   href: '/financial-os/cost'          },
+  { label: 'Optimizer',      icon: Zap,        href: '/financial-os/optimizer'     },
+  { label: 'Profit Zones',   icon: TrendingUp, href: '/financial-os/profit'        },
+  { label: 'AI CFO',         icon: Brain,      href: '/financial-os/cfo'           },
+  { label: 'Budget',         icon: BarChart2,  href: '/financial-os/budget'        },
+  { label: 'Revenue',        icon: DollarSign, href: '/financial-os/revenue'       },
+  { label: 'AI CEO',         icon: Building2,  href: '/financial-os/ceo'           },
+  { label: 'Unit Economics', icon: PieChart,   href: '/financial-os/unit-economics'},
 ];
 
 const TOOLS_NAV = [
-  { label: 'Generated Tools', href: '/system-generated' },
+  { label: 'Generated Tools', icon: Wrench, href: '/system-generated' },
 ];
 
-// ─── Chevron icon ─────────────────────────────────────────────────────────────
+// ─── Admin gate ────────────────────────────────────────────────────────────────
 
-function Chevron({ open }: { open: boolean }) {
+const ADMIN_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? '')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
+function isAdminUser(userId: string) { return ADMIN_IDS.includes(userId); }
+
+// ─── NavItem ───────────────────────────────────────────────────────────────────
+
+function NavItem({
+  href, label, icon: Icon, active, badge,
+}: {
+  href: string; label: string; icon: React.ElementType;
+  active: boolean; badge?: React.ReactNode;
+}) {
   return (
-    <svg
-      width="12" height="12" viewBox="0 0 12 12" fill="none"
-      style={{ transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}
+    <Link
+      href={href}
+      className={cn(
+        'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150',
+        active
+          ? 'bg-primary/15 text-primary'
+          : 'text-muted-foreground hover:bg-sidebar-accent hover:text-foreground',
+      )}
     >
-      <path d="M4 2.5L7.5 6L4 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+      <Icon className={cn('h-4 w-4 shrink-0 transition-colors', active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground')} />
+      <span className="truncate">{label}</span>
+      {badge}
+    </Link>
   );
 }
 
-// ─── Collapsible section ──────────────────────────────────────────────────────
+// ─── NavSection ────────────────────────────────────────────────────────────────
 
 function NavSection({
   label,
@@ -70,37 +99,33 @@ function NavSection({
   defaultOpen = false,
 }: {
   label: string;
-  items: { label: string; href: string }[];
+  items: { label: string; icon: React.ElementType; href: string }[];
   isActive: (href: string) => boolean;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div style={{ borderTop: '1px solid var(--border)', marginTop: 4 }}>
+    <div className="mt-1">
+      <Separator className="mb-2 opacity-50" />
       <button
         onClick={() => setOpen(o => !o)}
-        style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 12px', background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--muted)', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-        }}
+        className="flex w-full items-center justify-between px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 hover:text-muted-foreground transition-colors"
       >
         {label}
-        <Chevron open={open} />
+        <ChevronRight className={cn('h-3 w-3 transition-transform duration-200', open && 'rotate-90')} />
       </button>
 
       {open && (
-        <div style={{ paddingBottom: 6 }}>
+        <div className="mt-1 space-y-0.5">
           {items.map(item => (
-            <Link
+            <NavItem
               key={item.href}
               href={item.href}
-              className={`sidebar-nav-item${isActive(item.href) ? ' active' : ''}`}
-            >
-              <span className="sidebar-nav-text">{item.label}</span>
-            </Link>
+              label={item.label}
+              icon={item.icon}
+              active={isActive(item.href)}
+            />
           ))}
         </div>
       )}
@@ -108,28 +133,14 @@ function NavSection({
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-
-// ─── Admin gate ───────────────────────────────────────────────────────────────
-
-const ADMIN_IDS = (process.env.NEXT_PUBLIC_ADMIN_USER_IDS ?? '')
-  .split(',')
-  .map(s => s.trim())
-  .filter(Boolean);
-
-function isAdminUser(userId: string): boolean {
-  return ADMIN_IDS.includes(userId);
-}
-
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
+// ─── Sidebar ───────────────────────────────────────────────────────────────────
 
 export function Sidebar() {
   useRequireAuth();
   const pathname = usePathname();
-  const [userInfo,    setUserInfo]    = useState<{ name: string; email: string; initial: string; id: string } | null>(null);
-  const [generating,  setGenerating]  = useState(false);
+  const [userInfo, setUserInfo] = useState<{ name: string; email: string; initial: string; id: string } | null>(null);
+  const [generating, setGenerating] = useState(false);
 
-  // ── Generation indicator — listen for cross-page events + restore on mount ──
   useEffect(() => {
     try { setGenerating(!!sessionStorage.getItem('cos_active_job')); } catch {}
     const onStart = () => setGenerating(true);
@@ -146,17 +157,13 @@ export function Sidebar() {
     const supabase = getSupabase();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
-        const name = (user.user_metadata?.full_name as string | undefined)
-                  ?? user.email?.split('@')[0]
-                  ?? 'User';
+        const name = (user.user_metadata?.full_name as string) ?? user.email?.split('@')[0] ?? 'User';
         setUserInfo({ name, email: user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U', id: user.id });
       }
     });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session?.user) {
-        const name = (session.user.user_metadata?.full_name as string | undefined)
-                  ?? session.user.email?.split('@')[0]
-                  ?? 'User';
+        const name = (session.user.user_metadata?.full_name as string) ?? session.user.email?.split('@')[0] ?? 'User';
         setUserInfo({ name, email: session.user.email ?? '', initial: name[0]?.toUpperCase() ?? 'U', id: session.user.id });
       } else {
         setUserInfo(null);
@@ -171,108 +178,95 @@ export function Sidebar() {
   }
 
   function isActive(href: string) {
-    if (href === '/dashboard')    return pathname === href;
-    if (href === '/create')       return pathname === '/create' || pathname === '/ad-builder' || pathname === '/campaigns/new';
-    if (href === '/campaigns')    return pathname === href || (pathname.startsWith('/campaigns/') && !pathname.startsWith('/campaigns/new'));
+    if (href === '/dashboard') return pathname === href;
+    if (href === '/create')    return pathname === '/create' || pathname === '/ad-builder' || pathname === '/campaigns/new';
+    if (href === '/campaigns') return pathname === href || (pathname.startsWith('/campaigns/') && !pathname.startsWith('/campaigns/new'));
     if (href === '/financial-os') return pathname === href;
     return pathname === href || pathname.startsWith(href + '/');
   }
 
-  // Auto-open the section that contains the current page
   const inIntelligence = INTELLIGENCE_NAV.some(i => pathname.startsWith(i.href));
   const inFinancial    = FINANCIAL_NAV.some(i => isActive(i.href));
   const inTools        = TOOLS_NAV.some(i => pathname.startsWith(i.href));
 
   return (
-    <aside className="sidebar" style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <TooltipProvider delayDuration={0}>
+      <aside className="flex h-screen w-[220px] shrink-0 flex-col border-r border-sidebar-border bg-[hsl(var(--sidebar-background))]">
 
-      {/* Logo */}
-      <Link href="/dashboard" className="sidebar-header" style={{ flexShrink: 0, textDecoration: 'none', cursor: 'pointer' }}>
-        <Image src="/logo-icon.png" alt="" width={28} height={28} className="sidebar-logo-img" style={{ objectFit: 'contain' }} />
-        <span className="sidebar-logo-text">Creative OS</span>
-      </Link>
-
-      {/* Scrollable nav — fills available space between logo and footer */}
-      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-
-        {/* Main nav — always visible, no dropdown */}
-        <nav className="sidebar-nav-section">
-          <div className="sidebar-nav-label">Menu</div>
-          {MAIN_NAV.map(item => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`sidebar-nav-item${isActive(item.href) ? ' active' : ''}`}
-            >
-              <span className="sidebar-nav-icon">{item.icon}</span>
-              <span className="sidebar-nav-text">{item.label}</span>
-              {item.href === '/create' && generating && (
-                <span style={{
-                  marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4,
-                  fontSize: 9, fontWeight: 700, color: 'var(--indigo-l)',
-                  background: 'rgba(99,102,241,0.12)', border: '1px solid rgba(99,102,241,0.25)',
-                  borderRadius: 99, padding: '2px 7px', whiteSpace: 'nowrap',
-                }}>
-                  <span style={{
-                    width: 5, height: 5, borderRadius: '50%', background: 'var(--indigo-l)',
-                    display: 'inline-block',
-                    animation: 'pulse-dot 1.2s ease-in-out infinite',
-                  }} />
-                  Generating
-                </span>
-              )}
-            </Link>
-          ))}
-        </nav>
-
-        {/* Collapsible sections */}
-        <NavSection
-          label="Intelligence"
-          items={INTELLIGENCE_NAV}
-          isActive={isActive}
-          defaultOpen={inIntelligence}
-        />
-        <NavSection
-          label="Financial OS"
-          items={FINANCIAL_NAV}
-          isActive={isActive}
-          defaultOpen={inFinancial}
-        />
-        <NavSection
-          label="Tools"
-          items={TOOLS_NAV}
-          isActive={isActive}
-          defaultOpen={inTools}
-        />
-
-        {/* Admin OS — only visible to admin users */}
-        {isAdminUser(userInfo?.id ?? '') && (
-          <div style={{ borderTop: '1px solid var(--border)', marginTop: 4, padding: '8px 10px 6px' }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '0 2px', marginBottom: 4 }}>
-              Admin
-            </div>
-            <Link
-              href="/admin/profit"
-              className={`sidebar-nav-item${pathname.startsWith('/admin') ? ' active' : ''}`}
-            >
-              <span className="sidebar-nav-icon" style={{ fontSize: 13 }}>⚙</span>
-              <span className="sidebar-nav-text">Admin OS</span>
-            </Link>
+        {/* ── Logo ─────────────────────────────────────────────────────────── */}
+        <Link
+          href="/dashboard"
+          className="flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4 hover:opacity-90 transition-opacity"
+        >
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary shadow-[0_0_14px_rgba(249,115,22,0.4)]">
+            <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
-        )}
-      </div>
+          <span className="text-sm font-bold tracking-tight text-foreground">Creative OS</span>
+        </Link>
 
-      {/* Footer — fixed at bottom, always visible */}
-      <div className="sidebar-footer" style={{ flexShrink: 0 }}>
-        <div className="sidebar-user">
-          <div className="sidebar-avatar">{userInfo?.initial ?? '?'}</div>
-          <div style={{ minWidth: 0 }}>
-            <div className="sidebar-user-name">{userInfo?.name ?? '—'}</div>
-            <div className="sidebar-user-email">{userInfo?.email ?? ''}</div>
+        {/* ── Scrollable nav ───────────────────────────────────────────────── */}
+        <ScrollArea className="flex-1 px-3 py-3">
+          {/* Main nav */}
+          <div className="space-y-0.5">
+            {MAIN_NAV.map(item => (
+              <NavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={isActive(item.href)}
+                badge={
+                  item.href === '/create' && generating ? (
+                    <span className="ml-auto flex items-center gap-1 rounded-full bg-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary">
+                      <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                      Live
+                    </span>
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+
+          {/* Collapsible sections */}
+          <NavSection label="Intelligence" items={INTELLIGENCE_NAV} isActive={isActive} defaultOpen={inIntelligence} />
+          <NavSection label="Financial OS"  items={FINANCIAL_NAV}    isActive={isActive} defaultOpen={inFinancial} />
+          <NavSection label="Tools"         items={TOOLS_NAV}         isActive={isActive} defaultOpen={inTools} />
+
+          {/* Admin */}
+          {isAdminUser(userInfo?.id ?? '') && (
+            <div className="mt-1">
+              <Separator className="mb-2 opacity-50" />
+              <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Admin</p>
+              <NavItem href="/admin/profit" label="Admin OS" icon={Shield} active={pathname.startsWith('/admin')} />
+            </div>
+          )}
+        </ScrollArea>
+
+        {/* ── User footer ──────────────────────────────────────────────────── */}
+        <div className="border-t border-sidebar-border p-3">
+          <div className="flex items-center gap-2.5">
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarFallback className="text-xs">{userInfo?.initial ?? '?'}</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs font-semibold text-foreground">{userInfo?.name ?? '—'}</p>
+              <p className="truncate text-[10px] text-muted-foreground">{userInfo?.email ?? ''}</p>
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleSignOut}
+                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign out</TooltipContent>
+            </Tooltip>
           </div>
         </div>
-        <button className="sidebar-signout" onClick={handleSignOut}>Sign out</button>
-      </div>
-    </aside>
+
+      </aside>
+    </TooltipProvider>
   );
 }
