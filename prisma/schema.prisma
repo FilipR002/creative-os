@@ -865,6 +865,9 @@ model Resource {
   brandTone          String?   @map("brand_tone")
   brandVoice         String?   @map("brand_voice")
   imageUrls          String[]  @default([]) @map("image_urls")
+  // Cached Gemini Vision analysis of uploaded images.
+  // Written by POST /api/resources/analyze-images; read by image prompt builder.
+  brandVisualStyle   String?   @map("brand_visual_style")
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt      @map("updated_at")
   personas           Persona[]

@@ -9,7 +9,23 @@ import { GenerateCarouselDto } from './carousel.dto';
 import { buildPersonaBlock }   from '../resources/persona-prompt';
 import { autoSelectTemplate }  from '../compositor/templates/template-engine';
 import type { CompositorInput, AdTone, AdSize } from '../compositor/types/compositor.types';
+import { ResourcesService }    from '../resources/resources.service';
 import axios from 'axios';
+
+// ─── Emotional trigger extractor ─────────────────────────────────────────────
+// Parses an angle label and returns the dominant emotional keyword for Imagen.
+
+function extractEmotionalTrigger(angleLabel: string): string {
+  const a = angleLabel.toLowerCase();
+  if (a.match(/fear|fomo|miss.*out|scarcity/)) return 'fear';
+  if (a.match(/pride|aspir|achiev|success/))   return 'pride';
+  if (a.match(/curiosity|discover|secret|reveal/)) return 'curiosity';
+  if (a.match(/joy|happ|fun|energet|excite/))  return 'joy';
+  if (a.match(/trust|proof|result|credib/))    return 'trust';
+  if (a.match(/social|community|togeth/))      return 'social';
+  if (a.match(/urgency|now|limited|hurry/))    return 'urgency';
+  return '';
+}
 
 // ─── Slide sequence helper ────────────────────────────────────────────────────
 
@@ -64,6 +80,7 @@ export class CarouselService {
     private readonly images:           ImageService,
     private readonly compositor:       CompositorService,
     private readonly styleTranslator:  StyleTranslatorService,
+    private readonly resources:        ResourcesService,
     @Inject(forwardRef(() => CampaignService))
     private readonly campaigns:        CampaignService,
   ) {}
@@ -218,12 +235,24 @@ For the LAST slide (slide ${dto.slideCount}) only:
     const slides: any[] = content.slides || [];
     if (!slides.length) throw new BadRequestException('No slides found in this creative.');
 
+    // Load resource context (product, persona, brand visual style) for prompt enrichment
+    const resourceCtx = await this.resources.getContext(userId).catch(() => null);
+
+    // Extract angle emotional trigger keyword from angle label
+    const angleLabel: string = content.angle || 'engaging';
+    const angleEmotionalTrigger = extractEmotionalTrigger(angleLabel);
+
     const metadata = {
-      angle:        content.angle        || 'engaging',
+      angle:        angleLabel,
       format:       'carousel',
       platform:     content.platform     || 'instagram',
-      templateId:   content.templateId   || null,   // Phase 6 — user-selected override
-      primaryColor: content.primaryColor || null,   // Brand color
+      templateId:   content.templateId   || null,
+      primaryColor: content.primaryColor || null,
+      // #4 enrichment — persona, angle, uploaded brand images
+      productName:           resourceCtx?.productName           || undefined,
+      personaDemographics:   resourceCtx?.persona?.demographics || undefined,
+      brandVisualStyle:      resourceCtx?.brandVisualStyle      || undefined,
+      angleEmotionalTrigger: angleEmotionalTrigger              || undefined,
     };
 
     // Build inputs — one per slide

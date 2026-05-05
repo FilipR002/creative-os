@@ -5,9 +5,10 @@ import { CampaignModule }     from '../campaign/campaign.module';
 import { ImageModule }        from '../image/image.module';
 import { CompositorModule }   from '../compositor/compositor.module';
 import { UserStyleModule }    from '../user-style/user-style.module';
+import { ResourcesModule }    from '../resources/resources.module';
 
 @Module({
-  imports:     [forwardRef(() => CampaignModule), ImageModule, CompositorModule, UserStyleModule],
+  imports:     [forwardRef(() => CampaignModule), ImageModule, CompositorModule, UserStyleModule, ResourcesModule],
   controllers: [BannerController],
   providers:   [BannerService],
   exports:     [BannerService],

@@ -26,6 +26,18 @@ export class ResourcesController {
     return this.resources.upsert(dto, userId);
   }
 
+  // ── Brand image analysis ───────────────────────────────────────────────────
+
+  /**
+   * Analyze the user's uploaded images with Gemini Vision and cache a
+   * brand visual style description used in all subsequent image generation.
+   * Call this once after uploading new product/brand images.
+   */
+  @Post('analyze-images')
+  analyzeImages(@UserId() userId: string) {
+    return this.resources.analyzeImages(userId);
+  }
+
   // ── URL Scanner ────────────────────────────────────────────────────────────
 
   /** Scan a website URL and return a pre-filled brand profile */

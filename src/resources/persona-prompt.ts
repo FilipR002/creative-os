@@ -3,6 +3,9 @@ import type { ResourceContext } from './resources.service';
 /**
  * Build a persona + product/brand enrichment block to inject into any Claude prompt.
  * Returns an empty string when no context is available.
+ *
+ * Used by: banner.service, carousel.service (for Claude copy generation).
+ * Image prompt enrichment is handled separately by buildImagePrompt / buildBannerImagePrompt.
  */
 export function buildPersonaBlock(ctx: ResourceContext | undefined): string {
   if (!ctx) return '';
@@ -24,6 +27,19 @@ export function buildPersonaBlock(ctx: ResourceContext | undefined): string {
     lines.push('BRAND VOICE:');
     if (ctx.brandTone)  lines.push(`- Tone: ${ctx.brandTone}`);
     if (ctx.brandVoice) lines.push(`- Voice: ${ctx.brandVoice}`);
+  }
+
+  // Brand visual style (derived from uploaded images) — helps Claude reference the right aesthetic
+  if (ctx.brandVisualStyle) {
+    lines.push('BRAND VISUAL AESTHETIC:');
+    lines.push(`- ${ctx.brandVisualStyle}`);
+    lines.push('Reference this visual style when describing image direction or visual concepts.');
+  }
+
+  // Uploaded images — tell Claude images are available for reference
+  if (ctx.imageUrls?.length) {
+    lines.push(`BRAND IMAGES: ${ctx.imageUrls.length} product/brand image(s) uploaded.`);
+    lines.push('When suggesting visual directions, align with the brand image style above.');
   }
 
   // Persona section (most important for targeting)

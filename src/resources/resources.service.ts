@@ -21,6 +21,10 @@ export interface ResourceContext {
   productBenefits:     string[];
   brandTone?:          string;
   brandVoice?:         string;
+  // Uploaded brand/product image URLs
+  imageUrls:           string[];
+  // Cached Gemini Vision analysis of those images (written by analyzeImages())
+  brandVisualStyle?:   string;
   persona?:            PersonaContext;
 }
 
@@ -95,6 +99,8 @@ export class ResourcesService {
       productBenefits:    resource?.productBenefits    ?? [],
       brandTone:          resource?.brandTone          ?? undefined,
       brandVoice:         resource?.brandVoice         ?? undefined,
+      imageUrls:          resource?.imageUrls          ?? [],
+      brandVisualStyle:   (resource as any)?.brandVisualStyle ?? undefined,
     };
 
     if (personaId) {
@@ -425,6 +431,82 @@ Rules:
     if (competitor.resource.userId !== userId) throw new BadRequestException('Access denied');
     await this.prisma.competitor.delete({ where: { id: competitorId } });
     return { deleted: true };
+  }
+
+  // ── Brand image analysis ───────────────────────────────────────────────────
+  /**
+   * Calls Gemini Vision on the user's uploaded imageUrls (up to 4).
+   * Returns a concise visual style description and caches it on the Resource
+   * so every subsequent image generation can reference it without another API call.
+   *
+   * POST /api/resources/analyze-images
+   */
+  async analyzeImages(userId: string): Promise<{ brandVisualStyle: string; analyzedCount: number }> {
+    const resource = await this.prisma.resource.findUnique({ where: { userId } });
+    if (!resource) throw new BadRequestException('No resource found. Upload images first.');
+
+    const urls: string[] = (resource.imageUrls ?? []).slice(0, 4);
+    if (!urls.length) throw new BadRequestException('No image URLs found on your resource. Upload images first.');
+
+    // Fetch each image and convert to base64 for Gemini inline data
+    const imageParts: { mimeType: string; data: string }[] = [];
+    for (const url of urls) {
+      try {
+        const res = await axios.get<ArrayBuffer>(url, {
+          responseType: 'arraybuffer',
+          timeout: 10000,
+          headers: { 'User-Agent': 'CreativeOS-Scanner/1.0' },
+          maxContentLength: 5_000_000, // 5 MB per image
+        });
+        const mimeType = (res.headers['content-type'] as string)?.split(';')[0] || 'image/jpeg';
+        const data = Buffer.from(res.data).toString('base64');
+        imageParts.push({ mimeType, data });
+      } catch {
+        // Skip images that fail to fetch — don't abort the whole analysis
+      }
+    }
+
+    if (!imageParts.length) {
+      throw new BadRequestException('Could not fetch any of the uploaded images. Check that the URLs are publicly accessible.');
+    }
+
+    const apiKey = this.config.get<string>('GEMINI_API_KEY');
+    if (!apiKey) throw new BadRequestException('GEMINI_API_KEY not configured.');
+
+    // Build Gemini Vision request — inline images + analysis prompt
+    const parts: object[] = imageParts.map(img => ({
+      inlineData: { mimeType: img.mimeType, data: img.data },
+    }));
+    parts.push({
+      text: `Analyze the visual style of these brand/product images and produce a single concise paragraph (max 60 words) describing the consistent visual aesthetic. Focus on: lighting style, colour palette, background treatment, photography style (studio/lifestyle/editorial), subject framing, and overall mood. Write it as a direct style instruction for an image generation model — e.g. "Warm natural studio lighting, soft white background, lifestyle photography with relatable subjects, muted earthy tones, shallow depth of field, authentic candid feel." No lists, no headings — one flowing style description.`,
+    });
+
+    try {
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        { contents: [{ parts }] },
+        {
+          headers: { 'content-type': 'application/json' },
+          timeout: 30000,
+        },
+      );
+
+      const brandVisualStyle: string =
+        response.data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? '';
+
+      if (!brandVisualStyle) throw new Error('Empty response from Gemini Vision.');
+
+      // Cache on Resource so generateImages can read it without re-analyzing
+      await this.prisma.resource.update({
+        where: { userId },
+        data:  { brandVisualStyle } as any,
+      });
+
+      return { brandVisualStyle, analyzedCount: imageParts.length };
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message || err?.message || 'Unknown error';
+      throw new BadRequestException(`Image analysis failed: ${msg}`);
+    }
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
