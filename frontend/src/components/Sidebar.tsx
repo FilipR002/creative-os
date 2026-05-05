@@ -8,7 +8,7 @@ import {
   LayoutDashboard, Sparkles, FolderOpen, BookOpen, BarChart2,
   TrendingUp, CreditCard, Settings, Eye, Bot, Brain, Activity,
   Shield, Target, Lightbulb, DollarSign, PieChart, Zap,
-  ChevronRight, LogOut, Wrench, Building2, Loader2,
+  ChevronRight, LogOut, Wrench, Building2, Loader2, FileCode,
 } from 'lucide-react';
 import { getSupabase } from '@/lib/supabase';
 import { useRequireAuth } from '@/lib/hooks/useRequireAuth';
@@ -237,7 +237,8 @@ export function Sidebar() {
             <div className="mt-1">
               <Separator className="mb-2 opacity-50" />
               <p className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Admin</p>
-              <NavItem href="/admin/profit" label="Admin OS" icon={Shield} active={pathname.startsWith('/admin')} />
+              <NavItem href="/admin/profit" label="Admin OS"  icon={Shield}   active={pathname.startsWith('/admin')} />
+              <NavItem href="/api-docs"     label="API Docs"  icon={FileCode} active={pathname === '/api-docs'} />
             </div>
           )}
         </ScrollArea>
