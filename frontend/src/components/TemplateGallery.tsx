@@ -1509,6 +1509,9 @@ const PHOTO_TEMPLATE_IDS = new Set([
   // ── Extended – product/lifestyle templates ────────────────────────────────
   'flat-lay','photo-grid','split-panel','before-after-slide',
   'collage-cutout','retro-bold',
+  // ── Banner gallery additions ──────────────────────────────────────────────
+  'founder-story','testimonial-card','community-quote',
+  'brand-awareness','news-frame','mono-editorial','meme-format',
 ]);
 
 const PHOTO_OVERLAYS: Record<string, string> = {
@@ -1540,6 +1543,14 @@ const PHOTO_OVERLAYS: Record<string, string> = {
   'before-after-slide': 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.62) 100%)',
   'collage-cutout':     'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.50) 100%)',
   'retro-bold':         'linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.55) 100%)',
+  // ── Banner gallery additions ──────────────────────────────────────────────
+  'founder-story':      'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.72) 100%)',
+  'testimonial-card':   'linear-gradient(to bottom, rgba(0,0,0,0.22) 0%, rgba(0,0,0,0.78) 100%)',
+  'community-quote':    'linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.80) 100%)',
+  'brand-awareness':    'linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.60) 100%)',
+  'news-frame':         'linear-gradient(to bottom, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.92) 100%)',
+  'mono-editorial':     'linear-gradient(135deg, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 100%)',
+  'meme-format':        'linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.0) 30%)',
 };
 
 interface PhotoMeta {
@@ -5838,1488 +5849,2000 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
 function BannerPreview({ id, tone }: { id: string; tone: string }) {
   const dark  = tone === 'dark'  || tone === 'luxury';
   const light = tone === 'light' || tone === 'minimal' || tone === 'editorial';
-  const bg    = dark  ? '#0f1117'
-              : light ? '#f8fafc'
-              : '#1e1b4b';
+  const bg    = dark  ? '#0f1117' : light ? '#f8fafc' : '#1e1b4b';
   const txt   = dark || (!light) ? '#f1f5f9' : '#1e293b';
-  const muted = dark  ? 'rgba(241,245,249,0.4)'
-              : light ? 'rgba(30,41,59,0.4)'
-              : 'rgba(241,245,249,0.45)';
-  const accent = TEMPLATE_ACCENTS[id] ?? (
-    tone === 'luxury'  ? '#d4af37' :
-    tone === 'urgent'  ? '#ef4444' :
-    '#6366f1'
-  );
+  const muted = dark  ? 'rgba(241,245,249,0.38)' : light ? 'rgba(30,41,59,0.38)' : 'rgba(241,245,249,0.4)';
+  const accent = TEMPLATE_ACCENTS[id] ?? (tone === 'luxury' ? '#d4af37' : tone === 'urgent' ? '#ef4444' : '#6366f1');
 
-  // Shared inner layout
   const wrap: React.CSSProperties = {
     position: 'absolute', inset: 0,
     display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center',
-    padding: 14, gap: 8,
+    padding: 14, gap: 7,
     background: bg, overflow: 'hidden',
   };
 
-  // ── Real-photo support ───────────────────────────────────────────────────────
+  // ── Shared display-ad primitives ────────────────────────────────────────────
+  const BM = ({ c = muted }: { c?: string }) => (
+    <div style={{ position:'absolute', top:7, left:9, fontSize:5.5, fontWeight:800, letterSpacing:'0.14em', color:c, textTransform:'uppercase', zIndex:10 }}>BRAND</div>
+  );
+  const Stripe = ({ h = 3 }: { h?: number }) => (
+    <div style={{ position:'absolute', top:0, left:0, right:0, height:h, background:accent }} />
+  );
+  const ABtn = ({ label, bg: btnBg = accent, fg = '#fff', pill = false }: { label:string; bg?:string; fg?:string; pill?:boolean }) => (
+    <div style={{ background:btnBg, color:fg, borderRadius:pill?20:4, padding:'4px 11px', fontSize:7, fontWeight:800, letterSpacing:'0.03em', whiteSpace:'nowrap', flexShrink:0 }}>{label}</div>
+  );
+
+  // ── Photo support ───────────────────────────────────────────────────────────
   const photoMeta = useTemplatePhoto(id);
   const hasPhoto  = Boolean(photoMeta?.url && PHOTO_TEMPLATE_IDS.has(id));
-  // Layer: img + gradient overlay — sits at absolute zIndex 0/1
   const photoLayer = hasPhoto ? (
     <>
-      <img
-        src={photoMeta!.url} alt=""
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78, zIndex: 0 }}
-        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-      />
-      <div style={{ position: 'absolute', inset: 0, background: PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))', zIndex: 1 }} />
-      {/* Unsplash attribution — required by TOS */}
-      <a
-        href={photoMeta!.creditUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          position: 'absolute', bottom: 4, right: 6, zIndex: 10,
-          fontSize: 6, color: 'rgba(255,255,255,0.55)',
-          textDecoration: 'none', textShadow: '0 1px 2px rgba(0,0,0,0.6)',
-          whiteSpace: 'nowrap',
-        }}
-      >
+      <img src={photoMeta!.url} alt=""
+        style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.82, zIndex:0 }}
+        onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+      <div style={{ position:'absolute', inset:0, background:PHOTO_OVERLAYS[id] ?? 'linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.65))', zIndex:1 }} />
+      <a href={photoMeta!.creditUrl} target="_blank" rel="noopener noreferrer"
+        style={{ position:'absolute', bottom:4, right:6, zIndex:10, fontSize:6, color:'rgba(255,255,255,0.55)', textDecoration:'none', textShadow:'0 1px 2px rgba(0,0,0,0.6)', whiteSpace:'nowrap' }}>
         Photo: {photoMeta!.credit} · Unsplash
       </a>
     </>
   ) : null;
-  // Content z-index wrapper for photo templates — ensures text is above photo
   const pz = (extra?: React.CSSProperties): React.CSSProperties =>
-    hasPhoto ? { position: 'relative', zIndex: 2, ...extra } : { ...extra };
+    hasPhoto ? { position:'relative', zIndex:2, ...extra } : { ...extra };
 
-  // ── full-bleed ──────────────────────────────────────────────────────────────
-  if (id === 'full-bleed') return (
-    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(135deg, ${accent}, ${accent}cc)`, gap: 6 }}>
-      {photoLayer}
-      {!hasPhoto && <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)' }} />}
-      <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-        <T s={7} color="rgba(255,255,255,0.7)" align="center" caps spacing="0.12em">Your Brand</T>
-        <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">Stop Scrolling.</T>
-        <T s={9} color="rgba(255,255,255,0.75)" align="center">This changes everything.</T>
-        <Btn label="Learn More →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.5)" />
-      </div>
-    </div>
-  );
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 1 — COMMERCE / OFFER (11 templates)
+  // ════════════════════════════════════════════════════════════════════════════
 
-  // ── split-panel ─────────────────────────────────────────────────────────────
-  if (id === 'split-panel') return (
-    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10 }}>
-        <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">THE OFFER</T>
+  // ── offer-drop ──────────────────────────────────────────────────────────────
+  if (id === 'offer-drop') return (
+    <div style={{ ...wrap, background:'#0a0a0f', gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ width:72, height:72, borderRadius:'50%', background:accent, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', boxShadow:`0 0 28px ${accent}55` }}>
+        <div style={{ fontSize:22, fontWeight:900, color:'#fff', lineHeight:1 }}>50%</div>
+        <div style={{ fontSize:6.5, fontWeight:700, color:'rgba(255,255,255,0.8)', letterSpacing:'0.1em' }}>OFF</div>
       </div>
-      <div style={{ flex: 1, height: '100%', background: bg, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', padding: 10, gap: 6 }}>
-        <T s={8} color={txt} weight={700}>Save 50%</T>
-        <Bar w={60} color={muted} h={2} op={0.5} />
-        <T s={7} color={muted}>Limited time only</T>
-        <Btn label="Claim →" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── bold-headline ───────────────────────────────────────────────────────────
-  if (id === 'bold-headline') return (
-    <div style={{ ...wrap, background: '#0f1117' }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} />
-      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Breaking</T>
-      <T s={18} color="#f1f5f9" weight={900} align="center" spacing="-0.04em">THE TRUTH</T>
-      <T s={8} color="rgba(241,245,249,0.5)" align="center">Most people get this wrong</T>
-      <Btn label="Find Out Why" bg={accent} />
-    </div>
-  );
-
-  // ── minimal ─────────────────────────────────────────────────────────────────
-  if (id === 'minimal') return (
-    <div style={{ ...wrap, background: '#fff', gap: 10 }}>
-      <div style={{ height: 1, background: '#1e293b', width: 80, opacity: 0.15 }} />
-      <T s={14} color="#1e293b" weight={700} align="center" spacing="-0.02em">Less noise.<br/>More signal.</T>
-      <div style={{ height: 1, background: '#1e293b', width: 80, opacity: 0.15 }} />
-      <T s={8} color="rgba(30,41,59,0.45)" align="center">Simple. Effective. Yours.</T>
-      <Btn label="Get Started" bg="#1e293b" color="#fff" />
-    </div>
-  );
-
-  // ── ugc-style ───────────────────────────────────────────────────────────────
-  if (id === 'ugc-style') return (
-    <div style={{ ...wrap, background: hasPhoto ? '#e8f0f8' : '#fff', gap: 7, alignItems: 'flex-start' }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 7 })}>
-        <Row gap={6}>
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)` }} />
-          <Col gap={1}>
-            <T s={8} color="#1e293b" weight={700}>@realuser</T>
-            <T s={7} color="rgba(30,41,59,0.4)">Sponsored</T>
-          </Col>
-        </Row>
-        <T s={9} color="#1e293b" weight={500}>"I can't believe how much this changed my life in just 30 days."</T>
-        <Stars />
-        <Btn label="Try It Free" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── testimonial ─────────────────────────────────────────────────────────────
-  if (id === 'testimonial') return (
-    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
-      <Stars color={accent} />
-      <T s={9} color="#1e293b" weight={600} align="center">"Best decision I ever made for my business."</T>
-      <Row gap={6}>
-        <div style={{ width: 18, height: 18, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)` }} />
-        <T s={7} color="rgba(30,41,59,0.5)">Sarah K. · CEO</T>
-      </Row>
-      <Btn label="Read Reviews →" bg={accent} />
-    </div>
-  );
-
-  // ── stats-hero ──────────────────────────────────────────────────────────────
-  if (id === 'stats-hero') return (
-    <div style={{ ...wrap, background: '#0f1117' }}>
-      <T s={7} color={accent} caps spacing="0.12em" weight={700}>Proven results</T>
-      <T s={36} color="#f1f5f9" weight={900} align="center" spacing="-0.05em">10x</T>
-      <T s={9} color="rgba(241,245,249,0.55)" align="center">faster than the old way</T>
-      <Row gap={12}>
-        {['47%','3x','$12K'].map(s => (
-          <Col key={s} align="center" gap={1}>
-            <T s={10} color={accent} weight={800}>{s}</T>
-            <T s={6} color="rgba(241,245,249,0.3)">avg</T>
-          </Col>
-        ))}
-      </Row>
-    </div>
-  );
-
-  // ── feature-list ────────────────────────────────────────────────────────────
-  if (id === 'feature-list') return (
-    <div style={{ ...wrap, background: '#f8fafc', alignItems: 'flex-start', gap: 7 }}>
-      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">Everything you need</T>
-      {['AI-powered copy','Instant exports','30-day guarantee'].map((t, i) => (
-        <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#475569" weight={500}>{t}</T></Row>
-      ))}
-      <Btn label="Start Free Trial" bg={accent} />
-    </div>
-  );
-
-  // ── cta-final ───────────────────────────────────────────────────────────────
-  if (id === 'cta-final') return (
-    <div style={{ ...wrap, background: accent, gap: 7 }}>
-      <T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.12em">Limited Time Offer</T>
-      <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">50% OFF Today Only</T>
-      <T s={8} color="rgba(255,255,255,0.7)" align="center">Ends at midnight</T>
-      <Btn label="CLAIM DISCOUNT" bg="#fff" color={accent} />
-    </div>
-  );
-
-  // ── gradient-pop ────────────────────────────────────────────────────────────
-  if (id === 'gradient-pop') return (
-    <div style={{ ...wrap, background: 'linear-gradient(135deg, #7c3aed, #db2777)', gap: 8 }}>
-      <T s={8} color="rgba(255,255,255,0.7)" align="center">You won't regret this.</T>
-      <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">Don't scroll past.</T>
-      <div style={{ height: 2, background: 'rgba(255,255,255,0.35)', width: 50 }} />
-      <Btn label="See Why →" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
-    </div>
-  );
-
-  // ── dark-luxury ─────────────────────────────────────────────────────────────
-  if (id === 'dark-luxury') return (
-    <div style={{ ...wrap, background: '#090909', gap: 8 }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
-        <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
-        <T s={7} color="#d4af37" caps spacing="0.2em" weight={600}>Exclusively Yours</T>
-        <T s={14} color="#f1f5f9" weight={300} align="center" spacing="0.05em">Luxury redefined.</T>
-        <div style={{ height: 1, background: '#d4af37', width: 60, opacity: 0.7 }} />
-        <Btn label="Explore" bg="transparent" color="#d4af37" border="1px solid #d4af3755" />
-      </div>
-    </div>
-  );
-
-  // ── bright-minimal ──────────────────────────────────────────────────────────
-  if (id === 'bright-minimal') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
-      <div style={{ width: 36, height: 36, borderRadius: '50%', border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 14, height: 14, borderRadius: '50%', background: accent }} />
-      </div>
-      <T s={13} color="#1e293b" weight={700} align="center" spacing="-0.02em">Simply better.</T>
-      <T s={8} color="rgba(30,41,59,0.4)" align="center">No fluff. Just results.</T>
-      <Btn label="Try Now" bg={accent} />
-    </div>
-  );
-
-  // ── story-hook ──────────────────────────────────────────────────────────────
-  if (id === 'story-hook') return (
-    <div style={{ ...wrap, background: '#0f1117', alignItems: 'flex-start', gap: 8 }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 })}>
-        <T s={8} color={accent} weight={700}>A true story →</T>
-        <T s={13} color="#f1f5f9" weight={800} spacing="-0.02em">"I made $0 for 3 years."</T>
-        <T s={8} color="rgba(241,245,249,0.5)">Then I discovered one thing that changed everything.</T>
-        <Btn label="Read Story" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── problem-slide ───────────────────────────────────────────────────────────
-  if (id === 'problem-slide') return (
-    <div style={{ ...wrap, background: '#1e1b4b', alignItems: 'flex-start', gap: 7 }}>
-      <T s={7} color="rgba(239,68,68,0.8)" caps spacing="0.1em" weight={700}>The problem</T>
-      <T s={11} color="#f1f5f9" weight={800} spacing="-0.02em">Sound familiar?</T>
-      {['Wasting hours daily','No clear results','Burning money'].map((t, i) => (
-        <Row key={i} gap={5}><Cross /><T s={7} color="rgba(241,245,249,0.6)">{t}</T></Row>
-      ))}
-      <Btn label="Fix This Now" bg="#ef4444" />
-    </div>
-  );
-
-  // ── text-only-bold ──────────────────────────────────────────────────────────
-  if (id === 'text-only-bold') return (
-    <div style={{ ...wrap, background: accent, gap: 6 }}>
-      <T s={19} color="#fff" weight={900} align="center" spacing="-0.04em">We need to talk.</T>
-      <T s={9} color="rgba(255,255,255,0.7)" align="center">About what you've been missing.</T>
-      <Btn label="Keep Reading" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.3)" />
-    </div>
-  );
-
-  // ── product-center ──────────────────────────────────────────────────────────
-  if (id === 'product-center') return (
-    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#f8fafc', gap: 8 }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, background: `linear-gradient(135deg, ${accent}, #818cf8)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div style={{ width: 16, height: 16, borderRadius: 4, background: 'rgba(255,255,255,0.35)' }} /></div>
-        <T s={11} color={hasPhoto ? '#fff' : '#1e293b'} weight={800} align="center" spacing="-0.02em">Power up your workflow</T>
-        <Row gap={10}>
-          {['Fast','Smart','Safe'].map(f => <T key={f} s={7} color={hasPhoto ? 'rgba(255,255,255,0.7)' : '#475569'} weight={600}>{f}</T>)}
-        </Row>
-        <Btn label="Try Free" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── neon-dark ───────────────────────────────────────────────────────────────
-  if (id === 'neon-dark') return (
-    <div style={{ ...wrap, background: '#030712', gap: 6 }}>
-      {photoLayer}
-      <div style={{ position: 'absolute', top: '30%', left: '50%', transform: 'translate(-50%,-50%)', width: 100, height: 100, borderRadius: '50%', background: `${accent}20`, filter: 'blur(25px)', pointerEvents: 'none', zIndex: hasPhoto ? 2 : 0 }} />
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 })}>
-        <T s={7} color={accent} caps spacing="0.15em" weight={700}>Next level</T>
-        <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">GLOW UP</T>
-        <T s={8} color="rgba(255,255,255,0.45)" align="center">Your brand, amplified.</T>
-        <Btn label="Get Access" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── magazine-editorial ──────────────────────────────────────────────────────
-  if (id === 'magazine-editorial') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 7 })}>
-        <Row gap={8}>
-          <T s={7} color="#94a3b8" caps spacing="0.12em">Issue 12</T>
-          <div style={{ height: 1, background: '#94a3b8', flex: 1, marginTop: 4 }} />
-        </Row>
-        <T s={13} color="#1e293b" weight={800} spacing="-0.02em">The future of content</T>
-        <T s={8} color="#64748b">5 trends reshaping how brands speak.</T>
-        <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />
-        <T s={7} color="#94a3b8">Read the full story →</T>
-      </div>
-    </div>
-  );
-
-  // ── color-block ─────────────────────────────────────────────────────────────
-  if (id === 'color-block') return (
-    <div style={{ ...wrap, padding: 0, flexDirection: 'row', gap: 0 }}>
-      <div style={{ flex: 1, height: '100%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <T s={22} color="#fff" weight={900} spacing="-0.04em">BOLD.</T>
-      </div>
-      <div style={{ flex: 1, height: '100%', background: '#f8fafc', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
-        <T s={9} color="#1e293b" weight={700} align="center">Stand out from the crowd</T>
-        <Btn label="Shop Now" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── floating-card ───────────────────────────────────────────────────────────
-  if (id === 'floating-card') return (
-    <div style={{ ...wrap, background: `linear-gradient(135deg, ${accent}33, #818cf844)` }}>
-      <div style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 12, padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 6, width: '85%' }}>
-        <T s={7} color="rgba(255,255,255,0.6)" caps spacing="0.1em">Introducing</T>
-        <T s={12} color="#fff" weight={800} spacing="-0.02em">Something new</T>
-        <T s={8} color="rgba(255,255,255,0.55)">Crafted with care.</T>
-        <Btn label="Discover" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.3)" />
-      </div>
-    </div>
-  );
-
-  // ── countdown-urgency ───────────────────────────────────────────────────────
-  if (id === 'countdown-urgency') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
-      <T s={8} color="rgba(239,68,68,0.9)" caps spacing="0.1em" weight={700}>Sale ends in</T>
-      <Row gap={5}>
-        {['00','12','34'].map((t, i) => (
-          <React.Fragment key={i}>
-            {i > 0 && <T s={12} color="rgba(241,245,249,0.4)" weight={700}>:</T>}
-            <div style={{ background: '#1e293b', border: '1px solid rgba(241,245,249,0.1)', borderRadius: 6, padding: '4px 7px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <T s={13} color="#f1f5f9" weight={900}>{t}</T>
-            </div>
-          </React.Fragment>
-        ))}
-      </Row>
-      <T s={8} color="rgba(241,245,249,0.4)" align="center">Hours · Minutes · Seconds</T>
-      <Btn label="Shop Before It's Gone" bg="#ef4444" />
-    </div>
-  );
-
-  // ── social-proof-grid ───────────────────────────────────────────────────────
-  if (id === 'social-proof-grid') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, width: '100%' }}>
-        {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} style={{ height: 18, borderRadius: 4, background: `hsl(${200 + i * 25}, 60%, 80%)`, opacity: 0.7 }} />
-        ))}
-      </div>
-      <T s={12} color="#1e293b" weight={900} align="center" spacing="-0.02em">Join 47,000+ creators</T>
-      <Row gap={12}>
-        {['10K+','4.9★','99%'].map(s => (
-          <Col key={s} align="center" gap={1}><T s={9} color={accent} weight={800}>{s}</T></Col>
-        ))}
-      </Row>
-      <Btn label="Join Now" bg={accent} />
-    </div>
-  );
-
-  // ── headline-badge ──────────────────────────────────────────────────────────
-  if (id === 'headline-badge') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
-      <div style={{ background: `${accent}25`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '3px 10px' }}>
-        <T s={7} color={accent} weight={700}>✦ New Release</T>
-      </div>
-      <T s={14} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">The hook that converts</T>
-      <T s={8} color="rgba(241,245,249,0.45)" align="center">Scroll-stopping every time.</T>
-      <Btn label="See It Live" bg={accent} />
-    </div>
-  );
-
-  // ── side-by-side ────────────────────────────────────────────────────────────
-  if (id === 'side-by-side') return (
-    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, height: '100%', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
-        <T s={8} color="#ef4444" weight={700} align="center" caps>Before</T>
-        {['Slow','Costly','Stressful'].map((t, i) => (
-          <Row key={i} gap={4}><Cross /><T s={7} color="rgba(30,41,59,0.6)">{t}</T></Row>
-        ))}
-      </div>
-      <div style={{ flex: 1, height: '100%', background: `${accent}10`, border: `1px solid ${accent}25`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }}>
-        <T s={8} color={accent} weight={700} align="center" caps>After</T>
-        {['10x faster','Half the cost','Effortless'].map((t, i) => (
-          <Row key={i} gap={4}><Check color={accent} /><T s={7} color="rgba(30,41,59,0.7)">{t}</T></Row>
-        ))}
-      </div>
-    </div>
-  );
-
-  // ── diagonal-split ──────────────────────────────────────────────────────────
-  if (id === 'diagonal-split') return (
-    <div style={{ ...wrap, padding: 0, overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: '#0f1117' }} />
-      <div style={{ position: 'absolute', inset: 0, background: accent, clipPath: 'polygon(0 0, 55% 0, 45% 100%, 0 100%)' }} />
-      <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'row', width: '100%', height: '100%', alignItems: 'center' }}>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <T s={9} color="#fff" weight={900} align="center">BEFORE</T>
-          <T s={7} color="rgba(255,255,255,0.6)" align="center">Struggling</T>
-        </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <T s={9} color="#f1f5f9" weight={900} align="center">AFTER</T>
-          <T s={7} color="rgba(241,245,249,0.55)" align="center">Thriving</T>
-        </div>
-      </div>
-    </div>
-  );
-
-  // ── overlay-card ────────────────────────────────────────────────────────────
-  if (id === 'overlay-card') return (
-    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(180deg, ${accent}66, ${accent}dd)`, justifyContent: 'flex-end', padding: 0 }}>
-      {photoLayer}
-      {!hasPhoto && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '60%', background: `${accent}44` }} />}
-      <div style={{ width: '100%', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(10px)', borderTop: '1px solid rgba(255,255,255,0.2)', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5, position: 'relative', zIndex: 2 }}>
-        <T s={10} color="#fff" weight={800}>Ready to transform?</T>
-        <T s={7} color="rgba(255,255,255,0.65)">Join thousands already inside.</T>
-        <Btn label="Get Access Now" bg="#fff" color={accent} />
-      </div>
-    </div>
-  );
-
-  // ── number-list ─────────────────────────────────────────────────────────────
-  if (id === 'number-list') return (
-    <div style={{ ...wrap, background: '#f8fafc', alignItems: 'flex-start', gap: 7 }}>
-      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">3 steps to success</T>
-      {['Discover your angle','Build in minutes','Launch & grow'].map((t, i) => (
-        <Row key={i} gap={8}>
-          <div style={{ width: 18, height: 18, borderRadius: '50%', background: accent, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <T s={8} color="#fff" weight={800}>{i + 1}</T>
-          </div>
-          <T s={8} color="#475569" weight={500}>{t}</T>
-        </Row>
-      ))}
-      <Btn label="Start Now" bg={accent} />
-    </div>
-  );
-
-  // ── brand-manifesto ─────────────────────────────────────────────────────────
-  if (id === 'brand-manifesto') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
-      <div style={{ height: 1, background: accent, width: 40, opacity: 0.6 }} />
-      <T s={10} color="rgba(241,245,249,0.4)" align="center" spacing="0.02em">"We believe in building</T>
-      <T s={13} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">something real.</T>
-      <T s={10} color="rgba(241,245,249,0.4)" align="center">Not just another product."</T>
-      <div style={{ height: 1, background: accent, width: 40, opacity: 0.6 }} />
-    </div>
-  );
-
-  // ── product-demo ────────────────────────────────────────────────────────────
-  if (id === 'product-demo') return (
-    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
-      <div style={{ width: '85%', background: '#1e293b', borderRadius: 8, overflow: 'hidden' }}>
-        <div style={{ background: '#334155', padding: '4px 8px', display: 'flex', gap: 4 }}>
-          {['#ef4444','#fbbf24','#22c55e'].map(c => <div key={c} style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />)}
-        </div>
-        <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <div style={{ height: 4, background: `${accent}44`, borderRadius: 2, width: '80%' }} />
-          <div style={{ height: 3, background: 'rgba(255,255,255,0.1)', borderRadius: 2, width: '60%' }} />
-        </div>
-      </div>
-      <T s={9} color="#1e293b" weight={700} align="center">See it in action</T>
-      <Btn label="Watch Demo" bg={accent} />
-    </div>
-  );
-
-  // ── retro-bold ──────────────────────────────────────────────────────────────
-  if (id === 'retro-bold') return (
-    <div style={{ ...wrap, background: '#fef3c7', gap: 8 }}>
-      <div style={{ border: '3px solid #1e293b', borderRadius: 4, padding: '4px 12px', transform: 'rotate(-2deg)', background: '#fff' }}>
-        <T s={8} color="#1e293b" weight={900} caps spacing="0.1em">Est. 2024</T>
-      </div>
-      <T s={15} color="#1e293b" weight={900} align="center" spacing="-0.02em">Old School.<br/>New Results.</T>
-      <div style={{ height: 3, background: '#1e293b', width: 60 }} />
-      <Btn label="Shop Now" bg="#1e293b" color="#fef3c7" />
-    </div>
-  );
-
-  // ── offer-stack ──────────────────────────────────────────────────────────────
-  if (id === 'offer-stack') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#450a0a,#991b1b)', padding: 0 }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 16 }}>
-        <T s={7} color={accent} caps spacing="0.1em">Today Only</T>
-        <T s={16} color="#fff" weight={900} spacing="-0.04em">50% Off Everything</T>
-        <T s={8} color="rgba(255,255,255,0.55)">Auto-applied at checkout. No code needed.</T>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '0 18px' }}>
-        <Btn label="Claim Offer →" bg={accent} color="#fff" />
-      </div>
-    </div>
-  );
-
-  // ── value-math ───────────────────────────────────────────────────────────────
-  if (id === 'value-math') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#020617,#0c1a3a)', padding: '0 16px', gap: 14 }}>
-      <Row gap={8}>
-        <div style={{ textDecoration: 'line-through', color: 'rgba(255,255,255,0.3)', fontSize: 14, fontWeight: 700 }}>$299</div>
-        <T s={9} color="rgba(255,255,255,0.4)">→</T>
-        <T s={22} color={accent} weight={900} spacing="-0.03em">$97</T>
-      </Row>
-      <div style={{ width: 1, background: 'rgba(255,255,255,0.1)', alignSelf: 'stretch', marginBlock: 6 }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={9} color="#fff" weight={700}>Same results. Lower cost.</T>
-        <T s={7.5} color="rgba(255,255,255,0.45)">Save $202 every single month.</T>
-      </div>
-      <Btn label="Switch Now →" bg={accent} color="#fff" />
-    </div>
-  );
-
-  // ── case-study ───────────────────────────────────────────────────────────────
-  if (id === 'case-study') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: '0 16px', gap: 12 }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: accent }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={7} color={accent} caps spacing="0.08em">Case Study</T>
-        <T s={11} color={txt} weight={800} spacing="-0.02em">Acme Corp grew 340% in 60 days.</T>
-        <T s={7.5} color={muted}>From 200 to 880 qualified leads per month.</T>
-      </div>
-      <Btn label="Read Story →" bg={accent} color="#fff" />
-    </div>
-  );
-
-  // ── insight-frame ─────────────────────────────────────────────────────────────
-  if (id === 'insight-frame') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: '0 0 0 16px', gap: 12 }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={7} color={accent} caps spacing="0.08em">Insight</T>
-        <T s={10} color={txt} weight={800} spacing="-0.02em">The real reason results aren't compounding.</T>
-        <T s={7.5} color={muted}>3-step framework. Free breakdown.</T>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '0 16px 0 0' }}>
-        <Btn label="Get It Free →" bg={accent} color="#fff" />
-      </div>
-    </div>
-  );
-
-  // ── pain-diagnostic ───────────────────────────────────────────────────────────
-  if (id === 'pain-diagnostic') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)', padding: '0 16px', gap: 12 }}>
-      <div style={{ background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.4)', borderRadius: 6, padding: '4px 10px', flexShrink: 0 }}>
-        <T s={7} color="#f43f5e" caps spacing="0.08em">Diagnose</T>
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={10} color="#f1f5f9" weight={800} spacing="-0.02em">Does this sound familiar?</T>
-        <T s={7.5} color="rgba(241,245,249,0.45)">If yes — there's a better way. Keep reading.</T>
-      </div>
-      <Btn label="See The Fix →" bg={accent} color="#fff" />
-    </div>
-  );
-
-  // ── mistake-alert ─────────────────────────────────────────────────────────────
-  if (id === 'mistake-alert') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#1c0505,#431407)', padding: 0 }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} />
-      <div style={{ background: '#f97316', padding: '0 16px', display: 'flex', alignItems: 'center', alignSelf: 'stretch' }}>
-        <T s={9} color="#fff" weight={900} caps>⚠ Warning</T>
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, padding: '0 14px' }}>
-        <T s={10} color="#fff1ee" weight={800} spacing="-0.02em">3 mistakes killing your results.</T>
-        <T s={7.5} color="rgba(255,241,238,0.5)">Most people make all of them without knowing.</T>
-      </div>
-      <div style={{ padding: '0 16px 0 0', display: 'flex', alignItems: 'center' }}>
-        <Btn label="Avoid Them →" bg="#f97316" color="#fff" />
-      </div>
-    </div>
-  );
-
-  // ── empathy-card ─────────────────────────────────────────────────────────────
-  if (id === 'empathy-card') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#fff7f0,#fce7f3)', padding: '0 16px', gap: 12 }}>
-      <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg,#ec4899,#a78bfa)', flexShrink: 0 }} />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={10} color="#3b0764" weight={800} spacing="-0.02em">You deserve to feel this.</T>
-        <T s={7.5} color="#7c3aed">Not eventually. Starting today.</T>
-      </div>
-      <Btn label="Begin Now →" bg={accent} color="#fff" />
-    </div>
-  );
-
-  // ── validation-card ───────────────────────────────────────────────────────────
-  if (id === 'validation-card') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: 'linear-gradient(135deg,#f5f3ff,#ede9fe)', padding: '0 16px', gap: 12 }}>
-      <div style={{ display: 'flex', gap: 0, flexShrink: 0 }}>
-        {['#a78bfa','#818cf8','#6366f1'].map((c,i) => (
-          <div key={i} style={{ width: 22, height: 22, borderRadius: '50%', background: c, border: '2px solid #f5f3ff', marginLeft: i > 0 ? -7 : 0 }} />
-        ))}
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-        <T s={10} color="#2e1065" weight={800} spacing="-0.02em">14,000+ people feel exactly the same.</T>
-        <T s={7.5} color="#6d28d9">You're not broken. Join the community.</T>
-      </div>
-      <Btn label="Join Free →" bg={accent} color="#fff" />
-    </div>
-  );
-
-  // ── do-dont ───────────────────────────────────────────────────────────────────
-  if (id === 'do-dont') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: 14, background: '#fff5f5' }}>
-        <T s={11} color="#ef4444" weight={900}>✕</T>
-        <Col gap={2}>
-          <T s={7} color="#ef4444" caps spacing="0.06em" weight={700}>Don't</T>
-          <T s={9} color="#374151" weight={600}>Guess and hope it works</T>
-        </Col>
-      </div>
-      <div style={{ width: 1, background: '#e2e8f0', flexShrink: 0 }} />
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: 14, background: '#f0fdf4' }}>
-        <T s={11} color="#16a34a" weight={900}>✓</T>
-        <Col gap={2}>
-          <T s={7} color="#16a34a" caps spacing="0.06em" weight={700}>Do</T>
-          <T s={9} color="#374151" weight={600}>Follow a proven system</T>
-        </Col>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 0 10px' }}>
-        <Btn label="Get The System →" bg="#16a34a" color="#fff" />
-      </div>
-    </div>
-  );
-
-  // ── transform-split ───────────────────────────────────────────────────────────
-  if (id === 'transform-split') return (
-    <div style={{ ...wrap, flexDirection: 'row', background: '#fff', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 14, background: 'linear-gradient(135deg,#1e293b,#334155)' }}>
-        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Before</T>
-        <T s={9} color="rgba(255,255,255,0.6)" weight={600}>Struggling. No clear path.</T>
-      </div>
-      <div style={{ width: 24, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 10, color: '#fff', fontWeight: 900 }}>→</div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 3, padding: 14, background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
-        <T s={7} color={accent} caps spacing="0.1em">After</T>
-        <T s={9} color="#fff" weight={600}>Clear momentum. Real growth.</T>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', padding: '0 14px 0 0', background: 'linear-gradient(135deg,#042f2e,#0f766e)' }}>
-        <Btn label="Start Transforming →" bg={accent} color="#fff" />
-      </div>
-    </div>
-  );
-
-  if (id === 'photo-reveal') return (
-    <div style={{ ...wrap, background: '#111', justifyContent: 'flex-end', alignItems: 'stretch', padding: 0, gap: 0 }}>
-      {/* Simulated photo */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg,#1c1917 0%,#292524 40%,#44403c 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 56, height: 56, borderRadius: 8, background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 24, height: 18, border: '2px solid rgba(255,255,255,0.2)', borderRadius: 3 }} />
-        </div>
-      </div>
-      {/* Bottom gradient + label */}
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)', padding: '22px 12px 12px' }}>
-        <div style={{ fontSize: 13, fontWeight: 900, color: accent, textTransform: 'uppercase', letterSpacing: '-0.01em', lineHeight: 1.1, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
-          PHOTO REVEAL
-        </div>
-        <div style={{ fontSize: 8, color: 'rgba(255,255,255,0.4)', marginTop: 2, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-          your photo · bold label
-        </div>
-      </div>
-    </div>
-  );
-
-  // ── guarantee-badge ────────────────────────────────────────────────────────
-  if (id === 'guarantee-badge') return (
-    <div style={{ ...wrap, background: '#0f1117' }}>
-      <div style={{ position: 'relative', width: 80, height: 80, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-        <div style={{ position: 'absolute', inset: 5, borderRadius: '50%', border: `1px solid ${accent}44` }} />
-        <T s={11} color={accent} weight={900} align="center">100%</T>
-        <T s={7} color="#f1f5f9" weight={700} align="center">MONEY BACK</T>
-        <T s={6} color={muted} weight={600} align="center">GUARANTEE</T>
-      </div>
-      <T s={7} color={muted} align="center">30-day no-questions-asked refund</T>
-    </div>
-  );
-
-  // ── free-trial ──────────────────────────────────────────────────────────────
-  if (id === 'free-trial') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start' }}>
-      <T s={14} color="#1e293b" weight={900} spacing="-0.03em">Try it free.</T>
-      <T s={8} color="#64748b">No credit card required.</T>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-        {['Full access for 14 days', 'Cancel anytime', 'Setup in 5 minutes'].map((t, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check color={accent} /><T s={8} color="#475569">{t}</T></div>
-        ))}
-      </div>
-      <Btn label="Start Free Trial →" bg={accent} />
+      <div style={{ fontSize:8, fontWeight:700, color:'#f1f5f9', textAlign:'center', letterSpacing:'-0.01em' }}>Flash Sale — Today Only</div>
+      <div style={{ fontSize:7, color:'rgba(241,245,249,0.45)' }}>Auto-applied at checkout</div>
+      <ABtn label="Shop Now →" />
     </div>
   );
 
   // ── limited-drop ────────────────────────────────────────────────────────────
   if (id === 'limited-drop') return (
-    <div style={{ ...wrap, background: '#09090b' }}>
-      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Limited Drop</T>
-      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-        {['07','23','41'].map((n, i) => (
-          <React.Fragment key={i}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-              <div style={{ background: '#18181b', border: `1px solid ${accent}44`, borderRadius: 4, padding: '4px 8px' }}>
-                <T s={14} color="#f1f5f9" weight={900} align="center">{n}</T>
-              </div>
-              <T s={5} color={muted} align="center">{['HRS','MIN','SEC'][i]}</T>
-            </div>
-            {i < 2 && <T s={14} color={accent} weight={900}>:</T>}
-          </React.Fragment>
-        ))}
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#0f1117', gap:8 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ background:`${accent}22`, border:`1px solid ${accent}66`, borderRadius:20, padding:'2px 10px' }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:accent, letterSpacing:'0.1em', textTransform:'uppercase' }}>Limited Edition</div>
+        </div>
+        <div style={{ width:52, height:52, borderRadius:8, border:`2px solid ${accent}`, background:`${accent}15`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:24, height:24, borderRadius:4, background:`${accent}55` }} />
+        </div>
+        <div style={{ fontSize:7.5, color:'rgba(241,245,249,0.75)', textAlign:'center' }}>
+          Only <span style={{ color:accent, fontWeight:900 }}>47</span> left in stock
+        </div>
+        <div style={{ width:80, height:3, background:'rgba(255,255,255,0.1)', borderRadius:2 }}>
+          <div style={{ width:'47%', height:'100%', background:accent, borderRadius:2 }} />
+        </div>
+        <ABtn label="Get Yours" />
       </div>
-      <T s={8} color={accent} weight={800} align="center">Only 12 left in stock</T>
-      <Btn label="Shop Now" bg={accent} />
-    </div>
-  );
-
-  // ── offer-announce ──────────────────────────────────────────────────────────
-  if (id === 'offer-announce') return (
-    <div style={{ ...wrap, background: accent, gap: 6 }}>
-      <T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.12em">Flash Sale</T>
-      <T s={52} color="#fff" weight={900} spacing="-0.06em" align="center">30%</T>
-      <T s={10} color="rgba(255,255,255,0.85)" weight={700} align="center">OFF everything</T>
-      <Bar w={50} color="rgba(255,255,255,0.4)" h={1} />
-      <T s={7} color="rgba(255,255,255,0.6)" align="center">Today only · Ends at midnight</T>
     </div>
   );
 
   // ── price-compare ───────────────────────────────────────────────────────────
   if (id === 'price-compare') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'center', gap: 6 }}>
-      <T s={8} color="#64748b" align="center">Regular price</T>
-      <div style={{ fontSize: 16, color: '#94a3b8', fontWeight: 700, textDecoration: 'line-through' }}>$297</div>
-      <T s={34} color={accent} weight={900} spacing="-0.04em" align="center">$97</T>
-      <div style={{ background: `${accent}18`, border: `1px solid ${accent}44`, borderRadius: 6, padding: '3px 10px' }}>
-        <T s={8} color={accent} weight={800} align="center">You save $200 today</T>
+    <div style={{ ...wrap, background:'#fff', gap:10 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+        <div style={{ fontSize:18, fontWeight:700, color:'#94a3b8', textDecoration:'line-through' }}>$199</div>
+        <div style={{ fontSize:32, fontWeight:900, color:accent, lineHeight:1, letterSpacing:'-0.03em' }}>$97</div>
       </div>
-      <Btn label="Claim This Price" bg={accent} />
+      <div style={{ background:`${accent}15`, border:`1px solid ${accent}44`, borderRadius:20, padding:'3px 12px' }}>
+        <div style={{ fontSize:7, fontWeight:800, color:accent, letterSpacing:'0.06em' }}>SAVE $102 TODAY</div>
+      </div>
+      <div style={{ fontSize:7, color:'rgba(30,41,59,0.45)' }}>One-time purchase · Lifetime access</div>
+      <ABtn label="Buy Now" />
     </div>
   );
 
-  // ── award-winner ────────────────────────────────────────────────────────────
-  if (id === 'award-winner') return (
-    <div style={{ ...wrap, background: '#0f1117' }}>
-      <div style={{ position: 'relative', width: 82, height: 82, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accent}88)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, boxShadow: `0 0 28px ${accent}44` }}>
-        <T s={9} color="#fff" weight={900} align="center">VOTED</T>
-        <T s={22} color="#fff" weight={900} spacing="-0.04em" align="center">#1</T>
-        <T s={6} color="rgba(255,255,255,0.8)" align="center">2024</T>
-      </div>
-      <T s={8} color={muted} align="center">Best in class · Industry Awards</T>
-      <Btn label="See Why" bg={accent} />
-    </div>
-  );
-
-  // ── founder-story ───────────────────────────────────────────────────────────
-  if (id === 'founder-story') return (
-    <div style={{ ...wrap, background: '#fefce8', alignItems: 'flex-start', gap: 7 }}>
-      {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', gap: 7, width: '100%' })}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #fb923c)`, flexShrink: 0 }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-            <T s={9} color="#1c1917" weight={700}>Alex Chen</T>
-            <T s={7} color="#78716c">Founder & CEO</T>
-          </div>
-        </div>
-        <T s={9} color="#1c1917" weight={500}>"I built this after failing for 3 years. Here's what finally worked."</T>
-        <Bar w={40} color={accent} h={2} />
-        <Btn label="Read My Story →" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── review-card ─────────────────────────────────────────────────────────────
-  if (id === 'review-card') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      <Stars color={accent} />
-      <T s={9} color="#1e293b" weight={600}>"Changed everything about how I work. Worth every single penny."</T>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 20, height: 20, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)` }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <T s={7} color="#1e293b" weight={700}>Mark T.</T>
-          <T s={6} color="#94a3b8">✓ Verified Buyer</T>
-        </div>
-      </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: accent }} />
-    </div>
-  );
-
-  // ── trust-bar ───────────────────────────────────────────────────────────────
-  if (id === 'trust-bar') return (
-    <div style={{ ...wrap, background: '#fff', gap: 12 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.1em">Trusted by thousands</T>
-      <div style={{ display: 'flex', width: '100%' }}>
-        {[['12K+','Customers'],['4.9★','Rating'],['97%','Retention']].map(([stat, label], i) => (
-          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRight: i < 2 ? '1px solid #e2e8f0' : 'none' }}>
-            <T s={14} color={accent} weight={900} align="center">{stat}</T>
-            <T s={6} color="#94a3b8" align="center">{label}</T>
-          </div>
+  // ── bundle-stack ────────────────────────────────────────────────────────────
+  if (id === 'bundle-stack') return (
+    <div style={{ ...wrap, background:'#f8fafc', gap:9 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ position:'relative', width:68, height:52 }}>
+        {[0,1,2].map(i => (
+          <div key={i} style={{ position:'absolute', left:i*5, top:i*-4, width:58, height:40, borderRadius:6, background: i===2 ? accent : i===1 ? `${accent}88` : `${accent}44`, border:`1.5px solid ${accent}66`, boxShadow:'0 2px 6px rgba(0,0,0,0.08)' }} />
         ))}
       </div>
-      <Btn label="Join Them" bg={accent} />
+      <div style={{ fontSize:8, fontWeight:800, color:'#1e293b', textAlign:'center', letterSpacing:'-0.01em' }}>Bundle & Save</div>
+      <div style={{ fontSize:7, color:'rgba(30,41,59,0.5)' }}>$297 value → <span style={{ color:accent, fontWeight:800 }}>$147 today</span></div>
+      <ABtn label="Grab Bundle" />
     </div>
   );
 
-  // ── news-frame ──────────────────────────────────────────────────────────────
-  if (id === 'news-frame') return (
-    <div style={{ ...wrap, background: '#fff', gap: 6, alignItems: 'stretch' }}>
-      <div style={{ background: '#1e293b', padding: '4px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <T s={8} color="#fff" weight={900} caps spacing="0.08em">Breaking News</T>
-        <T s={7} color={accent}>● LIVE</T>
-      </div>
-      <div style={{ border: '2px solid #1e293b', padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
-        <T s={7} color={accent} caps spacing="0.08em" weight={700}>Exclusive Report</T>
-        <T s={11} color="#1e293b" weight={900} spacing="-0.02em">Industry disrupted by new approach</T>
-        <T s={7} color="#64748b">Jan 14, 2025 · Analysis Team</T>
-      </div>
-      <Btn label="Read Full Story" bg="#1e293b" />
-    </div>
-  );
-
-  // ── video-thumbnail ─────────────────────────────────────────────────────────
-  if (id === 'video-thumbnail') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
-      <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '3px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 0, height: 0, borderTop: '10px solid transparent', borderBottom: '10px solid transparent', borderLeft: `17px solid ${accent}`, marginLeft: 4 }} />
-      </div>
-      <T s={11} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">The Strategy Nobody Talks About</T>
-      <T s={7} color={muted} align="center">12:47 · 2.4M views</T>
-    </div>
-  );
-
-  // ── community-quote ─────────────────────────────────────────────────────────
-  if (id === 'community-quote') return (
-    <div style={{ ...wrap, background: '#0f1117', alignItems: 'flex-start', gap: 7 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 24, height: 24, borderRadius: '50%', background: accent, flexShrink: 0 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <T s={8} color="#f1f5f9" weight={700}>u/realcustomer</T>
-          <T s={6} color={muted}>Posted in r/results</T>
+  // ── guarantee-badge ─────────────────────────────────────────────────────────
+  if (id === 'guarantee-badge') return (
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ width:72, height:72, position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ position:'absolute', inset:0, borderRadius:'50%', border:`2.5px solid ${accent}` }} />
+        <div style={{ position:'absolute', inset:6, borderRadius:'50%', border:`1px solid ${accent}44` }} />
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+          <div style={{ fontSize:16, fontWeight:900, color:accent, lineHeight:1 }}>100%</div>
+          <div style={{ fontSize:5.5, fontWeight:800, color:'#475569', letterSpacing:'0.08em', textTransform:'uppercase' }}>Guaranteed</div>
         </div>
       </div>
-      <T s={9} color="#f1f5f9" weight={500}>"This is the only thing that actually worked after trying everything else."</T>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <T s={7} color={accent} weight={700}>▲ 4,287</T>
-        <T s={7} color={muted}>💬 312 comments</T>
+      <div style={{ fontSize:8, fontWeight:700, color:'#1e293b', textAlign:'center' }}>30-Day Money Back</div>
+      <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.45)', textAlign:'center' }}>No questions asked. Ever.</div>
+      <ABtn label="Shop Risk-Free" />
+    </div>
+  );
+
+  // ── free-trial ──────────────────────────────────────────────────────────────
+  if (id === 'free-trial') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:7, alignItems:'flex-start' }}>
+      <BM />
+      <Stripe />
+      <div style={{ display:'flex', alignItems:'baseline', gap:4, marginTop:6 }}>
+        <div style={{ fontSize:36, fontWeight:900, color:accent, lineHeight:1, letterSpacing:'-0.04em' }}>FREE</div>
       </div>
+      <div style={{ fontSize:8, fontWeight:700, color:'#f1f5f9' }}>14-Day Trial</div>
+      {['Unlimited access','Priority support','Cancel anytime'].map((f,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ width:7, height:7, borderRadius:'50%', background:accent, flexShrink:0 }} />
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.65)' }}>{f}</div>
+        </div>
+      ))}
+      <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.35)', marginTop:2 }}>No credit card required</div>
+      <ABtn label="Start Free →" pill />
     </div>
   );
 
-  // ── stat-study ──────────────────────────────────────────────────────────────
-  if (id === 'stat-study') return (
-    <div style={{ ...wrap, background: '#fff', gap: 6 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.1em">New research confirms</T>
-      <T s={46} color={accent} weight={900} spacing="-0.06em" align="center">73%</T>
-      <T s={8} color="#1e293b" weight={700} align="center">of users see results within 30 days</T>
-      <Bar w={50} color="#e2e8f0" h={1} op={1} />
-      <T s={6} color="#94a3b8" align="center">Source: Harvard Business Review, 2024</T>
-      <Btn label="See The Research" bg={accent} />
-    </div>
-  );
-
-  // ── caption-style ───────────────────────────────────────────────────────────
-  if (id === 'caption-style') return (
-    <div style={{ ...wrap, background: '#111', padding: 0, gap: 0, justifyContent: 'flex-end' }}>
+  // ── offer-announce ──────────────────────────────────────────────────────────
+  if (id === 'offer-announce') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : accent, gap:7 }}>
       {photoLayer}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 52%)' }} />
-      <div style={{ position: 'relative', zIndex: 2, padding: '0 12px 12px', width: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <div style={{ width: 20, height: 20, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)`, flexShrink: 0 }} />
-          <T s={8} color="#fff" weight={700}>@yourbrand</T>
-          <T s={7} color="rgba(255,255,255,0.5)">Sponsored</T>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.3)', borderRadius:4, padding:'2px 9px' }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:'#fff', letterSpacing:'0.12em', textTransform:'uppercase' }}>Exclusive Offer</div>
         </div>
-        <T s={8} color="#fff">The secret to 10x results that nobody shares…</T>
+        <div style={{ fontSize:18, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.15, letterSpacing:'-0.02em' }}>Get 40% Off<br/>This Week</div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.7)' }}>Ends Sunday at midnight</div>
+        <ABtn label="Claim Offer" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
       </div>
     </div>
   );
 
-  // ── chat-thread ─────────────────────────────────────────────────────────────
-  if (id === 'chat-thread') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 8 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.06em">Messages</T>
-      <div style={{ alignSelf: 'flex-start', background: '#e5e7eb', borderRadius: '12px 12px 12px 2px', padding: '6px 10px', maxWidth: '75%' }}>
-        <T s={8} color="#1f2937">"Is this actually worth it?"</T>
+  // ── cta-final ───────────────────────────────────────────────────────────────
+  if (id === 'cta-final') return (
+    <div style={{ ...wrap, background:accent, gap:10 }}>
+      <BM c="rgba(255,255,255,0.35)" />
+      <div style={{ fontSize:7, color:'rgba(255,255,255,0.65)', letterSpacing:'0.12em', textTransform:'uppercase', fontWeight:700 }}>Limited Time Offer</div>
+      <div style={{ fontSize:26, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.1, letterSpacing:'-0.03em' }}>50% OFF<br/>Today Only</div>
+      <div style={{ background:'rgba(255,255,255,0.15)', borderRadius:3, padding:'2px 10px' }}>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.8)', fontWeight:600 }}>Ends in 03:42:18</div>
       </div>
-      <div style={{ alignSelf: 'flex-end', background: accent, borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '75%' }}>
-        <T s={8} color="#fff">"Best decision I made this year."</T>
-      </div>
-      <Btn label="See For Yourself →" bg={accent} />
+      <ABtn label="CLAIM DISCOUNT" bg="#fff" fg={accent} />
     </div>
   );
 
-  // ── meme-format ─────────────────────────────────────────────────────────────
-  if (id === 'meme-format') return (
-    <div style={{ ...wrap, background: '#fff', padding: 0, gap: 0, justifyContent: 'space-between' }}>
-      <div style={{ padding: '10px 14px', width: '100%' }}>
-        <T s={11} color="#1e293b" weight={900} align="center" spacing="-0.01em">ME BEFORE THIS</T>
-      </div>
-      <div style={{ flex: 1, background: '#f1f5f9', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: 60, height: 60, borderRadius: 8, background: `${accent}18`, border: `2px dashed ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 28 }}>😅</span>
-        </div>
-      </div>
-      <div style={{ padding: '10px 14px', width: '100%' }}>
-        <T s={11} color={accent} weight={900} align="center" spacing="-0.01em">ME AFTER THIS</T>
-      </div>
-    </div>
-  );
-
-  // ── comment-reply ───────────────────────────────────────────────────────────
-  if (id === 'comment-reply') return (
-    <div style={{ ...wrap, background: '#09090b', alignItems: 'flex-start', gap: 8 }}>
-      <div style={{ background: '#1c1c1e', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start' }}>
-        <T s={7} color="rgba(255,255,255,0.5)">↩ Replying to @question</T>
-      </div>
-      <div style={{ flex: 1, width: '100%', background: '#18181b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 40 }}>
-        <T s={7} color="rgba(255,255,255,0.2)" align="center">your content here</T>
-      </div>
-      <T s={9} color="#f1f5f9" weight={600}>"Here's the real answer nobody gives you…"</T>
-      <Btn label="See Full Reply" bg={accent} />
-    </div>
-  );
-
-  // ── poll-card ───────────────────────────────────────────────────────────────
-  if (id === 'poll-card') return (
-    <div style={{ ...wrap, background: '#0f172a', gap: 8 }}>
-      <T s={10} color="#f1f5f9" weight={800} align="center">Which do you prefer?</T>
-      {[['Option A','72%'],['Option B','28%']].map(([label, pct], i) => (
-        <div key={i} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
-          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct, background: i === 0 ? accent : 'rgba(255,255,255,0.08)', borderRadius: 8 }} />
-          <div style={{ position: 'relative', padding: '6px 10px', display: 'flex', justifyContent: 'space-between' }}>
-            <T s={8} color="#fff" weight={700}>{label}</T>
-            <T s={8} color={i === 0 ? '#fff' : muted} weight={700}>{pct}</T>
-          </div>
-        </div>
-      ))}
-      <T s={6} color={muted} align="center">1,247 votes · Closes in 2h</T>
-    </div>
-  );
-
-  // ── hot-take ────────────────────────────────────────────────────────────────
-  if (id === 'hot-take') return (
-    <div style={{ ...wrap, background: accent, gap: 8 }}>
-      <T s={7} color="rgba(255,255,255,0.65)" caps spacing="0.12em">Hot Take 🔥</T>
-      <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">"Most people are doing this completely wrong."</T>
-      <Bar w={40} color="rgba(255,255,255,0.3)" h={2} />
-      <T s={8} color="rgba(255,255,255,0.75)" align="center">Change your approach →</T>
-    </div>
-  );
-
-  // ── leaderboard ─────────────────────────────────────────────────────────────
-  if (id === 'leaderboard') return (
-    <div style={{ ...wrap, background: '#0f1117', alignItems: 'stretch', gap: 7 }}>
-      <T s={8} color={accent} caps spacing="0.1em" weight={700} align="center">Top Performers</T>
-      {[['🥇','Strategy A','↑312%'],['🥈','Strategy B','↑187%'],['🥉','Strategy C','↑94%']].map(([icon, name, stat]) => (
-        <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13 }}>{icon}</span>
-          <T s={8} color="#f1f5f9" weight={600}>{name}</T>
-          <div style={{ flex: 1 }} />
-          <T s={8} color={accent} weight={800}>{stat}</T>
-        </div>
-      ))}
-      <Btn label="See Full Rankings" bg={accent} />
-    </div>
-  );
-
-  // ── checklist-viral ─────────────────────────────────────────────────────────
-  if (id === 'checklist-viral') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      <T s={9} color="#1e293b" weight={800}>Check what applies to you:</T>
-      {['You feel stuck','You want more results','You\'ve tried before','You\'re ready now'].map((item, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ width: 14, height: 14, borderRadius: 3, border: `2px solid ${accent}`, flexShrink: 0, background: i < 3 ? accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {i < 3 && <span style={{ fontSize: 7, color: '#fff', fontWeight: 900 }}>✓</span>}
-          </div>
-          <T s={8} color="#374151">{item}</T>
-        </div>
-      ))}
-      <Btn label="This Is For You →" bg={accent} />
-    </div>
-  );
-
-  // ── myth-reality ────────────────────────────────────────────────────────────
-  if (id === 'myth-reality') return (
-    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, height: '100%', background: '#1e293b', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
-        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Myth</T>
-        <T s={9} color="rgba(255,255,255,0.7)" weight={600}>"You need a huge budget to compete."</T>
-        <Cross />
-      </div>
-      <div style={{ width: 3, background: accent, flexShrink: 0 }} />
-      <div style={{ flex: 1, height: '100%', background: `${accent}18`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
-        <T s={7} color={accent} caps spacing="0.1em">Reality</T>
-        <T s={9} color="#1e293b" weight={600}>"Strategy beats spend every single time."</T>
-        <Check color={accent} />
-      </div>
-    </div>
-  );
-
-  // ── event-card ──────────────────────────────────────────────────────────────
-  if (id === 'event-card') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 7 }}>
-      <div style={{ width: 42, height: 42, borderRadius: 8, background: `${accent}22`, border: `1px solid ${accent}55`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
-        <T s={6} color={accent} caps spacing="0.06em">JAN</T>
-        <T s={14} color="#f1f5f9" weight={900}>14</T>
-      </div>
-      <T s={12} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">Live Workshop</T>
-      <T s={7} color={muted} align="center">2:00 PM EST · Online · Free</T>
-      <Bar w={80} color={`${accent}33`} h={1} op={1} />
-      <Btn label="Reserve Your Spot" bg={accent} />
-    </div>
-  );
-
-  // ── three-reasons ───────────────────────────────────────────────────────────
-  if (id === 'three-reasons') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 8 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <T s={32} color={accent} weight={900} spacing="-0.04em">3</T>
-        <T s={11} color="#1e293b" weight={800} spacing="-0.02em">reasons it works</T>
-      </div>
-      {['Solves the real problem','Proven by 10,000 users','Takes under 10 minutes'].map((reason, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{ width: 16, height: 16, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <T s={7} color="#fff" weight={900}>{i + 1}</T>
-            </div>
-            <T s={8} color="#374151">{reason}</T>
-          </div>
-          {i < 2 && <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />}
-        </div>
-      ))}
-    </div>
-  );
-
-  // ── timeline-journey ────────────────────────────────────────────────────────
-  if (id === 'timeline-journey') return (
-    <div style={{ ...wrap, background: '#fff', gap: 10 }}>
-      <T s={9} color="#1e293b" weight={800} align="center">Your Journey to Results</T>
-      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-        {['Start','Learn','Apply','Win'].map((step, i) => (
+  // ── countdown-urgency ───────────────────────────────────────────────────────
+  if (id === 'countdown-urgency') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <div style={{ fontSize:7, fontWeight:700, color:'rgba(239,68,68,0.9)', letterSpacing:'0.1em', textTransform:'uppercase' }}>Sale Ends In</div>
+      <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+        {['00','12','34'].map((t,i) => (
           <React.Fragment key={i}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flex: 1 }}>
-              <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= 1 ? accent : `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <T s={8} color={i <= 1 ? '#fff' : accent} weight={900}>{i + 1}</T>
-              </div>
-              <T s={6} color="#64748b" align="center">{step}</T>
+            {i > 0 && <div style={{ fontSize:14, color:'rgba(241,245,249,0.3)', fontWeight:700 }}>:</div>}
+            <div style={{ background:'#1e293b', border:'1px solid rgba(241,245,249,0.1)', borderRadius:5, padding:'5px 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
+              <div style={{ fontSize:15, fontWeight:900, color:'#f1f5f9', lineHeight:1 }}>{t}</div>
+              <div style={{ fontSize:5.5, color:'rgba(241,245,249,0.3)', letterSpacing:'0.05em' }}>{['HRS','MIN','SEC'][i]}</div>
             </div>
-            {i < 3 && <div style={{ height: 2, flex: 1, background: i < 1 ? accent : `${accent}30`, marginBottom: 14 }} />}
           </React.Fragment>
         ))}
       </div>
-      <Btn label="Start Your Journey" bg={accent} />
+      <div style={{ fontSize:8, fontWeight:700, color:'#f1f5f9', textAlign:'center' }}>Don't Miss Out — 60% Off</div>
+      <ABtn label="Shop Before It's Gone" bg="#ef4444" />
     </div>
   );
 
-  // ── brutalist ───────────────────────────────────────────────────────────────
-  if (id === 'brutalist') return (
-    <div style={{ ...wrap, background: '#fff', border: '4px solid #1e293b', padding: 12, gap: 8 }}>
-      <div style={{ position: 'absolute', top: 6, left: 6, right: 6, bottom: 6, border: '1px solid #1e293b', pointerEvents: 'none' }} />
-      <T s={22} color="#1e293b" weight={900} align="center" spacing="-0.05em">THE TRUTH</T>
-      <div style={{ height: 3, background: accent, width: '100%' }} />
-      <T s={9} color="#374151" align="center">No filters. No fluff. Just results.</T>
-      <Btn label="Read It" bg="#1e293b" />
+  // ── offer-stack ──────────────────────────────────────────────────────────────
+  if (id === 'offer-stack') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#450a0a,#991b1b)', flexDirection:'row', padding:'0 12px 0 14px', gap:10 }}>
+      <Stripe />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:3 }}>
+        <div style={{ fontSize:6.5, color:accent, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>Today Only</div>
+        <div style={{ fontSize:16, fontWeight:900, color:'#fff', lineHeight:1.1, letterSpacing:'-0.02em' }}>50% Off<br/>Everything</div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.5)' }}>Auto-applied at checkout</div>
+      </div>
+      <ABtn label="Claim →" bg={accent} />
     </div>
   );
 
-  // ── collage-cutout ──────────────────────────────────────────────────────────
-  if (id === 'collage-cutout') return (
-    <div style={{ ...wrap, background: '#fef9f0', padding: 0, gap: 0 }}>
-      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-        <div style={{ position: 'absolute', top: '8%', left: '8%', width: '55%', height: '50%', background: accent, borderRadius: 4, transform: 'rotate(-4deg)' }} />
-        <div style={{ position: 'absolute', top: '22%', left: '30%', width: '50%', height: '44%', background: '#1e293b', borderRadius: 4, transform: 'rotate(3deg)' }} />
-        <div style={{ position: 'absolute', top: '42%', left: '12%', width: '46%', height: '42%', background: `${accent}99`, borderRadius: 4, transform: 'rotate(-2deg)' }} />
-        <div style={{ position: 'absolute', bottom: '10%', right: '8%', background: '#fff', padding: '4px 8px', borderRadius: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
-          <T s={8} color="#1e293b" weight={800}>Your Brand</T>
+  // ── value-math ───────────────────────────────────────────────────────────────
+  if (id === 'value-math') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#020617,#0c1a3a)', flexDirection:'row', padding:'0 14px', gap:12 }}>
+      <Stripe />
+      <div style={{ display:'flex', alignItems:'baseline', gap:6 }}>
+        <div style={{ fontSize:13, fontWeight:700, color:'rgba(255,255,255,0.28)', textDecoration:'line-through' }}>$299</div>
+        <div style={{ fontSize:28, fontWeight:900, color:accent, letterSpacing:'-0.03em', lineHeight:1 }}>$97</div>
+      </div>
+      <div style={{ width:1, background:'rgba(255,255,255,0.1)', alignSelf:'stretch', marginBlock:8 }} />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2 }}>
+        <div style={{ fontSize:8.5, fontWeight:700, color:'#fff' }}>Same results.</div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.45)' }}>Save $202 every month.</div>
+      </div>
+      <ABtn label="Switch →" />
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 2 — SOCIAL PROOF (13 templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── testimonial ─────────────────────────────────────────────────────────────
+  if (id === 'testimonial') return (
+    <div style={{ ...wrap, background:'#fff', gap:7 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'flex', gap:2 }}>
+        {Array.from({length:5}).map((_,i) => <div key={i} style={{ fontSize:11, color:'#f59e0b' }}>★</div>)}
+      </div>
+      <div style={{ fontSize:8.5, fontWeight:600, color:'#1e293b', textAlign:'center', lineHeight:1.4, fontStyle:'italic' }}>"Best decision I ever made for my business."</div>
+      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+        <div style={{ width:22, height:22, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)` }} />
+        <div style={{ display:'flex', flexDirection:'column', gap:1 }}>
+          <div style={{ fontSize:7, fontWeight:700, color:'#1e293b' }}>Sarah K.</div>
+          <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.45)' }}>CEO, Acme Co.</div>
+        </div>
+      </div>
+      <ABtn label="Read Reviews →" />
+    </div>
+  );
+
+  // ── testimonial-card ─────────────────────────────────────────────────────────
+  if (id === 'testimonial-card') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#111' : '#0f1117', justifyContent:'flex-end', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ width:'100%', background:'rgba(15,17,23,0.85)', backdropFilter:'blur(8px)', borderTop:'1px solid rgba(255,255,255,0.1)', padding:'10px 12px', display:'flex', flexDirection:'column', gap:5, position:'relative', zIndex:2 }}>
+        <div style={{ display:'flex', gap:2 }}>
+          {Array.from({length:5}).map((_,i) => <div key={i} style={{ fontSize:9, color:'#f59e0b' }}>★</div>)}
+        </div>
+        <div style={{ fontSize:8, color:'rgba(255,255,255,0.85)', fontStyle:'italic', lineHeight:1.35 }}>"Tripled our conversion rate in 30 days."</div>
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:18, height:18, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)`, flexShrink:0 }} />
+          <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.5)' }}>Marcus T. · Head of Growth</div>
         </div>
       </div>
     </div>
   );
 
-  // ── aurora-gradient ─────────────────────────────────────────────────────────
-  if (id === 'aurora-gradient') return (
-    <div style={{ ...wrap, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #0e7490 55%, #065f46 100%)', gap: 8 }}>
-      <T s={7} color="rgba(255,255,255,0.55)" align="center" caps spacing="0.12em">Aurora Series</T>
-      <T s={16} color="#fff" weight={900} align="center" spacing="-0.04em">Beyond ordinary</T>
-      <T s={8} color="rgba(255,255,255,0.65)" align="center">Experience the difference</T>
-      <Btn label="Explore Now" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
-    </div>
-  );
-
-  // ── duotone-photo ───────────────────────────────────────────────────────────
-  if (id === 'duotone-photo') return (
-    <div style={{ ...wrap, padding: 0, gap: 0, justifyContent: 'flex-end', background: '#1e1b4b' }}>
-      {photoLayer}
-      {!hasPhoto && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${accent}cc, #1e1b4b)` }} />}
-      <div style={{ position: 'relative', zIndex: 2, padding: 14, width: '100%', background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}>
-        <T s={14} color="#fff" weight={900} spacing="-0.03em" align="center">Bold. Vivid. Unforgettable.</T>
-        <div style={{ marginTop: 6 }}><Btn label="See More" bg={accent} /></div>
+  // ── review-card ──────────────────────────────────────────────────────────────
+  if (id === 'review-card') return (
+    <div style={{ ...wrap, background:'#fff', gap:7 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'flex', alignItems:'baseline', gap:6 }}>
+        <div style={{ fontSize:34, fontWeight:900, color:'#1e293b', lineHeight:1, letterSpacing:'-0.03em' }}>4.9</div>
+        <div style={{ fontSize:16, color:'#f59e0b' }}>★</div>
       </div>
-    </div>
-  );
-
-  // ── mono-editorial ──────────────────────────────────────────────────────────
-  if (id === 'mono-editorial') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8, alignItems: 'flex-start' }}>
-      <div style={{ height: 3, background: '#1e293b', width: '100%' }} />
-      <T s={16} color="#1e293b" weight={900} spacing="-0.05em">The case for doing less.</T>
-      <div style={{ height: 1, background: '#1e293b', width: '60%' }} />
-      <T s={8} color="#64748b">A long read on focus, craft, and what actually matters in modern work.</T>
-      <div style={{ height: 1, background: '#1e293b', width: '100%' }} />
-      <T s={7} color="#94a3b8" caps spacing="0.1em">Brand · Issue 47</T>
-    </div>
-  );
-
-  // ── risograph-print ─────────────────────────────────────────────────────────
-  if (id === 'risograph-print') return (
-    <div style={{ ...wrap, background: '#fef3c7', padding: 0, gap: 0 }}>
-      <div style={{ position: 'absolute', inset: 0 }}>
-        <div style={{ position: 'absolute', top: '10%', left: '5%', width: '70%', height: '60%', background: '#f9a8d4', opacity: 0.7, borderRadius: 4 }} />
-        <div style={{ position: 'absolute', top: '25%', left: '25%', width: '65%', height: '55%', background: accent, opacity: 0.65, borderRadius: 4 }} />
-        <div style={{ position: 'absolute', top: '40%', left: '10%', width: '60%', height: '45%', background: '#86efac', opacity: 0.55, borderRadius: 4 }} />
-      </div>
-      <div style={{ position: 'relative', zIndex: 2, padding: 12, width: '100%' }}>
-        <T s={13} color="#1c1917" weight={900} spacing="-0.03em">Crafted with care.</T>
-      </div>
-    </div>
-  );
-
-  // ── chart-reveal ────────────────────────────────────────────────────────────
-  if (id === 'chart-reveal') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.08em">Growth over 90 days</T>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 52, width: '80%' }}>
-        {[18, 30, 42, 55, 66, 82, 100].map((h, i) => (
-          <div key={i} style={{ flex: 1, height: `${h}%`, background: i === 6 ? accent : `${accent}44`, borderRadius: '2px 2px 0 0' }} />
+      <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.45)' }}>Based on 2,847 verified reviews</div>
+      <div style={{ height:1, background:'#e2e8f0', width:'80%' }} />
+      <div style={{ fontSize:8, color:'#475569', textAlign:'center', fontStyle:'italic', lineHeight:1.4 }}>"Completely changed how we run campaigns."</div>
+      <div style={{ display:'flex', gap:-4 }}>
+        {['#6366f1','#ec4899','#f59e0b','#22c55e','#06b6d4'].map((c,i) => (
+          <div key={i} style={{ width:16, height:16, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft:i?-6:0 }} />
         ))}
       </div>
-      <T s={28} color={accent} weight={900} spacing="-0.05em" align="center">↑ 312%</T>
-      <T s={6} color="#94a3b8" align="center">Source: Internal analytics · Q4 2024</T>
-      <Btn label="Get the Report" bg={accent} />
+      <ABtn label="See All Reviews" />
     </div>
   );
 
-  // ── steps-infographic ───────────────────────────────────────────────────────
-  if (id === 'steps-infographic') return (
-    <div style={{ ...wrap, background: '#fff', gap: 7, alignItems: 'flex-start' }}>
-      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">4 steps to results</T>
-      {[['Sign up','2 min'],['Set your goal','5 min'],['Follow the system','Daily'],['See results','30 days']].map(([step, time], i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
-          <div style={{ width: 20, height: 20, borderRadius: '50%', background: i === 0 ? accent : `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <T s={8} color={i === 0 ? '#fff' : accent} weight={900}>{i + 1}</T>
-          </div>
-          <T s={8} color="#374151" weight={600}>{step}</T>
-          <div style={{ flex: 1 }} />
-          <T s={7} color="#94a3b8">{time}</T>
-        </div>
-      ))}
-    </div>
-  );
-
-  // ── vs-table ────────────────────────────────────────────────────────────────
-  if (id === 'vs-table') return (
-    <div style={{ ...wrap, background: '#fff', gap: 0, padding: 10 }}>
-      <div style={{ display: 'flex', width: '100%' }}>
-        <div style={{ flex: 1.5 }} />
-        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0', background: accent, borderRadius: '4px 4px 0 0' }}><T s={8} color="#fff" weight={800} align="center">Us</T></div>
-        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}><T s={8} color="#94a3b8" weight={600} align="center">Them</T></div>
-      </div>
-      {[['Speed','✓','✗'],['Price','✓','✗'],['Support','✓','✗'],['Results','✓','~']].map(([feat, us, them]) => (
-        <div key={feat} style={{ display: 'flex', width: '100%', borderTop: '1px solid #f1f5f9' }}>
-          <div style={{ flex: 1.5, padding: '4px 0' }}><T s={7} color="#64748b">{feat}</T></div>
-          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0', background: `${accent}08` }}><T s={9} color={accent} align="center" weight={700}>{us}</T></div>
-          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}><T s={9} color="#ef4444" align="center" weight={700}>{them}</T></div>
-        </div>
-      ))}
-    </div>
-  );
-
-  // ── flat-lay ────────────────────────────────────────────────────────────────
-  if (id === 'flat-lay') return (
-    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
+  // ── community-quote ──────────────────────────────────────────────────────────
+  if (id === 'community-quote') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#111' : '#1e293b', gap:8 }}>
       {photoLayer}
-      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
-        <div style={{ width: 82, height: 82, borderRadius: 10, background: `${accent}18`, border: `1px solid ${accent}33`, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <T s={34} color={accent} align="center">✦</T>
+      <BM c="rgba(255,255,255,0.38)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ fontSize:52, fontWeight:900, color:`${accent}55`, lineHeight:0.8, marginBottom:-8, userSelect:'none' }}>"</div>
+        <div style={{ fontSize:9, fontWeight:600, color:'#fff', textAlign:'center', lineHeight:1.45, fontStyle:'italic' }}>This changed the way I think about marketing forever.</div>
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:20, height:20, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)` }} />
+          <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.45)' }}>@realuser · 12K followers</div>
         </div>
-        <T s={10} color="#1e293b" weight={700} align="center">Product Name</T>
-        <T s={14} color={accent} weight={900} align="center">$49</T>
-        <Btn label="Shop Now" bg={accent} />
       </div>
     </div>
   );
 
-  // ── app-mockup ──────────────────────────────────────────────────────────────
-  if (id === 'app-mockup') return (
-    <div style={{ ...wrap, background: '#f8fafc', flexDirection: 'row', gap: 10, alignItems: 'center', padding: 12 }}>
-      <div style={{ width: 54, height: 90, borderRadius: 8, border: '2.5px solid #1e293b', background: '#1e293b', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: 5, gap: 3 }}>
-        <div style={{ height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
-        <div style={{ flex: 1, background: `${accent}44`, borderRadius: 3 }} />
-        <div style={{ height: 10, background: accent, borderRadius: 2 }} />
+  // ── award-winner ─────────────────────────────────────────────────────────────
+  if (id === 'award-winner') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#0a0a0a' : '#0f1117', gap:8 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.35)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ width:70, height:70, background:`conic-gradient(${accent} 0deg 45deg, transparent 45deg 90deg, ${accent} 90deg 135deg, transparent 135deg 180deg, ${accent} 180deg 225deg, transparent 225deg 270deg, ${accent} 270deg 315deg, transparent 315deg 360deg)`, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:54, height:54, borderRadius:'50%', background:'#0f1117', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:16 }}>🏆</div>
+          </div>
+        </div>
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+          <div style={{ fontSize:6.5, color:accent, fontWeight:800, letterSpacing:'0.1em', textTransform:'uppercase' }}>Award Winner</div>
+          <div style={{ fontSize:9, fontWeight:800, color:'#f1f5f9', textAlign:'center' }}>Best SaaS Platform 2024</div>
+          <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.4)' }}>ProductHunt · G2 · Capterra</div>
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
-        <T s={9} color="#1e293b" weight={800} spacing="-0.02em">Built for mobile-first</T>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {['Fast onboarding','Push notifications','Offline mode'].map((f, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check color={accent} /><T s={7} color="#64748b">{f}</T></div>
+    </div>
+  );
+
+  // ── trust-bar ────────────────────────────────────────────────────────────────
+  if (id === 'trust-bar') return (
+    <div style={{ ...wrap, background:'#fff', gap:10 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'flex', gap:16 }}>
+        {['🛡','✓','🔒'].map((icon,i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+            <div style={{ fontSize:18 }}>{icon}</div>
+            <div style={{ fontSize:6, color:'rgba(30,41,59,0.5)', textAlign:'center', fontWeight:600 }}>{['Secure','Verified','Private'][i]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize:10, fontWeight:800, color:'#1e293b', textAlign:'center', letterSpacing:'-0.01em' }}>Trusted by 10,000+</div>
+      <div style={{ display:'flex', gap:6 }}>
+        {[60,48,52,44].map((w,i) => <div key={i} style={{ width:w, height:10, borderRadius:3, background:'#e2e8f0' }} />)}
+      </div>
+      <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)' }}>As featured in leading publications</div>
+    </div>
+  );
+
+  // ── press-slide ──────────────────────────────────────────────────────────────
+  if (id === 'press-slide') return (
+    <div style={{ ...wrap, background:'#fff', gap:10 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:7, fontWeight:700, color:'rgba(30,41,59,0.45)', letterSpacing:'0.1em', textTransform:'uppercase' }}>As Seen In</div>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:6, justifyContent:'center' }}>
+        {[['Forbes',64],['TechCrunch',76],['Wired',50],['NYT',48]].map(([name,w],i) => (
+          <div key={i} style={{ width:w as number, height:16, borderRadius:3, background:'#e2e8f0', display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:6.5, fontWeight:800, color:'#94a3b8', letterSpacing:'0.06em' }}>{name as string}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ height:1, background:'#e2e8f0', width:'80%' }} />
+      <div style={{ fontSize:7, color:'rgba(30,41,59,0.4)', textAlign:'center' }}>Rated #1 in its category</div>
+      <ABtn label="Read Press Kit →" />
+    </div>
+  );
+
+  // ── stats-hero ───────────────────────────────────────────────────────────────
+  if (id === 'stats-hero') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:7 }}>
+      <BM />
+      <Stripe />
+      <div style={{ fontSize:6.5, color:accent, fontWeight:700, letterSpacing:'0.12em', textTransform:'uppercase' }}>Proven Results</div>
+      <div style={{ fontSize:44, fontWeight:900, color:'#f1f5f9', lineHeight:1, letterSpacing:'-0.05em' }}>94%</div>
+      <div style={{ fontSize:8, color:'rgba(241,245,249,0.5)', textAlign:'center' }}>customer satisfaction rate</div>
+      <div style={{ height:2, background:accent, width:40, borderRadius:1 }} />
+      <div style={{ display:'flex', gap:14 }}>
+        {[['47%','Faster'],['3x','ROI'],['$12K','Saved']].map(([v,l],i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
+            <div style={{ fontSize:11, fontWeight:800, color:accent }}>{v}</div>
+            <div style={{ fontSize:5.5, color:'rgba(241,245,249,0.3)', letterSpacing:'0.06em' }}>{l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── social-proof-grid ────────────────────────────────────────────────────────
+  if (id === 'social-proof-grid') return (
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(5, 1fr)', gap:3, width:'100%' }}>
+        {Array.from({length:10}).map((_,i) => (
+          <div key={i} style={{ width:20, height:20, borderRadius:'50%', background:`hsl(${200+i*25},60%,68%)`, border:'2px solid #fff' }} />
+        ))}
+      </div>
+      <div style={{ fontSize:12, fontWeight:900, color:'#1e293b', textAlign:'center', letterSpacing:'-0.02em' }}>Join 47,000+</div>
+      <div style={{ fontSize:7, color:'rgba(30,41,59,0.45)' }}>creators already inside</div>
+      <div style={{ display:'flex', gap:12 }}>
+        {[['10K+','Users'],['4.9★','Rating'],['99%','Uptime']].map(([v,l],i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
+            <div style={{ fontSize:9, fontWeight:800, color:accent }}>{v}</div>
+            <div style={{ fontSize:5.5, color:'rgba(30,41,59,0.4)' }}>{l}</div>
+          </div>
+        ))}
+      </div>
+      <ABtn label="Join Now" />
+    </div>
+  );
+
+  // ── brand-manifesto ──────────────────────────────────────────────────────────
+  if (id === 'brand-manifesto') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <div style={{ height:1, background:accent, width:36, opacity:0.6 }} />
+      <div style={{ fontSize:8, color:'rgba(241,245,249,0.38)', textAlign:'center', lineHeight:1.5 }}>We believe in building</div>
+      <div style={{ fontSize:16, fontWeight:900, color:'#f1f5f9', textAlign:'center', letterSpacing:'-0.03em' }}>something real.</div>
+      <div style={{ fontSize:8, color:'rgba(241,245,249,0.38)', textAlign:'center' }}>Not another empty promise.</div>
+      <div style={{ height:1, background:accent, width:36, opacity:0.6 }} />
+      <ABtn label="Our Story →" bg="transparent" fg={accent} pill />
+    </div>
+  );
+
+  // ── headline-badge ───────────────────────────────────────────────────────────
+  if (id === 'headline-badge') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ background:`${accent}22`, border:`1px solid ${accent}55`, borderRadius:20, padding:'3px 10px' }}>
+        <div style={{ fontSize:7, fontWeight:700, color:accent }}>✦ New Release</div>
+      </div>
+      <div style={{ fontSize:16, fontWeight:900, color:'#f1f5f9', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.2 }}>The hook that converts every time</div>
+      <div style={{ fontSize:7.5, color:'rgba(241,245,249,0.4)', textAlign:'center' }}>Scroll-stopping creative.</div>
+      <ABtn label="See It Live →" />
+    </div>
+  );
+
+  // ── case-study ───────────────────────────────────────────────────────────────
+  if (id === 'case-study') return (
+    <div style={{ ...wrap, background:'#fff', flexDirection:'row', padding:'0 14px', gap:12 }}>
+      <Stripe />
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:3 }}>
+        <div style={{ fontSize:6.5, fontWeight:700, color:accent, letterSpacing:'0.08em', textTransform:'uppercase' }}>Case Study</div>
+        <div style={{ fontSize:11, fontWeight:800, color:'#1e293b', lineHeight:1.25, letterSpacing:'-0.02em' }}>Acme grew 340% in 60 days.</div>
+        <div style={{ fontSize:7, color:'rgba(30,41,59,0.45)', lineHeight:1.4 }}>200 → 880 qualified leads/month.</div>
+      </div>
+      <ABtn label="Read →" />
+    </div>
+  );
+
+  // ── insight-frame ─────────────────────────────────────────────────────────────
+  if (id === 'insight-frame') return (
+    <div style={{ ...wrap, background:'#fff', flexDirection:'row', padding:'0 0 0 14px', gap:12 }}>
+      <div style={{ position:'absolute', top:0, left:0, bottom:0, width:3, background:accent }} />
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:3 }}>
+        <div style={{ fontSize:6.5, fontWeight:700, color:accent, letterSpacing:'0.08em', textTransform:'uppercase' }}>Key Insight</div>
+        <div style={{ fontSize:10, fontWeight:800, color:'#1e293b', lineHeight:1.3, letterSpacing:'-0.01em' }}>The real reason results aren't compounding.</div>
+        <div style={{ fontSize:7, color:'rgba(30,41,59,0.45)' }}>3-step framework. Free breakdown.</div>
+      </div>
+      <div style={{ display:'flex', alignItems:'center', padding:'0 14px 0 0' }}>
+        <ABtn label="Get It →" />
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 3 — DATA / INFO / PERSUASION (17 templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── stat-study ────────────────────────────────────────────────────────────
+  if (id === 'stat-study') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:7 }}>
+      <BM />
+      <Stripe />
+      <div style={{ fontSize:48, fontWeight:900, color:accent, lineHeight:1, letterSpacing:'-0.05em' }}>3.7x</div>
+      <div style={{ fontSize:8, fontWeight:700, color:'#f1f5f9' }}>Average ROI in 90 days</div>
+      <div style={{ height:2, background:`${accent}44`, width:70, borderRadius:1 }} />
+      <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.38)', textAlign:'center' }}>Source: 2024 Industry Benchmark Study · n=1,200</div>
+      <ABtn label="Read Study →" />
+    </div>
+  );
+
+  // ── chart-reveal ─────────────────────────────────────────────────────────
+  if (id === 'chart-reveal') return (
+    <div style={{ ...wrap, background:'#fff', gap:9 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:7, fontWeight:700, color:'rgba(30,41,59,0.45)', letterSpacing:'0.08em', textTransform:'uppercase' }}>Performance Report</div>
+      <div style={{ display:'flex', alignItems:'flex-end', gap:5, height:52 }}>
+        {[[28,'#e2e8f0'],[38,'#cbd5e1'],[22,'#e2e8f0'],[52,accent]].map(([h,c],i) => (
+          <div key={i} style={{ width:18, height:h as number, borderRadius:'3px 3px 0 0', background:c as string, position:'relative' }}>
+            {i===3 && <div style={{ position:'absolute', top:-16, left:'50%', transform:'translateX(-50%)', fontSize:6.5, fontWeight:800, color:accent, whiteSpace:'nowrap' }}>+52%</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', textAlign:'center', letterSpacing:'-0.01em' }}>Revenue up 52% this quarter</div>
+      <ABtn label="See Full Report" />
+    </div>
+  );
+
+  // ── steps-infographic ────────────────────────────────────────────────────
+  if (id === 'steps-infographic') return (
+    <div style={{ ...wrap, background:'#fff', gap:8, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em' }}>3 Steps to Results</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+        {[['Discover','Find your angle'],['Build','Launch in minutes'],['Grow','Scale with data']].map(([title,sub],i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ width:22, height:22, borderRadius:'50%', background:accent, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+              <div style={{ fontSize:9, fontWeight:900, color:'#fff' }}>{i+1}</div>
+            </div>
+            <div>
+              <div style={{ fontSize:7.5, fontWeight:700, color:'#1e293b' }}>{title}</div>
+              <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.45)' }}>{sub}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ABtn label="Start Now" />
+    </div>
+  );
+
+  // ── vs-table ──────────────────────────────────────────────────────────────
+  if (id === 'vs-table') return (
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ display:'grid', gridTemplateColumns:'1fr auto 1fr', gap:'4px 8px', width:'100%', alignItems:'center' }}>
+        <div style={{ fontSize:6.5, fontWeight:700, color:'rgba(30,41,59,0.45)', textAlign:'right' }}>Others</div>
+        <div style={{ fontSize:7, fontWeight:900, color:'rgba(30,41,59,0.3)' }}>vs</div>
+        <div style={{ fontSize:6.5, fontWeight:800, color:accent }}>BRAND</div>
+        {[['Slow setup','Fast setup'],['Per-seat pricing','Flat rate'],['No support','24/7 support'],['Limited exports','Unlimited']].map(([bad,good],i) => (
+          <React.Fragment key={i}>
+            <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)', textAlign:'right', display:'flex', alignItems:'center', justifyContent:'flex-end', gap:3 }}>
+              <div style={{ fontSize:8, color:'#ef4444' }}>✗</div>{bad}
+            </div>
+            <div style={{ width:1, background:'#e2e8f0', height:12, margin:'0 auto' }} />
+            <div style={{ fontSize:6.5, color:'#1e293b', fontWeight:600, display:'flex', alignItems:'center', gap:3 }}>
+              <div style={{ fontSize:8, color:'#22c55e' }}>✓</div>{good}
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+      <ABtn label="Try BRAND Free" />
+    </div>
+  );
+
+  // ── before-after-slide ───────────────────────────────────────────────────
+  if (id === 'before-after-slide') return (
+    <div style={{ ...wrap, padding:0, gap:0, flexDirection:'row' }}>
+      {photoLayer}
+      <div style={{ flex:1, height:'100%', background:'rgba(100,116,139,0.15)', borderRight:'2px solid rgba(255,255,255,0.2)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10, position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:7, fontWeight:800, color:'rgba(30,41,59,0.6)', letterSpacing:'0.08em', textTransform:'uppercase' }}>Before</div>
+        {['Slow','Costly','Guesswork'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:8, color:'#ef4444' }}>✗</div>
+            <div style={{ fontSize:7, color:'rgba(30,41,59,0.55)' }}>{t}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ flex:1, height:'100%', background:`${accent}12`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10, position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:7, fontWeight:800, color:accent, letterSpacing:'0.08em', textTransform:'uppercase' }}>After</div>
+        {['10x faster','Half cost','Data-driven'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:8, color:'#22c55e' }}>✓</div>
+            <div style={{ fontSize:7, color:'#1e293b', fontWeight:600 }}>{t}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── checklist-viral ──────────────────────────────────────────────────────
+  if (id === 'checklist-viral') return (
+    <div style={{ ...wrap, background:'#fff', gap:7, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em' }}>5 Things You Need</div>
+      {['Clear value proposition','Social proof upfront','Urgency + scarcity','One CTA only','Mobile-first design'].map((item,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:14, height:14, borderRadius:3, background:`${accent}20`, border:`1.5px solid ${accent}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <div style={{ fontSize:8, color:accent, fontWeight:800 }}>✓</div>
+          </div>
+          <div style={{ fontSize:7, color:'#475569' }}>{item}</div>
+        </div>
+      ))}
+      <ABtn label="Get the Full List" />
+    </div>
+  );
+
+  // ── myth-reality ─────────────────────────────────────────────────────────
+  if (id === 'myth-reality') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:6 }}>
+        <div style={{ background:'rgba(239,68,68,0.1)', border:'1px solid rgba(239,68,68,0.25)', borderRadius:6, padding:'7px 10px' }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:'#ef4444', letterSpacing:'0.08em', marginBottom:3 }}>✗  MYTH</div>
+          <div style={{ fontSize:7.5, color:'rgba(241,245,249,0.7)', lineHeight:1.4 }}>More content = more results</div>
+        </div>
+        <div style={{ background:'rgba(34,197,94,0.1)', border:'1px solid rgba(34,197,94,0.25)', borderRadius:6, padding:'7px 10px' }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:'#22c55e', letterSpacing:'0.08em', marginBottom:3 }}>✓  REALITY</div>
+          <div style={{ fontSize:7.5, color:'rgba(241,245,249,0.85)', lineHeight:1.4 }}>One great piece beats 10 weak ones</div>
+        </div>
+      </div>
+      <ABtn label="See The Proof" />
+    </div>
+  );
+
+  // ── three-reasons ────────────────────────────────────────────────────────
+  if (id === 'three-reasons') return (
+    <div style={{ ...wrap, background:'#fff', gap:8, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em' }}>3 Reasons to Switch</div>
+      {['Save 10+ hours per week','Results in 30 days or less','Used by 10,000+ brands'].map((reason,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:7 }}>
+          <div style={{ width:20, height:20, borderRadius:'50%', background:accent, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <div style={{ fontSize:8.5, fontWeight:900, color:'#fff' }}>{i+1}</div>
+          </div>
+          <div style={{ fontSize:7.5, color:'#475569', fontWeight:500, lineHeight:1.4, paddingTop:2 }}>{reason}</div>
+        </div>
+      ))}
+      <ABtn label="Learn More →" />
+    </div>
+  );
+
+  // ── timeline-journey ────────────────────────────────────────────────────
+  if (id === 'timeline-journey') return (
+    <div style={{ ...wrap, background:'#fff', gap:6, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em', marginBottom:2 }}>Your Journey</div>
+      <div style={{ position:'relative', paddingLeft:28, display:'flex', flexDirection:'column', gap:10, width:'100%' }}>
+        <div style={{ position:'absolute', left:10, top:8, bottom:8, width:1.5, background:`${accent}33` }} />
+        {[['Day 1','Sign up & onboard'],['Week 1','First campaign live'],['Month 1','Results compound']].map(([day,desc],i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ position:'absolute', left:4, width:13, height:13, borderRadius:'50%', background: i===2 ? accent : '#fff', border:`2px solid ${accent}`, zIndex:1 }} />
+            <div>
+              <div style={{ fontSize:7, fontWeight:800, color:accent }}>{day}</div>
+              <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.55)' }}>{desc}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <ABtn label="Start Today" />
+    </div>
+  );
+
+  // ── do-dont ──────────────────────────────────────────────────────────────
+  if (id === 'do-dont') return (
+    <div style={{ ...wrap, background:'#fff', gap:0, padding:0 }}>
+      <Stripe />
+      <div style={{ display:'flex', width:'100%', flex:1 }}>
+        <div style={{ flex:1, background:'rgba(239,68,68,0.05)', borderRight:'1px solid #fee2e2', padding:'12px 10px', display:'flex', flexDirection:'column', gap:6 }}>
+          <div style={{ fontSize:7, fontWeight:800, color:'#ef4444', letterSpacing:'0.06em' }}>✗ DON'T</div>
+          {['Ignore mobile','Skip the CTA','Use jargon'].map((t,i) => <div key={i} style={{ fontSize:6.5, color:'rgba(30,41,59,0.55)', lineHeight:1.4 }}>{t}</div>)}
+        </div>
+        <div style={{ flex:1, background:'rgba(34,197,94,0.05)', padding:'12px 10px', display:'flex', flexDirection:'column', gap:6 }}>
+          <div style={{ fontSize:7, fontWeight:800, color:'#22c55e', letterSpacing:'0.06em' }}>✓ DO</div>
+          {['Lead with value','One clear CTA','Speak plainly'].map((t,i) => <div key={i} style={{ fontSize:6.5, color:'rgba(30,41,59,0.75)', fontWeight:500, lineHeight:1.4 }}>{t}</div>)}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── number-list ──────────────────────────────────────────────────────────
+  if (id === 'number-list') return (
+    <div style={{ ...wrap, background:'#f8fafc', gap:8, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:9, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em' }}>3 Steps to Success</div>
+      {['Discover your angle','Build in minutes','Launch & grow'].map((t,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <div style={{ width:18, height:18, borderRadius:'50%', background:accent, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:8, color:'#fff', fontWeight:800 }}>{i+1}</div>
+          </div>
+          <div style={{ fontSize:7.5, color:'#475569', fontWeight:500 }}>{t}</div>
+        </div>
+      ))}
+      <ABtn label="Start Now" />
+    </div>
+  );
+
+  // ── pain-diagnostic ──────────────────────────────────────────────────────
+  if (id === 'pain-diagnostic') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#0a0a0f,#1a0a1a)', flexDirection:'row', padding:'0 14px', gap:10 }}>
+      <Stripe />
+      <BM />
+      <div style={{ background:'rgba(244,63,94,0.15)', border:'1px solid rgba(244,63,94,0.4)', borderRadius:5, padding:'4px 9px', flexShrink:0 }}>
+        <div style={{ fontSize:6.5, color:'#f43f5e', fontWeight:800, letterSpacing:'0.06em' }}>Diagnose</div>
+      </div>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2 }}>
+        <div style={{ fontSize:10, fontWeight:800, color:'#f1f5f9', letterSpacing:'-0.01em' }}>Does this sound familiar?</div>
+        <div style={{ fontSize:7, color:'rgba(241,245,249,0.4)', lineHeight:1.4 }}>If yes — there's a better way.</div>
+      </div>
+      <ABtn label="See Fix →" />
+    </div>
+  );
+
+  // ── mistake-alert ────────────────────────────────────────────────────────
+  if (id === 'mistake-alert') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#1c0505,#431407)', flexDirection:'row', padding:0 }}>
+      <div style={{ position:'absolute', top:0, left:0, right:0, height:3, background:'#f97316' }} />
+      <div style={{ background:'#f97316', padding:'0 14px', display:'flex', alignItems:'center', alignSelf:'stretch', flexShrink:0 }}>
+        <div style={{ fontSize:9, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.04em', writingMode:'vertical-rl', transform:'rotate(180deg)' }}>⚠ Alert</div>
+      </div>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2, padding:'0 12px' }}>
+        <div style={{ fontSize:10, fontWeight:800, color:'#fff1ee', letterSpacing:'-0.01em' }}>3 mistakes killing your results.</div>
+        <div style={{ fontSize:7, color:'rgba(255,241,238,0.5)', lineHeight:1.4 }}>Most people make all of them without knowing.</div>
+      </div>
+      <div style={{ padding:'0 14px 0 0', display:'flex', alignItems:'center' }}>
+        <ABtn label="Avoid →" bg="#f97316" />
+      </div>
+    </div>
+  );
+
+  // ── transform-split ──────────────────────────────────────────────────────
+  if (id === 'transform-split') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <div style={{ display:'flex', width:'100%', gap:0, borderRadius:8, overflow:'hidden' }}>
+        <div style={{ flex:1, background:'rgba(100,116,139,0.2)', padding:'10px 8px', display:'flex', flexDirection:'column', gap:4 }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:'rgba(241,245,249,0.4)', letterSpacing:'0.08em' }}>BEFORE</div>
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.5)', lineHeight:1.4 }}>Manual, slow, expensive</div>
+        </div>
+        <div style={{ width:24, display:'flex', alignItems:'center', justifyContent:'center', background:'#0f1117' }}>
+          <div style={{ fontSize:11, color:accent, fontWeight:800 }}>→</div>
+        </div>
+        <div style={{ flex:1, background:`${accent}18`, padding:'10px 8px', display:'flex', flexDirection:'column', gap:4 }}>
+          <div style={{ fontSize:6.5, fontWeight:800, color:accent, letterSpacing:'0.08em' }}>AFTER</div>
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.8)', fontWeight:600, lineHeight:1.4 }}>Automated, fast, scalable</div>
+        </div>
+      </div>
+      <div style={{ fontSize:9, fontWeight:700, color:'#f1f5f9', textAlign:'center' }}>The transformation is real.</div>
+      <ABtn label="Start Transforming" />
+    </div>
+  );
+
+  // ── problem-slide ────────────────────────────────────────────────────────
+  if (id === 'problem-slide') return (
+    <div style={{ ...wrap, background:'#1e1b4b', gap:7, alignItems:'flex-start' }}>
+      <BM />
+      <div style={{ fontSize:6.5, color:'rgba(239,68,68,0.85)', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>The Problem</div>
+      <div style={{ fontSize:12, fontWeight:800, color:'#f1f5f9', letterSpacing:'-0.02em' }}>Sound familiar?</div>
+      {['Wasting hours daily','No clear strategy','Burning budget'].map((t,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ fontSize:9, color:'#ef4444' }}>✗</div>
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.6)' }}>{t}</div>
+        </div>
+      ))}
+      <ABtn label="Fix This Now" bg="#ef4444" />
+    </div>
+  );
+
+  // ── validation-card ──────────────────────────────────────────────────────
+  if (id === 'validation-card') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#fff7f0,#fce7f3)', gap:8 }}>
+      <BM c="rgba(124,58,237,0.4)" />
+      <Stripe />
+      <div style={{ fontSize:26, fontWeight:900, color:'#3b0764', textAlign:'center', lineHeight:1.15, letterSpacing:'-0.02em' }}>You're not alone in this.</div>
+      <div style={{ height:2, background:`${accent}44`, width:50, borderRadius:1 }} />
+      <div style={{ fontSize:8, color:'rgba(59,7,100,0.6)', textAlign:'center', lineHeight:1.5 }}>Thousands share your exact challenge.</div>
+      <ABtn label="Join Our Community" bg={accent} />
+    </div>
+  );
+
+  // ── empathy-card ─────────────────────────────────────────────────────────
+  if (id === 'empathy-card') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#fff7f0,#fce7f3)', flexDirection:'row', padding:'0 14px', gap:10 }}>
+      <Stripe />
+      <div style={{ width:28, height:28, borderRadius:'50%', background:'linear-gradient(135deg,#ec4899,#a78bfa)', flexShrink:0 }} />
+      <div style={{ flex:1, display:'flex', flexDirection:'column', gap:2 }}>
+        <div style={{ fontSize:10, fontWeight:800, color:'#3b0764', letterSpacing:'-0.01em' }}>You deserve to feel this.</div>
+        <div style={{ fontSize:7, color:'#7c3aed', lineHeight:1.4 }}>Not eventually. Starting today.</div>
+      </div>
+      <ABtn label="Begin →" bg={accent} />
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 4 — PLATFORM NATIVE (11 templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── tweet-screenshot ─────────────────────────────────────────────────────
+  if (id === 'tweet-screenshot') return (
+    <div style={{ ...wrap, background:'#fff', gap:0, alignItems:'flex-start', padding:12 }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ display:'flex', gap:7, width:'100%' }}>
+        <div style={{ width:24, height:24, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)`, flexShrink:0 }} />
+        <div style={{ flex:1, display:'flex', flexDirection:'column', gap:1 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:7.5, fontWeight:700, color:'#0f172a' }}>Brand Name</div>
+            <div style={{ fontSize:8, color:'#1d9bf0' }}>✓</div>
+            <div style={{ fontSize:6.5, color:'rgba(15,23,42,0.45)' }}>@brand · 2h</div>
+          </div>
+          <div style={{ fontSize:8, color:'#0f172a', lineHeight:1.45, marginTop:3 }}>
+            We just hit 10,000 customers 🎉
+            <br/>
+            <span style={{ color:'#1d9bf0' }}>#growth #saas #milestone</span>
+          </div>
+          <div style={{ display:'flex', gap:14, marginTop:8 }}>
+            {[['💬','142'],['🔁','87'],['❤️','1.2K'],['📊','18K']].map(([icon,count],i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:3 }}>
+                <div style={{ fontSize:8 }}>{icon}</div>
+                <div style={{ fontSize:6.5, color:'rgba(15,23,42,0.45)' }}>{count}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── reddit-thread ────────────────────────────────────────────────────────
+  if (id === 'reddit-thread') return (
+    <div style={{ ...wrap, background:'#fff', gap:0, alignItems:'flex-start', padding:12 }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ display:'flex', flexDirection:'column', gap:6, width:'100%' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+          <div style={{ background:'#ff4500', borderRadius:10, padding:'2px 7px' }}>
+            <div style={{ fontSize:6, fontWeight:700, color:'#fff' }}>r/entrepreneur</div>
+          </div>
+          <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)' }}>Posted by u/founder · 4h</div>
+        </div>
+        <div style={{ fontSize:8.5, fontWeight:700, color:'#1a1a1b', lineHeight:1.35 }}>
+          Our revenue went from $0 to $1M ARR in 18 months. Here's exactly how.
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:4, background:'#f6f7f8', borderRadius:20, padding:'3px 8px' }}>
+            <div style={{ fontSize:8, color:'#ff4500' }}>▲</div>
+            <div style={{ fontSize:7, fontWeight:700, color:'#1a1a1b' }}>4.7K</div>
+          </div>
+          <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.5)' }}>💬 312 comments · 🏆 3 awards</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── tiktok-native ────────────────────────────────────────────────────────
+  if (id === 'tiktok-native') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#0a0a0a', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', right:8, bottom:40, display:'flex', flexDirection:'column', gap:10, zIndex:3 }}>
+        {[['❤️','12K'],['💬','847'],['↗','2.1K'],['🎵','']].map(([icon,count],i) => (
+          <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
+            <div style={{ fontSize:16 }}>{icon}</div>
+            {count && <div style={{ fontSize:6, color:'rgba(255,255,255,0.85)', fontWeight:600 }}>{count}</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{ position:'absolute', bottom:0, left:0, right:32, padding:'10px 10px 8px', background:'linear-gradient(transparent,rgba(0,0,0,0.85))', zIndex:3 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:5, marginBottom:4 }}>
+          <div style={{ width:16, height:16, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)` }} />
+          <div style={{ fontSize:7, fontWeight:700, color:'#fff' }}>@yourbrand</div>
+        </div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.85)', lineHeight:1.4 }}>POV: You just found the tool that changes everything ✨</div>
+      </div>
+    </div>
+  );
+
+  // ── chat-thread ──────────────────────────────────────────────────────────
+  if (id === 'chat-thread') return (
+    <div style={{ ...wrap, background:'#f2f2f7', gap:6, justifyContent:'flex-start', paddingTop:12 }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)', textAlign:'center', marginBottom:2 }}>Today 10:24 AM</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:5, width:'100%' }}>
+        <div style={{ alignSelf:'flex-start', background:'#fff', borderRadius:'14px 14px 14px 3px', padding:'6px 10px', maxWidth:'78%', boxShadow:'0 1px 2px rgba(0,0,0,0.08)' }}>
+          <div style={{ fontSize:7.5, color:'#1c1c1e', lineHeight:1.4 }}>Have you tried the new platform yet? 🤔</div>
+        </div>
+        <div style={{ alignSelf:'flex-end', background:accent, borderRadius:'14px 14px 3px 14px', padding:'6px 10px', maxWidth:'78%' }}>
+          <div style={{ fontSize:7.5, color:'#fff', lineHeight:1.4 }}>YES. It's incredible. 3x results in week one 🚀</div>
+        </div>
+        <div style={{ alignSelf:'flex-start', background:'#fff', borderRadius:'14px 14px 14px 3px', padding:'6px 10px', maxWidth:'78%', boxShadow:'0 1px 2px rgba(0,0,0,0.08)' }}>
+          <div style={{ fontSize:7.5, color:'#1c1c1e' }}>Send me the link!</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── comment-reply ────────────────────────────────────────────────────────
+  if (id === 'comment-reply') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:7, alignItems:'flex-start' }}>
+      <BM />
+      <div style={{ display:'flex', gap:6, width:'100%' }}>
+        <div style={{ width:18, height:18, borderRadius:'50%', background:'rgba(241,245,249,0.2)', flexShrink:0 }} />
+        <div style={{ flex:1, background:'rgba(241,245,249,0.05)', borderRadius:8, padding:'6px 8px' }}>
+          <div style={{ fontSize:6.5, fontWeight:700, color:'rgba(241,245,249,0.6)', marginBottom:2 }}>@user</div>
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.5)' }}>Is this actually worth it? Seems too good to be true…</div>
+        </div>
+      </div>
+      <div style={{ display:'flex', gap:6, width:'100%', marginLeft:24 }}>
+        <div style={{ width:18, height:18, borderRadius:'50%', background:accent, flexShrink:0 }} />
+        <div style={{ flex:1, background:`${accent}18`, border:`1px solid ${accent}33`, borderRadius:8, padding:'6px 8px' }}>
+          <div style={{ fontSize:6.5, fontWeight:700, color:accent, marginBottom:2 }}>@brand ✓</div>
+          <div style={{ fontSize:7, color:'rgba(241,245,249,0.8)' }}>We back every claim with data. Here's our full case study 👇</div>
+        </div>
+      </div>
+      <ABtn label="See the Results" pill />
+    </div>
+  );
+
+  // ── caption-style ────────────────────────────────────────────────────────
+  if (id === 'caption-style') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#1a1a2e', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'linear-gradient(transparent,rgba(0,0,0,0.92))', padding:'20px 10px 10px', zIndex:2 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:5 }}>
+          <div style={{ width:16, height:16, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#f472b6)` }} />
+          <div style={{ fontSize:7, fontWeight:700, color:'#fff' }}>yourbrand</div>
+          <div style={{ fontSize:6, color:'rgba(255,255,255,0.5)' }}>Sponsored</div>
+        </div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.9)', lineHeight:1.45 }}>The ad that actually performs. Every single time. 🔥 <span style={{ color:accent }}>#marketing</span></div>
+      </div>
+    </div>
+  );
+
+  // ── email-mockup ─────────────────────────────────────────────────────────
+  if (id === 'email-mockup') return (
+    <div style={{ ...wrap, background:'#fff', gap:0, padding:0, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ width:'100%', background:'#f1f5f9', borderBottom:'1px solid #e2e8f0', padding:'5px 10px', display:'flex', gap:5 }}>
+        {['#ef4444','#f59e0b','#22c55e'].map(c => <div key={c} style={{ width:7, height:7, borderRadius:'50%', background:c }} />)}
+      </div>
+      <div style={{ width:'100%', padding:'10px 12px', display:'flex', flexDirection:'column', gap:7 }}>
+        {[['From:','hello@brand.com'],['To:','you@email.com'],['Subject:','🎁 Your exclusive invite inside']].map(([label,val],i) => (
+          <div key={i} style={{ display:'flex', gap:5, borderBottom:'1px solid #f1f5f9', paddingBottom:4 }}>
+            <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)', fontWeight:600, width:38, flexShrink:0 }}>{label}</div>
+            <div style={{ fontSize:6.5, color:'#1e293b', fontWeight: i===2 ? 700 : 400 }}>{val}</div>
+          </div>
+        ))}
+        <div style={{ fontSize:7, color:'rgba(30,41,59,0.55)', lineHeight:1.5 }}>Hi there, we've saved you a special spot. Click below before it expires...</div>
+        <ABtn label="Open Your Invite →" />
+      </div>
+    </div>
+  );
+
+  // ── chat-native ──────────────────────────────────────────────────────────
+  if (id === 'chat-native') return (
+    <div style={{ ...wrap, background:'#f2f2f7', padding:0, gap:0 }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ width:'100%', background:'#075e54', padding:'6px 10px', display:'flex', alignItems:'center', gap:7 }}>
+        <div style={{ width:22, height:22, borderRadius:'50%', background:'rgba(255,255,255,0.2)' }} />
+        <div>
+          <div style={{ fontSize:7.5, fontWeight:700, color:'#fff' }}>Brand Support</div>
+          <div style={{ fontSize:6, color:'rgba(255,255,255,0.6)' }}>online · typically replies instantly</div>
+        </div>
+      </div>
+      <div style={{ flex:1, padding:10, display:'flex', flexDirection:'column', gap:5 }}>
+        <div style={{ alignSelf:'flex-start', background:'#fff', borderRadius:'14px 14px 14px 3px', padding:'6px 10px', maxWidth:'80%', boxShadow:'0 1px 2px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize:7, color:'#1c1c1e', lineHeight:1.4 }}>How does your pricing work? 🤔</div>
+        </div>
+        <div style={{ alignSelf:'flex-end', background:'#dcf8c6', borderRadius:'14px 14px 3px 14px', padding:'6px 10px', maxWidth:'80%' }}>
+          <div style={{ fontSize:7, color:'#1c1c1e', lineHeight:1.4 }}>Flat rate, no hidden fees. Try free for 14 days! ✅</div>
+          <div style={{ fontSize:5.5, color:'rgba(0,0,0,0.35)', textAlign:'right' }}>10:42 AM ✓✓</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── meme-format ──────────────────────────────────────────────────────────
+  if (id === 'meme-format') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#1a1a1a', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', top:10, left:0, right:0, textAlign:'center', zIndex:3 }}>
+        <div style={{ fontSize:13, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.04em', textShadow:'2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
+          WHEN YOUR ADS
+        </div>
+      </div>
+      <div style={{ position:'absolute', bottom:10, left:0, right:0, textAlign:'center', zIndex:3 }}>
+        <div style={{ fontSize:12, fontWeight:900, color:'#fff', textTransform:'uppercase', letterSpacing:'0.04em', textShadow:'2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000' }}>
+          FINALLY CONVERT
+        </div>
+      </div>
+      {!hasPhoto && <div style={{ width:80, height:80, borderRadius:8, background:'rgba(255,255,255,0.08)', border:'2px dashed rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1 }}>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.3)' }}>Photo</div>
+      </div>}
+    </div>
+  );
+
+  // ── poll-card ────────────────────────────────────────────────────────────
+  if (id === 'poll-card') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#0a0a0a' : '#1a1a2e', gap:8 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ fontSize:9, fontWeight:800, color:'#fff', textAlign:'center' }}>Which drives better results?</div>
+        <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:5 }}>
+          {[['Option A — Video','67%'],['Option B — Static','33%']].map(([label,pct],i) => (
+            <div key={i} style={{ display:'flex', flexDirection:'column', gap:2 }}>
+              <div style={{ display:'flex', justifyContent:'space-between' }}>
+                <div style={{ fontSize:7, color:i===0?accent:'rgba(255,255,255,0.6)', fontWeight:i===0?700:500 }}>{label}</div>
+                <div style={{ fontSize:7, color:i===0?accent:'rgba(255,255,255,0.4)', fontWeight:700 }}>{pct}</div>
+              </div>
+              <div style={{ height:6, background:'rgba(255,255,255,0.1)', borderRadius:3 }}>
+                <div style={{ height:'100%', width:pct, background:i===0?accent:'rgba(255,255,255,0.25)', borderRadius:3 }} />
+              </div>
+            </div>
           ))}
         </div>
-        <Btn label="Try Free" bg={accent} />
+        <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.35)' }}>1,247 votes · 18 hours left</div>
       </div>
     </div>
   );
 
-  // ── photo-grid ──────────────────────────────────────────────────────────────
-  if (id === 'photo-grid') return (
-    <div style={{ ...wrap, background: '#0f1117', padding: 10, gap: 6 }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, width: '100%', flex: 1 }}>
-        {[`${accent}44`, `${accent}66`, `${accent}55`, `${accent}80`].map((bg, i) => (
-          <div key={i} style={{ borderRadius: 4, background: bg, border: '1px solid rgba(255,255,255,0.1)', aspectRatio: '1', display: 'flex', alignItems: 'flex-end', padding: 4 }}>
-            <T s={6} color="rgba(255,255,255,0.65)">Item {i + 1}</T>
-          </div>
-        ))}
-      </div>
-      <T s={8} color="#f1f5f9" weight={700} align="center">Shop the Collection</T>
-    </div>
-  );
-
-  // ── brand-awareness ─────────────────────────────────────────────────────────
-  if (id === 'brand-awareness') return (
-    <div style={{ ...wrap, background: '#09090b', gap: 10 }}>
-      <div style={{ width: 58, height: 58, borderRadius: '50%', background: `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <T s={22} color={accent} weight={900} align="center">B</T>
-      </div>
-      <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">YourBrand</T>
-      <Bar w={40} color={`${accent}55`} h={1} op={1} />
-      <T s={8} color={muted} align="center">Building the future, one step at a time.</T>
-    </div>
-  );
-
-  // ── tweet-screenshot ────────────────────────────────────────────────────────
-  if (id === 'tweet-screenshot') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 26, height: 26, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)`, flexShrink: 0 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <T s={8} color="#0f172a" weight={700}>Real Customer</T>
-          <T s={7} color="#94a3b8">@realcustomer · 2h</T>
-        </div>
-      </div>
-      <T s={9} color="#0f172a">"Just got my results. This changed everything. 3x my output in 30 days. I can't believe I didn't start sooner."</T>
-      <div style={{ display: 'flex', gap: 14 }}>
-        <T s={7} color="#94a3b8">💬 47</T>
-        <T s={7} color="#94a3b8">🔁 312</T>
-        <T s={7} color="#ef4444">♥ 4,291</T>
-      </div>
-    </div>
-  );
-
-  // ── tiktok-native ───────────────────────────────────────────────────────────
-  if (id === 'tiktok-native') return (
-    <div style={{ ...wrap, background: '#09090b', padding: 0, gap: 0 }}>
+  // ── ugc-style ────────────────────────────────────────────────────────────
+  if (id === 'ugc-style') return (
+    <div style={{ ...wrap, background: hasPhoto ? 'rgba(232,240,248,0.95)' : '#fff', gap:7, alignItems:'flex-start' }}>
       {photoLayer}
-      <div style={{ position: 'absolute', right: 8, top: '28%', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', zIndex: 2 }}>
-        {[['♥','42K'],['💬','312'],['↗','Share']].map(([icon, count]) => (
-          <div key={icon} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-            <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
-            <T s={6} color="rgba(255,255,255,0.85)" align="center">{count}</T>
-          </div>
-        ))}
-      </div>
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 40, padding: '12px 10px', zIndex: 2, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)' }}>
-        <T s={8} color="#fff" weight={700}>@yourbrand</T>
-        <T s={8} color="rgba(255,255,255,0.85)">The strategy that changed everything ✨</T>
-        <T s={7} color="rgba(255,255,255,0.55)" weight={700}>♫ Original Audio</T>
-      </div>
-    </div>
-  );
-
-  // ── reddit-thread ───────────────────────────────────────────────────────────
-  if (id === 'reddit-thread') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 6 }}>
-      <T s={7} color="#ff4500" weight={700} caps spacing="0.04em">r/Success · Posted by u/member</T>
-      <T s={10} color="#1c1c1c" weight={700}>"The one framework that got me to $10k/month [full breakdown]"</T>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <T s={8} color={accent} weight={800}>▲</T>
-          <T s={8} color="#1c1c1c" weight={700}>8,293</T>
-          <T s={8} color={accent} weight={800}>▼</T>
-        </div>
-        <T s={7} color="#94a3b8">💬 847 comments</T>
-      </div>
-      <Btn label="Read Thread" bg="#ff4500" />
-    </div>
-  );
-
-  // ── email-mockup ────────────────────────────────────────────────────────────
-  if (id === 'email-mockup') return (
-    <div style={{ ...wrap, background: '#f8fafc', padding: 0, gap: 0, alignItems: 'stretch' }}>
-      <div style={{ background: '#1e293b', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <div style={{ width: 14, height: 14, borderRadius: '50%', background: accent }} />
-        <T s={8} color="#fff" weight={700}>YourBrand</T>
-        <div style={{ flex: 1 }} />
-        <T s={6} color="rgba(255,255,255,0.4)">2:14 PM</T>
-      </div>
-      <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <T s={9} color="#1e293b" weight={800}>"You're leaving money on the table"</T>
-        <T s={7} color="#64748b">Hi [First Name], most people miss this one thing…</T>
-        <Btn label="Read Now →" bg={accent} />
-      </div>
-    </div>
-  );
-
-  // ── receipt-style ───────────────────────────────────────────────────────────
-  if (id === 'receipt-style') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'stretch', gap: 0, padding: 12 }}>
-      <div style={{ border: '1px dashed #cbd5e1', borderRadius: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
-        <T s={9} color="#1e293b" weight={800} align="center">What You Get</T>
-        <div style={{ height: 1, background: '#e2e8f0' }} />
-        {['Full access','Templates library','1-on-1 support','Lifetime updates'].map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
-            <T s={8} color="#374151">{item}</T>
-            <div style={{ flex: 1 }} />
-            <T s={8} color={accent} weight={700}>✓</T>
-          </div>
-        ))}
-        <div style={{ height: 1, background: '#e2e8f0' }} />
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <T s={9} color="#1e293b" weight={800}>Total Value</T>
-          <div style={{ flex: 1 }} />
-          <T s={9} color={accent} weight={900}>$997</T>
-        </div>
-      </div>
-      <div style={{ marginTop: 8 }}><Btn label="Get All This" bg={accent} /></div>
-    </div>
-  );
-
-  // ── bundle-stack ─────────────────────────────────────────────────────────────
-  if (id === 'bundle-stack') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
-      <div style={{ position: 'relative', width: 84, height: 64, alignSelf: 'center' }}>
-        <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%) rotate(-6deg)', width: 62, height: 46, background: `${accent}44`, borderRadius: 6, border: `1px solid ${accent}66` }} />
-        <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%) rotate(-3deg)', width: 62, height: 46, background: `${accent}70`, borderRadius: 6 }} />
-        <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', width: 62, height: 46, background: accent, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <T s={8} color="#fff" weight={800} align="center">Bundle</T>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <div style={{ fontSize: 14, color: '#94a3b8', textDecoration: 'line-through', fontWeight: 600 }}>$597</div>
-        <T s={20} color={accent} weight={900} spacing="-0.03em">$197</T>
-      </div>
-      <T s={7} color="#94a3b8" align="center">Save $400 on the complete bundle</T>
-      <Btn label="Get Bundle" bg={accent} />
-    </div>
-  );
-
-  // ── testimonial-card ────────────────────────────────────────────────────────
-  if (id === 'testimonial-card') return (
-    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
-      <Stars color={accent} />
-      <T s={9} color="#1e293b" weight={600}>"Doubled my revenue in 60 days. I was skeptical, but the results speak for themselves."</T>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 26, height: 26, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)`, flexShrink: 0 }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <T s={8} color="#1e293b" weight={700}>Sarah M. · CEO</T>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <T s={7} color="#00b67a" weight={700}>★</T>
-            <T s={6} color="#64748b">Verified on Trustpilot</T>
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:7, width:'100%' })}>
+        <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+          <div style={{ width:22, height:22, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#f472b6)` }} />
+          <div style={{ display:'flex', flexDirection:'column', gap:1 }}>
+            <div style={{ fontSize:8, color:'#1e293b', fontWeight:700 }}>@realuser</div>
+            <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.4)' }}>Sponsored</div>
           </div>
         </div>
+        <div style={{ fontSize:8.5, color:'#1e293b', lineHeight:1.45 }}>
+          Honestly didn't believe the hype until I tried it myself 😮
+        </div>
+        <div style={{ display:'flex', gap:2 }}>
+          {Array.from({length:5}).map((_,i) => <div key={i} style={{ fontSize:10, color:'#f59e0b' }}>★</div>)}
+        </div>
+        <ABtn label="Try It Free" />
       </div>
     </div>
   );
 
-  // ── versus-slide ────────────────────────────────────────────────────────────
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 5 — BRAND / EDITORIAL (24 templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── aurora-gradient ──────────────────────────────────────────────────────
+  if (id === 'aurora-gradient') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#030712' }}>
+      {photoLayer}
+      {!hasPhoto && <>
+        <div style={{ position:'absolute', top:'10%', left:'15%', width:100, height:100, borderRadius:'50%', background:`${accent}40`, filter:'blur(30px)', zIndex:0 }} />
+        <div style={{ position:'absolute', bottom:'20%', right:'10%', width:80, height:80, borderRadius:'50%', background:'#06b6d455', filter:'blur(25px)', zIndex:0 }} />
+        <div style={{ position:'absolute', top:'40%', right:'30%', width:60, height:60, borderRadius:'50%', background:'#a855f740', filter:'blur(20px)', zIndex:0 }} />
+      </>}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ fontSize:22, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.15 }}>Beyond the ordinary.</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.6)', textAlign:'center' }}>Crafted for those who demand more.</div>
+        <ABtn label="Explore" bg="rgba(255,255,255,0.15)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── duotone-photo ────────────────────────────────────────────────────────
+  if (id === 'duotone-photo') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(135deg,${accent}cc,#1e1b4b)` }}>
+      {hasPhoto && <img src={photoMeta!.url} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.55, zIndex:0, filter:'grayscale(100%) contrast(1.2)' }} onError={e => {(e.target as HTMLImageElement).style.display='none';}} />}
+      {hasPhoto && <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg,${accent}88,#6366f188)`, zIndex:1, mixBlendMode:'color' }} />}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'relative', zIndex:2, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+        <div style={{ fontSize:28, fontWeight:900, color:'#fff', letterSpacing:'-0.04em', textTransform:'uppercase', textShadow:'0 2px 20px rgba(0,0,0,0.4)' }}>BOLD.</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.75)', letterSpacing:'0.14em', textTransform:'uppercase' }}>Make it count</div>
+        <ABtn label="See More" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── mono-editorial ───────────────────────────────────────────────────────
+  if (id === 'mono-editorial') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#fff' }}>
+      {photoLayer}
+      <BM c={hasPhoto ? 'rgba(255,255,255,0.38)' : 'rgba(30,41,59,0.35)'} />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:6 })}>
+        <div style={{ height:1, background: hasPhoto ? 'rgba(255,255,255,0.5)' : '#1e293b', width:60 }} />
+        <div style={{ fontSize:26, fontWeight:900, color: hasPhoto ? '#fff' : '#0f172a', letterSpacing:'0.06em', textTransform:'uppercase', lineHeight:1 }}>TRUTH.</div>
+        <div style={{ height:1, background: hasPhoto ? 'rgba(255,255,255,0.5)' : '#1e293b', width:60 }} />
+        <div style={{ fontSize:6.5, color: hasPhoto ? 'rgba(255,255,255,0.55)' : 'rgba(30,41,59,0.45)', letterSpacing:'0.18em', textTransform:'uppercase' }}>Est. MMXXIV</div>
+        <ABtn label="Discover" bg={hasPhoto ? 'rgba(255,255,255,0.15)' : accent} fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── brutalist ────────────────────────────────────────────────────────────
+  if (id === 'brutalist') return (
+    <div style={{ ...wrap, background:'#fff', gap:0, padding:0, alignItems:'flex-start' }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <div style={{ border:'3px solid #000', margin:8, padding:'8px 10px', display:'flex', flexDirection:'column', gap:4, width:'calc(100% - 16px)' }}>
+        <div style={{ fontSize:6.5, fontWeight:800, color:'#000', letterSpacing:'0.12em', textTransform:'uppercase', borderBottom:'2px solid #000', paddingBottom:3, marginBottom:3 }}>ADVERTISEMENT</div>
+        <div style={{ fontSize:20, fontWeight:900, color:'#000', lineHeight:1.05, letterSpacing:'-0.02em', textTransform:'uppercase' }}>THIS<br/>WORKS.</div>
+        <div style={{ fontSize:7, color:'#000', lineHeight:1.5, marginTop:4 }}>No fluff. No tricks. Just results backed by real data and real users.</div>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:4 }}>
+          <div style={{ fontSize:6.5, color:'rgba(0,0,0,0.5)', letterSpacing:'0.08em' }}>BRAND™ 2024</div>
+          <div style={{ background:'#000', color:'#fff', padding:'4px 10px', fontSize:7, fontWeight:800, letterSpacing:'0.06em' }}>GO →</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── risograph-print ──────────────────────────────────────────────────────
+  if (id === 'risograph-print') return (
+    <div style={{ ...wrap, background:'#fefce8', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ position:'absolute', top:8, left:8, width:70, height:70, borderRadius:'50%', background:accent, opacity:0.7, zIndex:0 }} />
+      <div style={{ position:'absolute', top:14, left:14, width:70, height:70, borderRadius:'50%', background:'#1e293b', opacity:0.7, zIndex:1 }} />
+      <div style={{ position:'relative', zIndex:2, display:'flex', flexDirection:'column', alignItems:'flex-end', gap:6, width:'100%', paddingRight:4 }}>
+        <div style={{ fontSize:20, fontWeight:900, color:'#1e293b', lineHeight:1.1, textAlign:'right' }}>PRINT<br/>IS NOT<br/>DEAD</div>
+        <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.55)', textAlign:'right', letterSpacing:'0.06em' }}>Limited run · 500 prints</div>
+        <ABtn label="Get Yours" bg="#1e293b" />
+      </div>
+    </div>
+  );
+
+  // ── gradient-pop ─────────────────────────────────────────────────────────
+  if (id === 'gradient-pop') return (
+    <div style={{ ...wrap, background:'linear-gradient(135deg,#7c3aed,#db2777,#f97316)', gap:8 }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', top:'20%', left:'60%', width:60, height:60, borderRadius:'50%', background:'rgba(255,255,255,0.12)', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.7)', letterSpacing:'0.1em', textTransform:'uppercase' }}>New drop</div>
+        <div style={{ fontSize:22, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.1, letterSpacing:'-0.03em' }}>Don't<br/>scroll past.</div>
+        <ABtn label="See Why →" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── neon-grid ────────────────────────────────────────────────────────────
+  if (id === 'neon-grid') return (
+    <div style={{ ...wrap, background:'#030712', gap:8 }}>
+      <BM />
+      <div style={{ position:'absolute', inset:0, backgroundImage:`linear-gradient(${accent}18 1px, transparent 1px), linear-gradient(90deg, ${accent}18 1px, transparent 1px)`, backgroundSize:'18px 18px', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:22, fontWeight:900, color:accent, letterSpacing:'-0.02em', textAlign:'center', textShadow:`0 0 20px ${accent}88` }}>NEXT LEVEL</div>
+        <div style={{ fontSize:7.5, color:'rgba(241,245,249,0.55)', textAlign:'center', letterSpacing:'0.06em' }}>Technology meets creativity</div>
+        <ABtn label="Access Beta" />
+      </div>
+    </div>
+  );
+
+  // ── glass-card ───────────────────────────────────────────────────────────
+  if (id === 'glass-card') return (
+    <div style={{ ...wrap, background:`linear-gradient(135deg, ${accent}33, #818cf833)` }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ background:'rgba(255,255,255,0.1)', backdropFilter:'blur(12px)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:14, padding:'14px 16px', display:'flex', flexDirection:'column', gap:7, width:'85%', alignItems:'center' }}>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.6)', letterSpacing:'0.1em', textTransform:'uppercase' }}>Introducing</div>
+        <div style={{ fontSize:16, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.02em', lineHeight:1.2 }}>Something new is here.</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.6)', textAlign:'center' }}>Crafted with care.</div>
+        <ABtn label="Discover" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── kinetic-type ─────────────────────────────────────────────────────────
+  if (id === 'kinetic-type') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:0, overflow:'hidden' }}>
+      <BM />
+      <div style={{ position:'absolute', top:'10%', left:'-5%', fontSize:32, fontWeight:900, color:`${accent}22`, transform:'rotate(-12deg)', whiteSpace:'nowrap', letterSpacing:'-0.02em' }}>MOVE FAST</div>
+      <div style={{ position:'absolute', bottom:'15%', right:'-5%', fontSize:28, fontWeight:900, color:'rgba(241,245,249,0.06)', transform:'rotate(-12deg)', whiteSpace:'nowrap', letterSpacing:'-0.02em' }}>BREAK LIMITS</div>
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:20, fontWeight:900, color:'#f1f5f9', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.1 }}>Energy.<br/>Motion.<br/>Results.</div>
+        <ABtn label="Go →" />
+      </div>
+    </div>
+  );
+
+  // ── layered-depth ────────────────────────────────────────────────────────
+  if (id === 'layered-depth') return (
+    <div style={{ ...wrap, background:'#1e1b4b', gap:0 }}>
+      <BM />
+      {[0,1,2].map(i => (
+        <div key={i} style={{ position:'absolute', inset: i*12, borderRadius:12-i*2, background:`${accent}${['08','12','18'][i]}`, border:`1px solid ${accent}${['18','22','30'][i]}` }} />
+      ))}
+      <div style={{ position:'relative', zIndex:3, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:18, fontWeight:900, color:'#f1f5f9', textAlign:'center', letterSpacing:'-0.02em', lineHeight:1.2 }}>Depth that converts.</div>
+        <div style={{ fontSize:7.5, color:`${accent}cc`, textAlign:'center' }}>Layer by layer. Frame by frame.</div>
+        <ABtn label="See the Layers" />
+      </div>
+    </div>
+  );
+
+  // ── colour-split ─────────────────────────────────────────────────────────
+  if (id === 'colour-split') return (
+    <div style={{ ...wrap, padding:0, gap:0, flexDirection:'row' }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ flex:1, height:'100%', background:accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ fontSize:20, fontWeight:900, color:'#fff', letterSpacing:'-0.03em', textAlign:'center' }}>BOLD.</div>
+      </div>
+      <div style={{ flex:1, height:'100%', background:'#0f1117', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6, padding:10 }}>
+        <div style={{ fontSize:8, fontWeight:700, color:'#f1f5f9', textAlign:'center' }}>Make your statement.</div>
+        <ABtn label="Start" />
+      </div>
+    </div>
+  );
+
+  // ── ink-wash ─────────────────────────────────────────────────────────────
+  if (id === 'ink-wash') return (
+    <div style={{ ...wrap, background:'#fafaf9', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ position:'absolute', top:'15%', left:'20%', width:90, height:90, borderRadius:'50%', background:`${accent}18`, filter:'blur(18px)', zIndex:0 }} />
+      <div style={{ position:'absolute', bottom:'25%', right:'15%', width:70, height:70, borderRadius:'50%', background:`${accent}12`, filter:'blur(14px)', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:20, fontWeight:300, color:'#1e293b', textAlign:'center', letterSpacing:'0.06em', lineHeight:1.4 }}>Quiet<br/>Confidence.</div>
+        <div style={{ height:1, background:`${accent}66`, width:40 }} />
+        <div style={{ fontSize:7, color:'rgba(30,41,59,0.45)' }}>Minimal. Intentional. Yours.</div>
+        <ABtn label="Explore" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── paper-cut ────────────────────────────────────────────────────────────
+  if (id === 'paper-cut') return (
+    <div style={{ ...wrap, background:'#f0f4f8', gap:0 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      {[3,2,1,0].map(i => (
+        <div key={i} style={{ position:'absolute', inset: i*10, background:['#e2e8f0','#fff','#f8fafc',`${accent}18`][i], borderRadius:8-i, boxShadow:i===0?'none':'0 2px 8px rgba(0,0,0,0.06)' }} />
+      ))}
+      <div style={{ position:'relative', zIndex:4, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:16, fontWeight:900, color:'#1e293b', textAlign:'center', letterSpacing:'-0.02em' }}>Layer by layer.</div>
+        <div style={{ fontSize:7.5, color:'rgba(30,41,59,0.5)' }}>Beautifully stacked.</div>
+        <ABtn label="View All" />
+      </div>
+    </div>
+  );
+
+  // ── sci-fi-grid ──────────────────────────────────────────────────────────
+  if (id === 'sci-fi-grid') return (
+    <div style={{ ...wrap, background:'#020617', gap:7 }}>
+      <BM />
+      <div style={{ position:'absolute', inset:0, backgroundImage:`linear-gradient(rgba(34,197,94,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(34,197,94,0.07) 1px, transparent 1px)`, backgroundSize:'12px 12px', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', gap:4, fontFamily:'monospace', width:'100%', padding:4 }}>
+        <div style={{ fontSize:6, color:'rgba(34,197,94,0.6)' }}>{'> SYSTEM ONLINE'}</div>
+        <div style={{ fontSize:6, color:'rgba(34,197,94,0.4)' }}>{'> LOADING CAMPAIGN...'}</div>
+        <div style={{ fontSize:6, color:'rgba(34,197,94,0.8)' }}>{'> STATUS: CONVERTING'}</div>
+      </div>
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:6 }}>
+        <div style={{ fontSize:18, fontWeight:900, color:'#22c55e', letterSpacing:'0.1em', textShadow:'0 0 15px rgba(34,197,94,0.6)' }}>SYS_READY</div>
+        <ABtn label="Initialize" bg="#22c55e" fg="#020617" />
+      </div>
+    </div>
+  );
+
+  // ── blueprint ────────────────────────────────────────────────────────────
+  if (id === 'blueprint') return (
+    <div style={{ ...wrap, background:'#1e3a5f', gap:8 }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', inset:0, backgroundImage:'linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px)', backgroundSize:'14px 14px', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ width:60, height:60, border:'2px solid rgba(255,255,255,0.5)', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+          <div style={{ position:'absolute', top:-1, left:-1, right:-1, bottom:-1, border:'1px solid rgba(255,255,255,0.2)', borderRadius:5 }} />
+          <div style={{ fontSize:9, fontWeight:700, color:'rgba(255,255,255,0.7)', fontFamily:'monospace' }}>REF.A1</div>
+        </div>
+        <div style={{ fontSize:13, fontWeight:700, color:'#fff', textAlign:'center', letterSpacing:'0.04em', textTransform:'uppercase' }}>Engineered to Perform</div>
+        <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.45)', letterSpacing:'0.08em' }}>SPEC: v2.4.1 · APPROVED</div>
+        <ABtn label="Get Specs" bg="rgba(255,255,255,0.15)" fg="#fff" />
+      </div>
+    </div>
+  );
+
+  // ── analog-noise ─────────────────────────────────────────────────────────
+  if (id === 'analog-noise') return (
+    <div style={{ ...wrap, background:'#fef3c7', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ position:'absolute', inset:0, backgroundImage:'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' opacity=\'0.06\'/%3E%3C/svg%3E")', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ border:'3px solid #1e293b', borderRadius:4, padding:'3px 10px', transform:'rotate(-1.5deg)', background:'rgba(255,255,255,0.6)' }}>
+          <div style={{ fontSize:7, fontWeight:900, color:'#1e293b', letterSpacing:'0.1em', textTransform:'uppercase' }}>Est. 2024</div>
+        </div>
+        <div style={{ fontSize:18, fontWeight:900, color:'#1e293b', textAlign:'center', letterSpacing:'-0.02em', lineHeight:1.2 }}>Old School.<br/>New Results.</div>
+        <div style={{ height:3, background:'#1e293b', width:50 }} />
+        <ABtn label="Shop Now" bg="#1e293b" fg="#fef3c7" />
+      </div>
+    </div>
+  );
+
+  // ── floating-shapes ──────────────────────────────────────────────────────
+  if (id === 'floating-shapes') return (
+    <div style={{ ...wrap, background:'#fff', gap:0 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      {[[accent,'circle','15%','20%',40],[`#06b6d4`,'square','65%','15%',28],[`#f59e0b`,'circle','70%','65%',22],[`#ec4899`,'square','10%','70%',18]].map(([color,shape,left,top,size],i) => (
+        <div key={i} style={{ position:'absolute', left, top, width:size as number, height:size as number, borderRadius:shape==='circle'?'50%':4, background:color as string, opacity:0.55, zIndex:0 }} />
+      ))}
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:18, fontWeight:900, color:'#1e293b', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.2 }}>Creative.<br/>Colorful.<br/>Yours.</div>
+        <ABtn label="Explore" />
+      </div>
+    </div>
+  );
+
+  // ── liquid-gradient ──────────────────────────────────────────────────────
+  if (id === 'liquid-gradient') return (
+    <div style={{ ...wrap, background:`radial-gradient(ellipse at 30% 40%, ${accent}44 0%, transparent 55%), radial-gradient(ellipse at 75% 70%, #06b6d444 0%, transparent 50%), #030712`, gap:8 }}>
+      <BM />
+      <div style={{ fontSize:20, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.15 }}>Fluid by design.</div>
+      <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.55)', textAlign:'center' }}>Responsive. Adaptive. Live.</div>
+      <ABtn label="Discover →" pill />
+    </div>
+  );
+
+  // ── flat-color ───────────────────────────────────────────────────────────
+  if (id === 'flat-color') return (
+    <div style={{ ...wrap, background:accent, gap:8 }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ fontSize:24, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.03em', lineHeight:1.1 }}>Simple.<br/>Effective.<br/>Done.</div>
+      <div style={{ height:2, background:'rgba(255,255,255,0.35)', width:50 }} />
+      <ABtn label="Get Started" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
+    </div>
+  );
+
+  // ── pastel-soft ──────────────────────────────────────────────────────────
+  if (id === 'pastel-soft') return (
+    <div style={{ ...wrap, background:'#fdf4ff', gap:8 }}>
+      <BM c="rgba(124,58,237,0.35)" />
+      <div style={{ position:'absolute', top:'10%', left:'15%', width:60, height:60, borderRadius:'50%', background:'#f0abfc44', zIndex:0 }} />
+      <div style={{ position:'absolute', bottom:'15%', right:'10%', width:48, height:48, borderRadius:'50%', background:'#a5f3fc44', zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:18, fontWeight:800, color:'#6b21a8', textAlign:'center', lineHeight:1.3 }}>Soft & Powerful.</div>
+        <div style={{ fontSize:7.5, color:'rgba(107,33,168,0.55)', textAlign:'center' }}>Gentle on the eyes. Heavy on results.</div>
+        <ABtn label="Explore" bg="#9333ea" />
+      </div>
+    </div>
+  );
+
+  // ── earth-tones ──────────────────────────────────────────────────────────
+  if (id === 'earth-tones') return (
+    <div style={{ ...wrap, background:'#faf7f2', gap:8 }}>
+      <BM c="rgba(120,80,40,0.35)" />
+      <div style={{ width:56, height:56, borderRadius:'50%', background:'linear-gradient(135deg,#d97706,#92400e)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 12px rgba(217,119,6,0.3)' }}>
+        <div style={{ fontSize:7, fontWeight:800, color:'#fef3c7', letterSpacing:'0.06em', textAlign:'center' }}>EARTH<br/>MADE</div>
+      </div>
+      <div style={{ fontSize:16, fontWeight:800, color:'#78350f', textAlign:'center', lineHeight:1.3, letterSpacing:'-0.01em' }}>Rooted in nature.</div>
+      <div style={{ fontSize:7.5, color:'rgba(120,53,15,0.55)', textAlign:'center' }}>Sustainable. Authentic. Real.</div>
+      <ABtn label="Shop Collection" bg="#92400e" />
+    </div>
+  );
+
+  // ── colour-cascade ───────────────────────────────────────────────────────
+  if (id === 'colour-cascade') return (
+    <div style={{ ...wrap, padding:0, gap:0 }}>
+      <BM c="rgba(255,255,255,0.5)" />
+      {[accent,'#818cf8','#06b6d4','#f1f5f9'].map((c,i) => (
+        <div key={i} style={{ flex:1, width:'100%', background:c, display:'flex', alignItems:'center', justifyContent:'center' }}>
+          {i===0 && <div style={{ fontSize:9, fontWeight:900, color:'#fff', letterSpacing:'0.06em', textTransform:'uppercase' }}>Cascade</div>}
+        </div>
+      ))}
+      <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center', zIndex:2 }}>
+        <ABtn label="Start the Flow" bg="rgba(255,255,255,0.15)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── colour-burst ─────────────────────────────────────────────────────────
+  if (id === 'colour-burst') return (
+    <div style={{ ...wrap, background:'#030712', gap:8 }}>
+      <BM />
+      <div style={{ position:'absolute', inset:0, background:`conic-gradient(from 0deg at 50% 50%, ${accent}22, #818cf822, #06b6d422, #f59e0b22, ${accent}22)`, zIndex:0 }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ width:64, height:64, borderRadius:'50%', background:`radial-gradient(circle, #fff 0%, ${accent} 50%, transparent 70%)`, opacity:0.9 }} />
+        <div style={{ fontSize:16, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.02em' }}>Burst onto the scene.</div>
+        <ABtn label="Ignite →" />
+      </div>
+    </div>
+  );
+
+  // ── retro-bold ───────────────────────────────────────────────────────────
+  if (id === 'retro-bold') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#fef3c7', gap:8 }}>
+      {photoLayer}
+      <BM c={hasPhoto ? 'rgba(255,255,255,0.4)' : 'rgba(30,41,59,0.35)'} />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ border:'3px solid', borderColor: hasPhoto ? '#fff' : '#1e293b', borderRadius:3, padding:'3px 12px', transform:'rotate(-2deg)', background: hasPhoto ? 'rgba(255,255,255,0.1)' : '#fff' }}>
+          <div style={{ fontSize:7.5, fontWeight:900, color: hasPhoto ? '#fff' : '#1e293b', letterSpacing:'0.1em', textTransform:'uppercase' }}>Est. 1994</div>
+        </div>
+        <div style={{ fontSize:18, fontWeight:900, color: hasPhoto ? '#fff' : '#1e293b', textAlign:'center', lineHeight:1.2, letterSpacing:'-0.01em' }}>Old School.<br/>New Results.</div>
+        <div style={{ height:3, background: hasPhoto ? '#fff' : '#1e293b', width:55 }} />
+        <ABtn label="Shop Now" bg={hasPhoto ? 'rgba(255,255,255,0.2)' : '#1e293b'} fg={hasPhoto ? '#fff' : '#fef3c7'} />
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 6 — PRODUCT VISUAL / PHOTO (14 templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── flat-lay ─────────────────────────────────────────────────────────────
+  if (id === 'flat-lay') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#f8f8f4' : '#f8fafc', padding:0, justifyContent:'flex-end' }}>
+      {photoLayer}
+      <BM c="rgba(30,41,59,0.35)" />
+      {!hasPhoto && (
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:6, padding:10, width:'100%' }}>
+          {['#e2e8f0','#cbd5e1',accent+'33','#dde1e7','#c7cdd6',accent+'22'].map((c,i) => (
+            <div key={i} style={{ height:32, borderRadius:4, background:c }} />
+          ))}
+        </div>
+      )}
+      <div style={{ width:'100%', background: hasPhoto ? 'rgba(255,255,255,0.92)' : '#fff', borderTop:'1px solid #e2e8f0', padding:'8px 12px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'relative', zIndex:2 }}>
+        <div>
+          <div style={{ fontSize:7.5, fontWeight:800, color:'#1e293b' }}>New Arrivals</div>
+          <div style={{ fontSize:6.5, color:'rgba(30,41,59,0.45)' }}>Shop the collection</div>
+        </div>
+        <ABtn label="Shop →" />
+      </div>
+    </div>
+  );
+
+  // ── app-mockup ───────────────────────────────────────────────────────────
+  if (id === 'app-mockup') return (
+    <div style={{ ...wrap, background:'#f8fafc', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ width:58, height:96, borderRadius:12, border:'2.5px solid #1e293b', background:'#fff', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.12)' }}>
+        <div style={{ height:10, background:'#1e293b', display:'flex', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ width:14, height:3, borderRadius:2, background:'rgba(255,255,255,0.3)' }} />
+        </div>
+        <div style={{ flex:1, padding:'6px 5px', display:'flex', flexDirection:'column', gap:4 }}>
+          <div style={{ height:6, background:`${accent}33`, borderRadius:2, width:'80%' }} />
+          <div style={{ height:4, background:'#e2e8f0', borderRadius:2, width:'60%' }} />
+          <div style={{ height:20, background:`${accent}18`, borderRadius:4, marginTop:2, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{ fontSize:5.5, fontWeight:700, color:accent }}>DASHBOARD</div>
+          </div>
+          <div style={{ height:3, background:'#e2e8f0', borderRadius:2, width:'70%' }} />
+          <div style={{ height:3, background:'#e2e8f0', borderRadius:2, width:'50%' }} />
+        </div>
+      </div>
+      <div style={{ fontSize:8, fontWeight:700, color:'#1e293b', textAlign:'center' }}>Download Free</div>
+      <ABtn label="Get the App" />
+    </div>
+  );
+
+  // ── photo-grid ───────────────────────────────────────────────────────────
+  if (id === 'photo-grid') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#1e293b', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      {!hasPhoto && (
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gridTemplateRows:'1fr 1fr', gap:2, width:'100%', height:'100%', position:'absolute', inset:0 }}>
+          {[accent+'55','rgba(255,255,255,0.1)',accent+'33','rgba(255,255,255,0.06)'].map((c,i) => (
+            <div key={i} style={{ background:c }} />
+          ))}
+        </div>
+      )}
+      <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.85) 100%)', zIndex:2 }} />
+      <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'10px 12px', zIndex:3 }}>
+        <div style={{ fontSize:10, fontWeight:800, color:'#fff', marginBottom:5, letterSpacing:'-0.01em' }}>The Collection</div>
+        <ABtn label="View All →" />
+      </div>
+    </div>
+  );
+
+  // ── video-thumbnail ──────────────────────────────────────────────────────
+  if (id === 'video-thumbnail') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#0a0a0a' }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ width:52, height:52, borderRadius:'50%', background:'rgba(255,255,255,0.18)', border:'2px solid rgba(255,255,255,0.5)', display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(4px)' }}>
+          <div style={{ fontSize:18, marginLeft:3 }}>▶</div>
+        </div>
+        <div style={{ fontSize:8, fontWeight:700, color:'#fff', textAlign:'center' }}>Watch Now</div>
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.5)' }}>3:47 · 24K views</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── collage-cutout ───────────────────────────────────────────────────────
+  if (id === 'collage-cutout') return (
+    <div style={{ ...wrap, background: hasPhoto ? 'rgba(248,250,252,0.95)' : '#f8fafc', padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(30,41,59,0.35)" />
+      {[{r:-8,l:'12%',t:'15%',w:55,h:45,c:accent},{r:6,l:'45%',t:'8%',w:45,h:55,c:'#818cf8'},{r:-3,l:'28%',t:'50%',w:60,h:40,c:'#06b6d4'}].map((p,i) => (
+        <div key={i} style={{ position:'absolute', left:p.l, top:p.t, width:p.w, height:p.h, borderRadius:4, background:p.c, opacity:0.7, transform:`rotate(${p.r}deg)`, zIndex:i+1 }} />
+      ))}
+      <div style={{ position:'absolute', bottom:10, left:0, right:0, display:'flex', justifyContent:'center', zIndex:10 }}>
+        <ABtn label="Explore Styles" />
+      </div>
+    </div>
+  );
+
+  // ── brand-awareness ──────────────────────────────────────────────────────
+  if (id === 'brand-awareness') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#0f1117' }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.38)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ fontSize:28, fontWeight:900, color:'#fff', letterSpacing:'-0.03em', textShadow:'0 2px 20px rgba(0,0,0,0.5)' }}>BRAND</div>
+        <div style={{ height:2, background:accent, width:50, borderRadius:1 }} />
+        <div style={{ fontSize:8, fontWeight:400, color:'rgba(255,255,255,0.7)', textAlign:'center', letterSpacing:'0.1em', textTransform:'uppercase' }}>Made for those who dare</div>
+      </div>
+    </div>
+  );
+
+  // ── full-bleed ───────────────────────────────────────────────────────────
+  if (id === 'full-bleed') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(135deg,${accent},${accent}cc)`, gap:7 }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.22)' }} />}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'relative', zIndex:2, display:'flex', flexDirection:'column', alignItems:'center', gap:7 }}>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.65)', letterSpacing:'0.12em', textTransform:'uppercase', fontWeight:600 }}>Your Brand</div>
+        <div style={{ fontSize:22, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.1, letterSpacing:'-0.03em' }}>Stop Scrolling.</div>
+        <div style={{ fontSize:8, color:'rgba(255,255,255,0.7)', textAlign:'center' }}>This changes everything.</div>
+        <ABtn label="Learn More →" bg="rgba(255,255,255,0.18)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── overlay-card ─────────────────────────────────────────────────────────
+  if (id === 'overlay-card') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(180deg,${accent}55,${accent}cc)`, justifyContent:'flex-end', padding:0 }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position:'absolute', top:0, left:0, right:0, height:'60%', background:`${accent}33` }} />}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ width:'100%', background:'rgba(255,255,255,0.1)', backdropFilter:'blur(10px)', borderTop:'1px solid rgba(255,255,255,0.18)', padding:'10px 12px', display:'flex', flexDirection:'column', gap:5, position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:10, fontWeight:800, color:'#fff', letterSpacing:'-0.01em' }}>Ready to transform?</div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.65)' }}>Thousands are already inside.</div>
+        <ABtn label="Get Access Now" bg="#fff" fg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── story-hook ───────────────────────────────────────────────────────────
+  if (id === 'story-hook') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#0f1117' : '#0f1117', alignItems:'flex-start', gap:8 }}>
+      {photoLayer}
+      <BM />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:8 })}>
+        <div style={{ fontSize:7.5, color:accent, fontWeight:700 }}>A true story →</div>
+        <div style={{ fontSize:14, fontWeight:900, color:'#f1f5f9', letterSpacing:'-0.02em', lineHeight:1.25 }}>"I made $0 for 3 years. Then one shift changed everything."</div>
+        <div style={{ fontSize:7, color:'rgba(241,245,249,0.45)' }}>Read the full story below.</div>
+        <ABtn label="Read Story" />
+      </div>
+    </div>
+  );
+
+  // ── magazine-editorial ───────────────────────────────────────────────────
+  if (id === 'magazine-editorial') return (
+    <div style={{ ...wrap, background: hasPhoto ? 'rgba(255,255,255,0.9)' : '#fff', alignItems:'flex-start', gap:7 }}>
+      {photoLayer}
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:7, width:'100%' })}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, width:'100%' }}>
+          <div style={{ fontSize:6.5, color:'#94a3b8', letterSpacing:'0.12em', textTransform:'uppercase', fontWeight:600 }}>Issue 12</div>
+          <div style={{ flex:1, height:1, background:'#e2e8f0' }} />
+        </div>
+        <div style={{ fontSize:14, fontWeight:800, color:'#1e293b', letterSpacing:'-0.02em', lineHeight:1.25 }}>The future of content marketing</div>
+        <div style={{ fontSize:7.5, color:'#64748b', lineHeight:1.4 }}>5 trends reshaping how brands speak.</div>
+        <div style={{ height:1, background:'#e2e8f0', width:'100%' }} />
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', width:'100%' }}>
+          <div style={{ fontSize:7, color:'#94a3b8' }}>Read the full story →</div>
+          <ABtn label="Subscribe" />
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── product-center ───────────────────────────────────────────────────────
+  if (id === 'product-center') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#f8fafc', gap:8 }}>
+      {photoLayer}
+      <BM c={hasPhoto ? 'rgba(255,255,255,0.4)' : 'rgba(30,41,59,0.35)'} />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ width:56, height:56, borderRadius:14, background:`linear-gradient(135deg,${accent},#818cf8)`, display:'flex', alignItems:'center', justifyContent:'center', boxShadow:`0 8px 24px ${accent}44` }}>
+          <div style={{ width:22, height:22, borderRadius:6, background:'rgba(255,255,255,0.3)' }} />
+        </div>
+        <div style={{ fontSize:12, fontWeight:800, color: hasPhoto ? '#fff' : '#1e293b', textAlign:'center', letterSpacing:'-0.01em' }}>Power up your workflow</div>
+        <div style={{ display:'flex', gap:10 }}>
+          {['Fast','Smart','Safe'].map(f => <div key={f} style={{ fontSize:7, color: hasPhoto ? 'rgba(255,255,255,0.65)' : '#64748b', fontWeight:600 }}>{f}</div>)}
+        </div>
+        <ABtn label="Try Free" />
+      </div>
+    </div>
+  );
+
+  // ── dark-luxury ──────────────────────────────────────────────────────────
+  if (id === 'dark-luxury') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#090909' : '#090909', gap:8 }}>
+      {photoLayer}
+      <BM c="rgba(212,175,55,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ height:1, background:'#d4af37', width:55, opacity:0.65 }} />
+        <div style={{ fontSize:7, color:'#d4af37', letterSpacing:'0.22em', fontWeight:600, textTransform:'uppercase' }}>Exclusively Yours</div>
+        <div style={{ fontSize:18, fontWeight:300, color:'#f1f5f9', textAlign:'center', letterSpacing:'0.06em', lineHeight:1.3 }}>Luxury redefined.</div>
+        <div style={{ height:1, background:'#d4af37', width:55, opacity:0.65 }} />
+        <ABtn label="Explore" bg="transparent" fg="#d4af37" pill />
+      </div>
+    </div>
+  );
+
+  // ── neon-dark ────────────────────────────────────────────────────────────
+  if (id === 'neon-dark') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#030712' : '#030712', gap:7 }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position:'absolute', top:'25%', left:'50%', transform:'translate(-50%,-50%)', width:110, height:110, borderRadius:'50%', background:`${accent}18`, filter:'blur(30px)', zIndex:0 }} />}
+      <BM c="rgba(255,255,255,0.35)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ fontSize:7, color:accent, letterSpacing:'0.15em', fontWeight:700, textTransform:'uppercase' }}>Next level</div>
+        <div style={{ fontSize:22, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.03em', textShadow:`0 0 25px ${accent}88` }}>GLOW UP</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.4)', textAlign:'center' }}>Your brand, amplified.</div>
+        <ABtn label="Get Access" />
+      </div>
+    </div>
+  );
+
+  // ── founder-story ────────────────────────────────────────────────────────
+  if (id === 'founder-story') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#111' : '#1e293b', alignItems:'flex-start', gap:7 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.38)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'flex-start', gap:7, width:'100%' })}>
+        <div style={{ display:'flex', alignItems:'center', gap:7 }}>
+          <div style={{ width:28, height:28, borderRadius:'50%', background:`linear-gradient(135deg,${accent},#818cf8)`, border:'2px solid rgba(255,255,255,0.25)', flexShrink:0 }} />
+          <div>
+            <div style={{ fontSize:7, fontWeight:700, color:'#fff' }}>Alex Chen, Founder</div>
+            <div style={{ fontSize:6, color:'rgba(255,255,255,0.45)' }}>CEO & Co-Founder</div>
+          </div>
+        </div>
+        <div style={{ fontSize:9, fontWeight:600, color:'rgba(255,255,255,0.85)', lineHeight:1.45, fontStyle:'italic' }}>"I built this because I was tired of tools that overpromised and underdelivered."</div>
+        <div style={{ height:1, background:accent, width:40, opacity:0.7 }} />
+        <ABtn label="Read Our Story" />
+      </div>
+    </div>
+  );
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // BATCH 7 — CAMPAIGN FORMATS + MISC + FALLBACK (remaining templates)
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── versus-slide ─────────────────────────────────────────────────────────
   if (id === 'versus-slide') return (
-    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
-      <div style={{ flex: 1, height: '100%', background: '#1e293b', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
-        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Without</T>
-        {['Wasted time','Guessing game','No system','Stuck forever'].map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Cross /><T s={7} color="rgba(255,255,255,0.55)">{item}</T></div>
+    <div style={{ ...wrap, padding:0, gap:0, flexDirection:'row' }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ flex:1, height:'100%', background:'#1e293b', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10 }}>
+        <div style={{ fontSize:7, fontWeight:700, color:'rgba(241,245,249,0.4)', letterSpacing:'0.06em' }}>OTHERS</div>
+        {['Slow setup','Per-seat cost','No support'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:3 }}>
+            <div style={{ fontSize:8, color:'#ef4444' }}>✗</div>
+            <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.45)' }}>{t}</div>
+          </div>
         ))}
       </div>
-      <div style={{ width: 26, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <T s={7} color={accent} weight={900} align="center">VS</T>
+      <div style={{ width:32, background:'#0f1117', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2 }}>
+        <div style={{ fontSize:8, fontWeight:900, color:'rgba(241,245,249,0.5)' }}>VS</div>
       </div>
-      <div style={{ flex: 1, height: '100%', background: `${accent}18`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
-        <T s={7} color={accent} caps spacing="0.1em">With Us</T>
-        {['Clear roadmap','Proven system','Fast results','Real growth'].map((item, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check color={accent} /><T s={7} color="#1e293b">{item}</T></div>
+      <div style={{ flex:1, height:'100%', background:`${accent}18`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10 }}>
+        <div style={{ fontSize:7, fontWeight:700, color:accent, letterSpacing:'0.06em' }}>BRAND</div>
+        {['Instant launch','Flat rate','24/7 help'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:3 }}>
+            <div style={{ fontSize:8, color:'#22c55e' }}>✓</div>
+            <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.8)', fontWeight:600 }}>{t}</div>
+          </div>
         ))}
       </div>
     </div>
   );
 
-  // ── before-after-slide ──────────────────────────────────────────────────────
-  if (id === 'before-after-slide') return (
-    <div style={{ ...wrap, padding: 0, gap: 0, justifyContent: 'stretch' }}>
-      <div style={{ flex: 1, background: 'linear-gradient(135deg,#1e293b,#334155)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, padding: 12 }}>
-        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Before</T>
-        <T s={10} color="rgba(255,255,255,0.75)" weight={600}>Struggling. No clear path. Trying everything.</T>
-      </div>
-      <div style={{ height: 28, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <T s={10} color="#fff" weight={900} align="center">↓ THE SHIFT ↓</T>
-      </div>
-      <div style={{ flex: 1, background: `${accent}20`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, padding: 12 }}>
-        <T s={7} color={accent} caps spacing="0.1em">After</T>
-        <T s={10} color="#1e293b" weight={600}>Confident. On track. Seeing real results daily.</T>
-      </div>
-    </div>
-  );
-
-  // ── press-slide ─────────────────────────────────────────────────────────────
-  if (id === 'press-slide') return (
-    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.12em">As Seen In</T>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-        {['Forbes','TechCrunch','Inc.','Wired'].map(pub => (
-          <T key={pub} s={8} color="#64748b" weight={800} align="center">{pub}</T>
-        ))}
-      </div>
-      <div style={{ height: 1, background: '#e2e8f0', width: '80%' }} />
-      <T s={9} color="#1e293b" weight={600} align="center">"A game-changer for the entire industry."</T>
-      <T s={7} color="#94a3b8" align="center">— Forbes, Jan 2025</T>
-      <Btn label="Read Coverage" bg={accent} />
-    </div>
-  );
-
-  // ── point-out-slide ─────────────────────────────────────────────────────────
+  // ── point-out-slide ──────────────────────────────────────────────────────
   if (id === 'point-out-slide') return (
-    <div style={{ ...wrap, background: '#fff', gap: 0, padding: 10 }}>
-      <T s={9} color="#1e293b" weight={800} align="center" spacing="-0.02em">Every detail matters</T>
-      <div style={{ position: 'relative', width: '100%', flex: 1, marginTop: 6 }}>
-        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: 8, background: `${accent}18`, border: `2px solid ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <T s={22} color={accent} align="center">✦</T>
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ position:'relative', border:`2px solid ${accent}`, borderRadius:8, padding:'8px 12px', background:`${accent}08` }}>
+        <div style={{ fontSize:8.5, fontWeight:800, color:'#1e293b' }}>This is the key feature.</div>
+        <div style={{ position:'absolute', top:-22, right:12 }}>
+          <div style={{ fontSize:9, color:accent }}>↓</div>
         </div>
-        {[['← Feature 1','8%','8%'],['← Feature 2','68%','8%'],['← Feature 3','8%','68%']].map(([label, l, t]) => (
-          <div key={label} style={{ position: 'absolute', left: l, top: t, background: '#fff', border: `1px solid ${accent}33`, borderRadius: 4, padding: '2px 6px', fontSize: 6, fontWeight: 700, color: '#374151', whiteSpace: 'nowrap', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-            {label}
-          </div>
-        ))}
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+        <div style={{ fontSize:9, color:accent }}>←</div>
+        <div style={{ fontSize:7, color:accent, fontWeight:700 }}>Pay attention here</div>
+      </div>
+      <div style={{ fontSize:7, color:'rgba(30,41,59,0.5)', textAlign:'center', lineHeight:1.4 }}>Most people overlook this. Don't be most people.</div>
+      <ABtn label="See the Detail →" />
+    </div>
+  );
+
+  // ── hot-take ─────────────────────────────────────────────────────────────
+  if (id === 'hot-take') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#0a0a0a' : '#0a0a0f', gap:8 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:8 })}>
+        <div style={{ fontSize:24 }}>🔥</div>
+        <div style={{ fontSize:11, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.3, letterSpacing:'-0.02em' }}>"Most marketing advice is completely wrong."</div>
+        <div style={{ display:'flex', gap:8 }}>
+          {[['❤️','4.2K'],['🔁','892'],['💬','341']].map(([icon,count],i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:3 }}>
+              <div style={{ fontSize:9 }}>{icon}</div>
+              <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.55)', fontWeight:600 }}>{count}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
 
-  // ── gallery-slide ───────────────────────────────────────────────────────────
+  // ── leaderboard ──────────────────────────────────────────────────────────
+  if (id === 'leaderboard') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ fontSize:7, color:accent, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>Top Performers</div>
+      <div style={{ display:'flex', flexDirection:'column', gap:5, width:'100%' }}>
+        {[['🥇','BRAND','$48K'],['🥈','Rival A','$31K'],['🥉','Rival B','$19K']].map(([medal,name,rev],i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:6, background: i===0 ? `${accent}18` : 'rgba(241,245,249,0.04)', borderRadius:5, padding:'4px 8px', border: i===0 ? `1px solid ${accent}33` : 'none' }}>
+            <div style={{ fontSize:11 }}>{medal}</div>
+            <div style={{ flex:1, fontSize:7.5, fontWeight: i===0 ? 800 : 500, color: i===0 ? '#f1f5f9' : 'rgba(241,245,249,0.5)' }}>{name}</div>
+            <div style={{ fontSize:7, fontWeight:700, color: i===0 ? accent : 'rgba(241,245,249,0.4)' }}>{rev}</div>
+          </div>
+        ))}
+      </div>
+      <ABtn label="See Full Rankings" />
+    </div>
+  );
+
+  // ── gallery-slide ────────────────────────────────────────────────────────
   if (id === 'gallery-slide') return (
-    <div style={{ ...wrap, padding: 0, gap: 0, background: '#0f1117' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, flex: 1, width: '100%' }}>
-        {[`${accent}55`, `${accent}33`, `${accent}66`, `${accent}44`].map((bg, i) => (
-          <div key={i} style={{ background: bg, display: 'flex', alignItems: 'flex-end', padding: 5 }}>
-            <T s={6} color="rgba(255,255,255,0.75)" weight={600}>Look {i + 1}</T>
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:8, fontWeight:800, color:'#1e293b' }}>Browse Collection</div>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:4, width:'100%' }}>
+        {[accent,`${accent}88`,`${accent}55`,'#818cf8','#06b6d4',`#818cf888`].map((c,i) => (
+          <div key={i} style={{ height:38, borderRadius:4, background:c, opacity: i>3?0.6:1 }} />
+        ))}
+      </div>
+      <ABtn label="View All Photos →" />
+    </div>
+  );
+
+  // ── event-card ───────────────────────────────────────────────────────────
+  if (id === 'event-card') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : '#0f172a', gap:7 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.38)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ background:`${accent}22`, border:`1px solid ${accent}44`, borderRadius:20, padding:'2px 10px' }}>
+          <div style={{ fontSize:6.5, fontWeight:700, color:accent, letterSpacing:'0.08em' }}>LIVE EVENT</div>
+        </div>
+        <div style={{ fontSize:14, fontWeight:900, color:'#f1f5f9', textAlign:'center', lineHeight:1.2, letterSpacing:'-0.02em' }}>The Marketing Summit 2024</div>
+        <div style={{ display:'flex', gap:10 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:8 }}>📅</div>
+            <div style={{ fontSize:7, color:'rgba(241,245,249,0.65)' }}>Nov 14, 2024</div>
+          </div>
+          <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:8 }}>📍</div>
+            <div style={{ fontSize:7, color:'rgba(241,245,249,0.65)' }}>New York City</div>
+          </div>
+        </div>
+        <ABtn label="Register Now →" pill />
+      </div>
+    </div>
+  );
+
+  // ── color-block ───────────────────────────────────────────────────────────
+  if (id === 'color-block') return (
+    <div style={{ ...wrap, padding:0, gap:0, flexDirection:'row' }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ flex:1, height:'100%', background:accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ fontSize:24, fontWeight:900, color:'#fff', letterSpacing:'-0.03em' }}>BOLD.</div>
+      </div>
+      <div style={{ flex:1, height:'100%', background:'#f8fafc', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6, padding:10 }}>
+        <div style={{ fontSize:8, fontWeight:700, color:'#1e293b', textAlign:'center' }}>Stand out from the crowd</div>
+        <ABtn label="Shop Now" />
+      </div>
+    </div>
+  );
+
+  // ── floating-card ─────────────────────────────────────────────────────────
+  if (id === 'floating-card') return (
+    <div style={{ ...wrap, background:`linear-gradient(135deg,${accent}33,#818cf844)` }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ background:'rgba(255,255,255,0.1)', backdropFilter:'blur(12px)', border:'1px solid rgba(255,255,255,0.2)', borderRadius:14, padding:'12px 16px', display:'flex', flexDirection:'column', gap:7, width:'86%', alignItems:'center' }}>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.6)', letterSpacing:'0.1em', textTransform:'uppercase' }}>Introducing</div>
+        <div style={{ fontSize:14, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.02em', lineHeight:1.2 }}>Something new is here.</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.55)', textAlign:'center' }}>Crafted with care.</div>
+        <ABtn label="Discover" bg="rgba(255,255,255,0.2)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── side-by-side ─────────────────────────────────────────────────────────
+  if (id === 'side-by-side') return (
+    <div style={{ ...wrap, flexDirection:'row', padding:0, gap:0 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ flex:1, height:'100%', background:'rgba(239,68,68,0.06)', borderRight:'1px solid rgba(239,68,68,0.15)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10 }}>
+        <div style={{ fontSize:7, fontWeight:800, color:'#ef4444', letterSpacing:'0.06em', textTransform:'uppercase' }}>Before</div>
+        {['Slow','Costly','Stressful'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:9, color:'#ef4444' }}>✗</div>
+            <div style={{ fontSize:7, color:'rgba(30,41,59,0.55)' }}>{t}</div>
           </div>
         ))}
       </div>
-      <div style={{ padding: '8px 10px', width: '100%', background: '#0f1117' }}>
-        <T s={9} color="#f1f5f9" weight={700}>Shop the collection →</T>
+      <div style={{ flex:1, height:'100%', background:`${accent}08`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:5, padding:10 }}>
+        <div style={{ fontSize:7, fontWeight:800, color:accent, letterSpacing:'0.06em', textTransform:'uppercase' }}>After</div>
+        {['10x faster','Half cost','Effortless'].map((t,i) => (
+          <div key={i} style={{ display:'flex', alignItems:'center', gap:4 }}>
+            <div style={{ fontSize:9, color:'#22c55e' }}>✓</div>
+            <div style={{ fontSize:7, color:'rgba(30,41,59,0.7)', fontWeight:600 }}>{t}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
 
-  // ── chat-native ─────────────────────────────────────────────────────────────
-  if (id === 'chat-native') return (
-    <div style={{ ...wrap, background: '#f9fafb', alignItems: 'flex-start', gap: 8, padding: 12 }}>
-      <T s={7} color="#94a3b8" align="center" caps spacing="0.06em">Messages</T>
-      <div style={{ alignSelf: 'flex-start', background: '#e5e7eb', borderRadius: '12px 12px 12px 2px', padding: '6px 10px', maxWidth: '70%' }}>
-        <T s={8} color="#1f2937">"How do I get started?"</T>
-      </div>
-      <div style={{ alignSelf: 'flex-end', background: '#1d9bf0', borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '70%' }}>
-        <T s={8} color="#fff">"Just click the link below 👇"</T>
-      </div>
-      <div style={{ alignSelf: 'flex-end', background: accent, borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '80%' }}>
-        <T s={8} color="#fff">"We set everything up for you."</T>
+  // ── diagonal-split ───────────────────────────────────────────────────────
+  if (id === 'diagonal-split') return (
+    <div style={{ ...wrap, padding:0, overflow:'hidden' }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ position:'absolute', inset:0, background:'#0f1117' }} />
+      <div style={{ position:'absolute', inset:0, background:accent, clipPath:'polygon(0 0, 55% 0, 45% 100%, 0 100%)' }} />
+      <div style={{ position:'relative', zIndex:1, display:'flex', flexDirection:'row', width:'100%', height:'100%', alignItems:'center' }}>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+          <div style={{ fontSize:8, fontWeight:900, color:'#fff' }}>BEFORE</div>
+          <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.6)' }}>Struggling</div>
+        </div>
+        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+          <div style={{ fontSize:8, fontWeight:900, color:'rgba(241,245,249,0.9)' }}>AFTER</div>
+          <div style={{ fontSize:6.5, color:'rgba(241,245,249,0.55)' }}>Thriving</div>
+        </div>
       </div>
     </div>
   );
 
-  // ── offer-drop ──────────────────────────────────────────────────────────────
-  if (id === 'offer-drop') return (
-    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
-      <div style={{ background: `${accent}18`, border: `1px solid ${accent}44`, borderRadius: 20, padding: '2px 10px' }}>
-        <T s={7} color={accent} caps spacing="0.1em">⚡ Flash Drop</T>
-      </div>
-      <div style={{ width: 92, height: 92, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, boxShadow: `0 0 30px ${accent}33` }}>
-        <T s={8} color={muted} align="center" caps spacing="0.06em">Save</T>
-        <T s={24} color={accent} weight={900} align="center" spacing="-0.04em">40%</T>
-        <T s={7} color={muted} align="center">Today only</T>
-      </div>
-      <Btn label="Claim Offer" bg={accent} />
+  // ── text-only-bold ───────────────────────────────────────────────────────
+  if (id === 'text-only-bold') return (
+    <div style={{ ...wrap, background:accent, gap:7 }}>
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ fontSize:22, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.1, letterSpacing:'-0.04em' }}>We need to talk.</div>
+      <div style={{ fontSize:8.5, color:'rgba(255,255,255,0.7)', textAlign:'center' }}>About what you've been missing.</div>
+      <ABtn label="Keep Reading" bg="rgba(255,255,255,0.18)" fg="#fff" pill />
     </div>
   );
 
-  // fallback for any unmapped id
+  // ── bright-minimal ───────────────────────────────────────────────────────
+  if (id === 'bright-minimal') return (
+    <div style={{ ...wrap, background:'#fff', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ width:44, height:44, borderRadius:'50%', border:`2px solid ${accent}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ width:18, height:18, borderRadius:'50%', background:accent }} />
+      </div>
+      <div style={{ fontSize:16, fontWeight:700, color:'#1e293b', textAlign:'center', letterSpacing:'-0.02em' }}>Simply better.</div>
+      <div style={{ fontSize:8, color:'rgba(30,41,59,0.4)', textAlign:'center' }}>No fluff. Just results.</div>
+      <ABtn label="Try Now" />
+    </div>
+  );
+
+  // ── product-demo ─────────────────────────────────────────────────────────
+  if (id === 'product-demo') return (
+    <div style={{ ...wrap, background:'#f8fafc', gap:8 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ width:'85%', background:'#1e293b', borderRadius:8, overflow:'hidden', boxShadow:'0 4px 16px rgba(0,0,0,0.12)' }}>
+        <div style={{ background:'#334155', padding:'4px 8px', display:'flex', gap:4, alignItems:'center' }}>
+          {['#ef4444','#fbbf24','#22c55e'].map(c => <div key={c} style={{ width:6, height:6, borderRadius:'50%', background:c }} />)}
+        </div>
+        <div style={{ padding:'8px 10px', display:'flex', flexDirection:'column', gap:3 }}>
+          <div style={{ height:4, background:`${accent}55`, borderRadius:2, width:'82%' }} />
+          <div style={{ height:3, background:'rgba(255,255,255,0.1)', borderRadius:2, width:'60%' }} />
+          <div style={{ height:3, background:'rgba(255,255,255,0.08)', borderRadius:2, width:'72%', marginTop:3 }} />
+        </div>
+      </div>
+      <div style={{ fontSize:9, fontWeight:700, color:'#1e293b', textAlign:'center' }}>See it in action</div>
+      <ABtn label="Watch Demo" />
+    </div>
+  );
+
+  // ── news-frame ────────────────────────────────────────────────────────────
+  if (id === 'news-frame') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#fff' : '#fff', alignItems:'flex-start', gap:0, padding:0 }}>
+      {photoLayer}
+      <BM c="rgba(30,41,59,0.35)" />
+      <div style={{ width:'100%', background:'#1e293b', padding:'5px 12px', display:'flex', alignItems:'center', gap:6 }}>
+        <div style={{ fontSize:7, fontWeight:800, color:'#ef4444', letterSpacing:'0.08em', textTransform:'uppercase' }}>Breaking</div>
+        <div style={{ width:1, height:10, background:'rgba(255,255,255,0.2)' }} />
+        <div style={{ fontSize:6.5, color:'rgba(255,255,255,0.6)' }}>Ad Weekly · Sponsored</div>
+      </div>
+      <div style={{ padding:'10px 12px', display:'flex', flexDirection:'column', gap:6, flex:1 }}>
+        <div style={{ fontSize:12, fontWeight:800, color:'#1e293b', lineHeight:1.3, letterSpacing:'-0.01em' }}>New Study: Video Ads Drive 3x More Conversions in 2024</div>
+        <div style={{ fontSize:7, color:'#64748b', lineHeight:1.5 }}>Researchers confirm what top brands already knew. Here's how to act on it.</div>
+      </div>
+      <div style={{ width:'100%', padding:'8px 12px', borderTop:'1px solid #e2e8f0', display:'flex', justifyContent:'flex-end' }}>
+        <ABtn label="Read Study →" />
+      </div>
+    </div>
+  );
+
+  // ── photo-reveal ─────────────────────────────────────────────────────────
+  if (id === 'photo-reveal') return (
+    <div style={{ ...wrap, background: hasPhoto ? '#000' : `linear-gradient(135deg,${accent}cc,#1e1b4b)` }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={pz({ display:'flex', flexDirection:'column', alignItems:'center', gap:7 })}>
+        <div style={{ fontSize:20, fontWeight:900, color:'#fff', textAlign:'center', lineHeight:1.15, letterSpacing:'-0.02em' }}>The reveal<br/>is worth it.</div>
+        <div style={{ fontSize:7.5, color:'rgba(255,255,255,0.65)', textAlign:'center' }}>Swipe to see the full picture.</div>
+        <ABtn label="Reveal →" bg="rgba(255,255,255,0.18)" fg="#fff" pill />
+      </div>
+    </div>
+  );
+
+  // ── split-panel ─────────────────────────────────────────────────────────
+  if (id === 'split-panel') return (
+    <div style={{ ...wrap, flexDirection:'row', padding:0, gap:0 }}>
+      {photoLayer}
+      <BM c="rgba(255,255,255,0.4)" />
+      <div style={{ flex:1, height:'100%', background: hasPhoto ? 'rgba(0,0,0,0.65)' : accent, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:10, position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:14, fontWeight:900, color:'#fff', textAlign:'center', letterSpacing:'-0.02em' }}>THE OFFER</div>
+        <div style={{ fontSize:7, color:'rgba(255,255,255,0.65)', marginTop:4, textAlign:'center' }}>Save 50% today</div>
+      </div>
+      <div style={{ flex:1, height:'100%', background: hasPhoto ? 'rgba(255,255,255,0.08)' : bg, display:'flex', flexDirection:'column', alignItems:'flex-start', justifyContent:'center', padding:10, gap:6, position:'relative', zIndex:2 }}>
+        <div style={{ fontSize:8, fontWeight:700, color: hasPhoto ? '#fff' : txt }}>Limited deal</div>
+        <div style={{ height:1.5, background: hasPhoto ? 'rgba(255,255,255,0.25)' : muted, width:50 }} />
+        <div style={{ fontSize:7, color: hasPhoto ? 'rgba(255,255,255,0.55)' : muted }}>Ends midnight</div>
+        <ABtn label="Claim →" />
+      </div>
+    </div>
+  );
+
+  // ── bold-headline ────────────────────────────────────────────────────────
+  if (id === 'bold-headline') return (
+    <div style={{ ...wrap, background:'#0f1117', gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ fontSize:7, color:accent, letterSpacing:'0.15em', fontWeight:700, textTransform:'uppercase' }}>Breaking</div>
+      <div style={{ fontSize:22, fontWeight:900, color:'#f1f5f9', textAlign:'center', lineHeight:1.05, letterSpacing:'-0.04em', textTransform:'uppercase' }}>THE TRUTH</div>
+      <div style={{ fontSize:8, color:'rgba(241,245,249,0.45)', textAlign:'center' }}>Most people get this wrong.</div>
+      <ABtn label="Find Out Why" />
+    </div>
+  );
+
+  // ── minimal ──────────────────────────────────────────────────────────────
+  if (id === 'minimal') return (
+    <div style={{ ...wrap, background:'#fff', gap:10 }}>
+      <BM c="rgba(30,41,59,0.3)" />
+      <Stripe />
+      <div style={{ height:1, background:'#1e293b', width:70, opacity:0.1 }} />
+      <div style={{ fontSize:17, fontWeight:700, color:'#1e293b', textAlign:'center', letterSpacing:'-0.02em', lineHeight:1.3 }}>Less noise.<br/>More signal.</div>
+      <div style={{ height:1, background:'#1e293b', width:70, opacity:0.1 }} />
+      <div style={{ fontSize:7.5, color:'rgba(30,41,59,0.4)', textAlign:'center' }}>Simple. Effective. Yours.</div>
+      <ABtn label="Get Started" bg="#1e293b" fg="#fff" />
+    </div>
+  );
+
+  // ── feature-list ─────────────────────────────────────────────────────────
+  if (id === 'feature-list') return (
+    <div style={{ ...wrap, background:'#f8fafc', alignItems:'flex-start', gap:7 }}>
+      <BM c="rgba(30,41,59,0.35)" />
+      <Stripe />
+      <div style={{ fontSize:10, fontWeight:800, color:'#1e293b', letterSpacing:'-0.01em' }}>Everything you need</div>
+      {['AI-powered copy','Instant exports','30-day guarantee'].map((t,i) => (
+        <div key={i} style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <div style={{ width:14, height:14, borderRadius:3, background:`${accent}18`, border:`1.5px solid ${accent}`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+            <div style={{ fontSize:7.5, color:accent, fontWeight:800 }}>✓</div>
+          </div>
+          <div style={{ fontSize:7.5, color:'#475569', fontWeight:500 }}>{t}</div>
+        </div>
+      ))}
+      <ABtn label="Start Free Trial" />
+    </div>
+  );
+
+  // ── stat-study (already done above, skip duplicate) — handled above ───────
+
+  // ── brand-manifesto (already done above) — handled above ──────────────────
+
+  // fallback for any remaining unmapped id
   return (
-    <div style={{ ...wrap, gap: 8 }}>
-      <T s={12} color={txt} weight={800} align="center" spacing="-0.02em">Ad Template</T>
-      <Bar w={60} color={accent} h={3} />
-      <Btn label="Use Template" bg={accent} />
+    <div style={{ ...wrap, background:bg, gap:8 }}>
+      <BM />
+      <Stripe />
+      <div style={{ width:50, height:50, borderRadius:'50%', border:`2px solid ${accent}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div style={{ width:24, height:24, borderRadius:'50%', background:accent, opacity:0.6 }} />
+      </div>
+      <div style={{ fontSize:11, fontWeight:800, color:txt, textAlign:'center', letterSpacing:'-0.02em' }}>Ad Creative</div>
+      <div style={{ fontSize:7, color:muted, textAlign:'center' }}>Display-ready template</div>
+      <ABtn label="Use Template" />
     </div>
   );
 }
+
 
 function CarouselSlidePreview({ id, tone }: { id: string; tone: string }) {
   const [paused, setPaused] = useState(false);
