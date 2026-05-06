@@ -21,15 +21,15 @@ type Cat = 'square' | 'wide' | 'tall' | 'rect' | 'strip' | 'sky';
 const ARCHETYPES: { id: AID; label: string; icon: string; t: Theme }[] = [
   {
     id: 'product-drop', label: 'Product Drop', icon: '📦',
-    t: { bg:'#f0f4ff', fg:'#1e1b4b', accent:'#4f46e5', muted:'#818cf8', ctaBg:'#4f46e5', ctaFg:'#fff' },
+    t: { bg:'#f8f9ff', fg:'#1e1b4b', accent:'#4f46e5', muted:'#a5b4fc', ctaBg:'#4f46e5', ctaFg:'#fff' },
   },
   {
     id: 'bold-type', label: 'Bold Type', icon: '✦',
-    t: { bg:'#09090b', fg:'#fafafa', accent:'#a3e635', muted:'rgba(250,250,250,0.4)', ctaBg:'#a3e635', ctaFg:'#09090b' },
+    t: { bg:'#09090b', fg:'#fafafa', accent:'#a3e635', muted:'rgba(250,250,250,0.35)', ctaBg:'#a3e635', ctaFg:'#09090b' },
   },
   {
     id: 'offer-flash', label: 'Offer Flash', icon: '⚡',
-    t: { bg:'#0c0500', fg:'#fff', accent:'#f97316', muted:'rgba(255,255,255,0.5)', ctaBg:'#f97316', ctaFg:'#fff' },
+    t: { bg:'#0c0500', fg:'#fff', accent:'#f97316', muted:'rgba(255,255,255,0.45)', ctaBg:'#f97316', ctaFg:'#fff' },
   },
   {
     id: 'photo-overlay', label: 'Photo Overlay', icon: '🌆',
@@ -44,8 +44,9 @@ const ARCHETYPES: { id: AID; label: string; icon: string; t: Theme }[] = [
     t: { bg:'#fffbf0', fg:'#1c1917', accent:'#d97706', muted:'#78716c', ctaBg:'#d97706', ctaFg:'#fff' },
   },
   {
+    // Differentiated from product-drop: emerald on dark navy
     id: 'stat-bomb', label: 'Stat Bomb', icon: '📊',
-    t: { bg:'#fff', fg:'#0f172a', accent:'#4f46e5', muted:'#94a3b8', ctaBg:'#4f46e5', ctaFg:'#fff' },
+    t: { bg:'#020c14', fg:'#f0fdf4', accent:'#22c55e', muted:'rgba(240,253,244,0.35)', ctaBg:'#22c55e', ctaFg:'#020c14' },
   },
   {
     id: 'dark-minimal', label: 'Dark Minimal', icon: '◼',
@@ -97,14 +98,6 @@ function Btn({ label, t, dw, full }: { label: string; t: Theme; dw: number; full
   );
 }
 
-function Stars({ dw, color }: { dw: number; color: string }) {
-  return (
-    <div style={{ ...R, gap: sc(1, dw) }}>
-      {[0,1,2,3,4].map(i => <span key={i} style={{ fontSize: sc(9, dw), color, lineHeight: 1 }}>★</span>)}
-    </div>
-  );
-}
-
 // ─── Per-archetype render engine ──────────────────────────────────────────────
 
 function renderContent(
@@ -114,66 +107,86 @@ function renderContent(
   const p   = sc(10, dw);
   const gap = sc(6, dw);
 
-  // Column wrapper — most archetypes use this for square/tall/rect
-  const col = (children: React.ReactNode) => (
-    <div style={{ ...ABS, ...C, padding: p, gap, background: t.bg }}>{children}</div>
+  /** Column wrapper — most archetypes share this for square / tall / rect */
+  const col = (children: React.ReactNode, extra?: React.CSSProperties) => (
+    <div style={{ ...ABS, ...C, padding: p, gap, background: t.bg, ...extra }}>{children}</div>
   );
 
-  // Trimmed headlines
   const h25 = hl.slice(0, 25);
   const h40 = hl.slice(0, 40);
-  const h60 = hl.slice(0, 60);
+  const h55 = hl.slice(0, 55);
 
-  // ── STRIP (leaderboard 728×90): all archetypes → horizontal bar ───────────
+  // ── STRIP (Leaderboard 728×90): horizontal bar, all archetypes ─────────────
   if (cat === 'strip') {
     const isSplit = id === 'split-panel';
+    const extraEl = (
+      id === 'offer-flash'   ? <span style={{ fontSize: sc(9, dw), fontWeight:900, color:'#fff', background: t.accent, borderRadius: sc(3, dw), padding:`${sc(2, dw)}px ${sc(5, dw)}px`, whiteSpace:'nowrap', flexShrink:0 }}>50% OFF ⚡</span>
+      : id === 'stat-bomb'   ? <span style={{ fontSize: sc(11, dw), fontWeight:900, color: t.accent, whiteSpace:'nowrap', flexShrink:0 }}>↑ 312%</span>
+      : id === 'social-proof'? <div style={{ ...R, gap: sc(2, dw), flexShrink:0 }}>{[0,1,2,3,4].map(i=><span key={i} style={{fontSize: sc(8,dw), color: t.accent}}>★</span>)}</div>
+      : id === 'bold-type'   ? <div style={{ width: sc(2, dw), height:'60%', background:`${t.accent}55`, flexShrink:0 }} />
+      : null
+    );
     return (
       <div style={{ ...ABS, ...R, padding: `0 ${p}px`, gap: sc(8, dw), background: t.bg, overflow:'hidden' }}>
-        {isSplit && <div style={{ ...ABS, left: 0, right:'65%', background: t.accent }} />}
+        {isSplit && <div style={{ ...ABS, left:0, right:'67%', background: t.accent }} />}
         <Brand dw={dw} color={isSplit ? '#fff' : t.accent} />
-        <div style={{ flex:1, fontSize: sc(11, dw), fontWeight: 800, color: t.fg, lineHeight:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+        <div style={{ flex:1, fontSize: sc(10, dw), fontWeight:800, color: t.fg, lineHeight:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
           {h40}
         </div>
-        {id === 'offer-flash' && (
-          <span style={{ fontSize: sc(9, dw), fontWeight:800, color: t.accent, whiteSpace:'nowrap' }}>50% OFF</span>
-        )}
-        {id === 'stat-bomb' && (
-          <span style={{ fontSize: sc(11, dw), fontWeight:900, color: t.accent, whiteSpace:'nowrap' }}>312%</span>
-        )}
+        {extraEl}
         <Btn label={cta} t={t} dw={dw} />
       </div>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // PRODUCT DROP
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── PRODUCT DROP ──────────────────────────────────────────────────────────
+  // Hero element: stacked 3-layer product mockup with rotation (depth illusion)
   if (id === 'product-drop') {
-    const product = (size: number) => (
-      <div style={{ position:'relative', width: sc(size, dw), height: sc(size, dw), display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ ...ABS, borderRadius: sc(10, dw), background:`${t.accent}18` }} />
-        <div style={{ width:'72%', height:'72%', borderRadius: sc(8, dw), background: t.accent, boxShadow:`0 ${sc(6, dw)}px ${sc(18, dw)}px ${t.accent}55` }} />
-      </div>
-    );
+    const product = (size: number) => {
+      const s = sc(size, dw);
+      return (
+        <div style={{ position:'relative', width: s, height: s, flexShrink:0 }}>
+          {/* Stacked layers create depth */}
+          <div style={{ position:'absolute', inset:'8%', borderRadius: sc(12, dw), background:`${t.accent}25`, transform:'rotate(-5deg)' }} />
+          <div style={{ position:'absolute', inset:'4%', borderRadius: sc(11, dw), background:`${t.accent}40`, transform:'rotate(-2deg)' }} />
+          <div style={{ position:'absolute', inset:0, borderRadius: sc(10, dw), background: t.accent, boxShadow:`0 ${sc(4,dw)}px ${sc(16,dw)}px ${t.accent}55`, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap: sc(3, dw) }}>
+            <div style={{ width:'55%', height: sc(3, dw), background:'rgba(255,255,255,0.5)', borderRadius: sc(2, dw) }} />
+            <div style={{ width:'38%', height: sc(2, dw), background:'rgba(255,255,255,0.28)', borderRadius: sc(2, dw) }} />
+          </div>
+        </div>
+      );
+    };
 
     if (cat === 'sky') return (
       <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(5, dw), alignItems:'center' }}>
-        <Brand dw={dw} color={t.accent} />
-        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>{product(48)}</div>
-        <div style={{ fontSize: sc(8, dw), fontWeight: 900, color: t.fg, lineHeight:1.2, textAlign:'center', width:'100%' }}>{h25}</div>
+        <div style={{ ...R, width:'100%', justifyContent:'space-between' }}>
+          <Brand dw={dw} color={t.accent} />
+          <div style={{ background: t.accent, color:'#fff', borderRadius: sc(3, dw), padding:`${sc(2, dw)}px ${sc(4, dw)}px`, fontSize: sc(6, dw), fontWeight:800 }}>NEW</div>
+        </div>
+        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>{product(44)}</div>
+        <div style={{ fontSize: sc(7, dw), fontWeight:900, color: t.fg, lineHeight:1.2, textAlign:'center', width:'100%' }}>{h25}</div>
+        <div style={{ ...R, gap: sc(4, dw), justifyContent:'center' }}>
+          <span style={{ fontSize: sc(6, dw), color: t.muted, textDecoration:'line-through' }}>$129</span>
+          <span style={{ fontSize: sc(8, dw), fontWeight:900, color: t.accent }}>$49</span>
+        </div>
         <Btn label={cta} t={t} dw={dw} full />
       </div>
     );
 
     if (cat === 'wide') return (
       <div style={{ ...ABS, ...R, background: t.bg, overflow:'hidden' }}>
-        <div style={{ flex:1, ...C, padding:`${p}px`, gap: sc(5, dw) }}>
+        <div style={{ flex:1, ...C, padding:`${p}px ${sc(12,dw)}px`, gap: sc(5, dw) }}>
           <Brand dw={dw} color={t.accent} />
-          <div style={{ fontSize: sc(13, dw), fontWeight: 900, color: t.fg, lineHeight:1.1, letterSpacing:'-0.02em' }}>{h40}</div>
+          <div style={{ fontSize: sc(13, dw), fontWeight:900, color: t.fg, lineHeight:1.1, letterSpacing:'-0.02em' }}>{h40}</div>
+          <div style={{ ...R, gap: sc(6, dw) }}>
+            <span style={{ fontSize: sc(7, dw), color: t.muted, textDecoration:'line-through' }}>$129</span>
+            <span style={{ fontSize: sc(11, dw), fontWeight:900, color: t.accent }}>$49</span>
+          </div>
           <Btn label={cta} t={t} dw={dw} />
         </div>
-        <div style={{ width: sc(72, dw), height:'100%', background:`${t.accent}10`, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          {product(56)}
+        <div style={{ width: sc(72, dw), height:'100%', background:`${t.accent}08`, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
+          <div style={{ position:'absolute', top: sc(8, dw), right: sc(8, dw), background: t.accent, color:'#fff', borderRadius: sc(4, dw), padding:`${sc(2,dw)}px ${sc(5,dw)}px`, fontSize: sc(6, dw), fontWeight:800 }}>NEW ↗</div>
+          {product(54)}
         </div>
       </div>
     );
@@ -182,91 +195,128 @@ function renderContent(
       <>
         <div style={{ ...R, justifyContent:'space-between' }}>
           <Brand dw={dw} color={t.accent} />
-          <div style={{ background: t.accent, color:'#fff', borderRadius: sc(4, dw), padding:`${sc(2, dw)}px ${sc(6, dw)}px`, fontSize: sc(7, dw), fontWeight:800 }}>$49</div>
+          <div style={{ ...R, gap: sc(4, dw) }}>
+            <span style={{ fontSize: sc(7, dw), color: t.muted, textDecoration:'line-through' }}>$129</span>
+            <span style={{ fontSize: sc(9, dw), fontWeight:900, color: t.accent }}>$49</span>
+          </div>
         </div>
-        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>{product(cat === 'tall' ? 64 : 52)}</div>
-        <div style={{ fontSize: sc(cat === 'rect' ? 10 : 12, dw), fontWeight:900, color: t.fg, lineHeight:1.15, letterSpacing:'-0.02em' }}>{h40}</div>
+        <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center' }}>{product(cat === 'tall' ? 68 : 52)}</div>
+        <div style={{ fontSize: sc(cat === 'rect' ? 9 : 11, dw), fontWeight:900, color: t.fg, lineHeight:1.15, letterSpacing:'-0.02em' }}>{h40}</div>
         <Btn label={cta} t={t} dw={dw} full />
       </>,
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // BOLD TYPE
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── BOLD TYPE ─────────────────────────────────────────────────────────────
+  // Hero element: split-colour headline (first 2 words accent, rest fg) + ring accent
   if (id === 'bold-type') {
+    const words = h40.split(' ');
+    const split = Math.min(2, Math.max(1, words.length - 1));
+    const part1 = words.slice(0, split).join(' ');
+    const part2 = words.slice(split).join(' ') || h25;
+
+    const ring = (
+      <div style={{ width: sc(16, dw), height: sc(16, dw), borderRadius:'50%', border:`${Math.max(1, sc(1.5, dw))}px solid ${t.accent}`, flexShrink:0 }} />
+    );
+
     if (cat === 'sky') return (
-      <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(6, dw), justifyContent:'flex-end' }}>
-        <div style={{ width: sc(20, dw), height: sc(2, dw), background: t.accent }} />
-        <div style={{ fontSize: sc(10, dw), fontWeight:900, color: t.fg, lineHeight:1.05, letterSpacing:'-0.03em', flex:1, display:'flex', alignItems:'center' }}>{h25}</div>
+      <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(5, dw), overflow:'hidden' }}>
+        <div style={{ width: sc(16, dw), height: sc(2, dw), background: t.accent, borderRadius: sc(1, dw) }} />
+        <div style={{ flex:1, ...C, justifyContent:'center', gap: sc(1, dw) }}>
+          <div style={{ fontSize: sc(9, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.03em' }}>{part1}</div>
+          <div style={{ fontSize: sc(9, dw), fontWeight:900, color: t.fg, lineHeight:1, letterSpacing:'-0.03em' }}>{part2}</div>
+        </div>
         <Btn label={cta} t={t} dw={dw} full />
         <Brand dw={dw} color={t.muted} />
       </div>
     );
 
     if (cat === 'wide') return (
-      <div style={{ ...ABS, ...R, background: t.bg, padding: `0 ${p}px`, gap: sc(10, dw), overflow:'hidden' }}>
-        <div style={{ ...C, gap: sc(6, dw), flex:1 }}>
-          <div style={{ fontSize: sc(19, dw), fontWeight:900, color: t.fg, lineHeight:0.93, letterSpacing:'-0.04em' }}>{h40}</div>
-          <div style={{ ...R, gap: sc(8, dw) }}>
-            <Brand dw={dw} color={t.muted} />
-            <Btn label={cta} t={t} dw={dw} />
+      <div style={{ ...ABS, background: t.bg, overflow:'hidden' }}>
+        {/* Ghost background ✦ */}
+        <div style={{ position:'absolute', right: sc(-8, dw), top:'50%', transform:'translateY(-50%)', fontSize: sc(96, dw), color:`${t.accent}0c`, fontWeight:900, lineHeight:1, userSelect:'none', pointerEvents:'none' }}>✦</div>
+        <div style={{ ...ABS, ...R, padding:`0 ${p}px`, gap: sc(10, dw) }}>
+          <div style={{ ...C, gap: sc(4, dw), flex:1, zIndex:1 }}>
+            <div style={{ height: sc(3, dw), background: t.accent, width: sc(22, dw), borderRadius: sc(2, dw) }} />
+            <div style={{ ...C, gap: 0 }}>
+              <div style={{ fontSize: sc(16, dw), fontWeight:900, color: t.accent, lineHeight:0.94, letterSpacing:'-0.04em' }}>{part1}</div>
+              <div style={{ fontSize: sc(16, dw), fontWeight:900, color: t.fg, lineHeight:0.94, letterSpacing:'-0.04em' }}>{part2}</div>
+            </div>
+            <div style={{ ...R, gap: sc(8, dw) }}>
+              <Brand dw={dw} color={t.muted} />
+              <Btn label={cta} t={t} dw={dw} />
+            </div>
           </div>
         </div>
-        <div style={{ fontSize: sc(52, dw), color:`${t.accent}14`, fontWeight:900, letterSpacing:'-0.1em', lineHeight:0.9, flexShrink:0 }}>✦</div>
       </div>
     );
 
+    const fs = cat === 'rect' ? 14 : cat === 'tall' ? 11 : 18;
     return col(
       <>
-        <div style={{ flex:1, display:'flex', alignItems:'center' }}>
-          <div style={{ fontSize: sc(cat === 'rect' ? 16 : cat === 'tall' ? 13 : 21, dw), fontWeight:900, color: t.fg, lineHeight:0.93, letterSpacing:'-0.04em' }}>
-            {h40}
-          </div>
-        </div>
-        <div style={{ height: sc(1, dw), background:`${t.accent}44`, width:'100%' }} />
         <div style={{ ...R, justifyContent:'space-between' }}>
           <Brand dw={dw} color={t.muted} />
-          <Btn label={cta} t={t} dw={dw} />
+          {ring}
         </div>
+        <div style={{ flex:1, ...C, justifyContent:'center', gap: sc(1, dw) }}>
+          <div style={{ fontSize: sc(fs, dw), fontWeight:900, color: t.accent, lineHeight:0.93, letterSpacing:'-0.04em' }}>{part1}</div>
+          <div style={{ fontSize: sc(fs, dw), fontWeight:900, color: t.fg, lineHeight:0.93, letterSpacing:'-0.04em' }}>{part2}</div>
+        </div>
+        <div style={{ height: sc(2, dw), background:`${t.accent}44`, width:'100%', borderRadius: sc(1, dw) }} />
+        <Btn label={cta} t={t} dw={dw} full />
       </>,
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // OFFER FLASH
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── OFFER FLASH ───────────────────────────────────────────────────────────
+  // Hero element: radial orange glow bg + shimmer badge + countdown urgency
   if (id === 'offer-flash') {
+    const radialBg = `radial-gradient(ellipse at 50% 30%, ${t.accent}28 0%, ${t.bg} 68%)`;
+
     const badge = (fsBig: number, fsSub: number) => (
-      <div style={{ background: t.accent, borderRadius: sc(8, dw), padding:`${sc(5, dw)}px ${sc(10, dw)}px`, alignSelf:'flex-start' }}>
-        <div style={{ fontSize: sc(fsBig, dw), fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>50% OFF</div>
-        <div style={{ fontSize: sc(fsSub, dw), fontWeight:700, color:'rgba(255,255,255,0.7)', marginTop: sc(1, dw) }}>Today only</div>
+      <div style={{ background: t.accent, borderRadius: sc(8, dw), padding:`${sc(5,dw)}px ${sc(10,dw)}px`, alignSelf:'flex-start', position:'relative', overflow:'hidden' }}>
+        {/* Inner highlight shimmer */}
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%)' }} />
+        <div style={{ ...R, gap: sc(3, dw) }}>
+          <span style={{ fontSize: sc(fsSub + 1, dw), lineHeight:1 }}>⚡</span>
+          <div>
+            <div style={{ fontSize: sc(fsBig, dw), fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>50% OFF</div>
+            <div style={{ fontSize: sc(fsSub, dw), fontWeight:700, color:'rgba(255,255,255,0.72)', marginTop: sc(1, dw) }}>Today only</div>
+          </div>
+        </div>
       </div>
     );
 
     if (cat === 'sky') return (
-      <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(5, dw), justifyContent:'space-between', alignItems:'center' }}>
+      <div style={{ ...ABS, ...C, background: t.bg, backgroundImage: radialBg, padding: p, gap: sc(5, dw), justifyContent:'space-between', alignItems:'center' }}>
         <Brand dw={dw} color={t.accent} />
         <div style={{ ...C, alignItems:'center', gap: sc(3, dw) }}>
-          <div style={{ background: t.accent, borderRadius: sc(6, dw), padding:`${sc(5, dw)}px ${sc(7, dw)}px`, textAlign:'center' }}>
+          <div style={{ background: t.accent, borderRadius: sc(6, dw), padding:`${sc(5,dw)}px ${sc(7,dw)}px`, textAlign:'center', position:'relative', overflow:'hidden' }}>
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, rgba(255,255,255,0.14) 0%, transparent 55%)' }} />
             <div style={{ fontSize: sc(14, dw), fontWeight:900, color:'#fff', lineHeight:1, letterSpacing:'-0.04em' }}>50%</div>
-            <div style={{ fontSize: sc(6, dw), fontWeight:800, color:'rgba(255,255,255,0.8)', letterSpacing:'0.06em' }}>OFF</div>
+            <div style={{ fontSize: sc(6, dw), fontWeight:800, color:'rgba(255,255,255,0.78)', letterSpacing:'0.08em' }}>OFF</div>
           </div>
-          <span style={{ fontSize: sc(7, dw), color: t.muted, textDecoration:'line-through' }}>$199</span>
-          <span style={{ fontSize: sc(12, dw), fontWeight:900, color:'#fff' }}>$97</span>
+          <div style={{ ...R, gap: sc(4, dw) }}>
+            <span style={{ fontSize: sc(7, dw), color: t.muted, textDecoration:'line-through' }}>$199</span>
+            <span style={{ fontSize: sc(12, dw), fontWeight:900, color:'#fff' }}>$97</span>
+          </div>
         </div>
-        <Btn label={cta} t={t} dw={dw} full />
+        <div style={{ ...C, gap: sc(3, dw), width:'100%', alignItems:'center' }}>
+          <div style={{ fontSize: sc(6, dw), color: t.muted }}>⏰ Ends midnight</div>
+          <Btn label={cta} t={t} dw={dw} full />
+        </div>
       </div>
     );
 
     if (cat === 'wide') return (
-      <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${p}px`, gap: sc(10, dw), overflow:'hidden' }}>
-        {badge(22, 7)}
+      <div style={{ ...ABS, ...R, background: t.bg, backgroundImage: radialBg, padding:`0 ${p}px`, gap: sc(10, dw), overflow:'hidden' }}>
+        {badge(20, 6)}
         <div style={{ ...C, gap: sc(4, dw), flex:1 }}>
           <div style={{ fontSize: sc(12, dw), fontWeight:900, color: t.fg, lineHeight:1.1 }}>{h40}</div>
-          <div style={{ ...R, gap: sc(8, dw) }}>
+          <div style={{ ...R, gap: sc(6, dw) }}>
             <span style={{ fontSize: sc(7, dw), color: t.muted, textDecoration:'line-through' }}>$199</span>
-            <span style={{ fontSize: sc(12, dw), fontWeight:900, color: t.accent }}>$97</span>
+            <span style={{ fontSize: sc(11, dw), fontWeight:900, color: t.accent }}>$97</span>
+            <span style={{ fontSize: sc(7, dw), color: t.muted }}>· ⏰ Ends midnight</span>
           </div>
           <Btn label={cta} t={t} dw={dw} />
         </div>
@@ -278,33 +328,43 @@ function renderContent(
         <Brand dw={dw} color={t.accent} />
         {badge(cat === 'rect' ? 18 : 22, 6)}
         <div style={{ fontSize: sc(10, dw), fontWeight:800, color: t.fg, lineHeight:1.2 }}>{h40}</div>
-        <div style={{ ...R, gap: sc(8, dw) }}>
+        <div style={{ ...R, gap: sc(6, dw) }}>
           <span style={{ fontSize: sc(8, dw), color: t.muted, textDecoration:'line-through' }}>$199</span>
-          <span style={{ fontSize: sc(13, dw), fontWeight:900, color: t.accent }}>$97</span>
+          <span style={{ fontSize: sc(12, dw), fontWeight:900, color: t.accent }}>$97</span>
         </div>
         {cat !== 'rect' && <div style={{ fontSize: sc(7, dw), color: t.muted }}>⏰ Limited-time offer</div>}
         <Btn label={cta} t={t} dw={dw} full />
       </>,
+      { backgroundImage: radialBg },
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // PHOTO OVERLAY
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── PHOTO OVERLAY ─────────────────────────────────────────────────────────
+  // Hero element: abstract lifestyle "scene" via overlapping circles + gradient
   if (id === 'photo-overlay') {
-    // Fake photo texture: diagonal stripes + colour noise
-    const photoBg = (
+    const scene = (
       <>
-        <div style={{ ...ABS, backgroundImage: `repeating-linear-gradient(135deg, ${t.accent}06 0px, ${t.accent}06 2px, transparent 2px, transparent 13px)` }} />
-        <div style={{ ...ABS, background:`linear-gradient(to top, ${t.bg} 0%, ${t.bg}cc 45%, transparent 72%)` }} />
+        <div style={{ ...ABS, background:`linear-gradient(135deg, ${t.accent}1a 0%, ${t.bg}99 100%)` }} />
+        {/* Large circle — blurred background subject */}
+        <div style={{ position:'absolute', right:'-8%', top:'4%', width:'62%', paddingBottom:'62%', borderRadius:'50%', background:`${t.accent}22` }} />
+        {/* Smaller accent circle — foreground highlight */}
+        <div style={{ position:'absolute', right:'14%', top:'10%', width:'28%', paddingBottom:'28%', borderRadius:'50%', background:`${t.accent}40` }} />
+        {/* Text-area gradient */}
+        <div style={{ ...ABS, background:`linear-gradient(to top, ${t.bg} 0%, ${t.bg}ee 38%, transparent 66%)` }} />
       </>
+    );
+
+    const featuredPill = (
+      <div style={{ background: t.accent, color: t.ctaFg, borderRadius: sc(3, dw), padding:`${sc(2,dw)}px ${sc(6,dw)}px`, fontSize: sc(7, dw), fontWeight:800, alignSelf:'flex-start', letterSpacing:'0.05em', textTransform:'uppercase' as const }}>
+        Featured
+      </div>
     );
 
     if (cat === 'sky') return (
       <div style={{ ...ABS, ...C, background: t.bg, justifyContent:'flex-end', overflow:'hidden' }}>
-        {photoBg}
-        <div style={{ ...C, padding: p, gap: sc(5, dw), zIndex:1 }}>
-          <div style={{ fontSize: sc(9, dw), fontWeight:800, color: t.fg, lineHeight:1.2 }}>{h25}</div>
+        {scene}
+        <div style={{ ...C, padding: p, gap: sc(4, dw), zIndex:1 }}>
+          <div style={{ fontSize: sc(8, dw), fontWeight:900, color: t.fg, lineHeight:1.2 }}>{h25}</div>
           <Btn label={cta} t={t} dw={dw} full />
           <Brand dw={dw} color={t.accent} />
         </div>
@@ -313,10 +373,11 @@ function renderContent(
 
     if (cat === 'wide') return (
       <div style={{ ...ABS, background: t.bg, overflow:'hidden' }}>
-        {photoBg}
+        {scene}
         <div style={{ ...ABS, ...R, padding:`0 ${p}px`, zIndex:1 }}>
-          <div style={{ ...C, gap: sc(5, dw), maxWidth:'62%' }}>
-            <Brand dw={dw} color={t.accent} />
+          <div style={{ ...C, gap: sc(5, dw), maxWidth:'60%' }}>
+            {featuredPill}
+            <Brand dw={dw} color={t.fg} />
             <div style={{ fontSize: sc(13, dw), fontWeight:900, color: t.fg, lineHeight:1.1 }}>{h40}</div>
             <Btn label={cta} t={t} dw={dw} />
           </div>
@@ -326,31 +387,35 @@ function renderContent(
 
     return (
       <div style={{ ...ABS, background: t.bg, overflow:'hidden', ...C, justifyContent:'flex-end' }}>
-        {photoBg}
+        {scene}
         <div style={{ ...C, padding: p, gap: sc(5, dw), zIndex:1 }}>
-          {cat !== 'rect' && <Brand dw={dw} color={t.accent} />}
-          <div style={{ fontSize: sc(cat === 'rect' ? 10 : 12, dw), fontWeight:900, color: t.fg, lineHeight:1.15 }}>{h40}</div>
+          {cat !== 'rect' && featuredPill}
+          <div style={{ fontSize: sc(cat === 'rect' ? 9 : 12, dw), fontWeight:900, color: t.fg, lineHeight:1.15 }}>{h40}</div>
           <Btn label={cta} t={t} dw={dw} full />
+          {cat !== 'rect' && <Brand dw={dw} color={t.fg} />}
         </div>
       </div>
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // SPLIT PANEL
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── SPLIT PANEL ───────────────────────────────────────────────────────────
+  // Hero element: dot-matrix pattern on accent side (feels designed, not flat)
   if (id === 'split-panel') {
-    const visual = (size: number) => (
-      <div style={{ position:'relative', width: sc(size, dw), height: sc(size, dw), display:'flex', alignItems:'center', justifyContent:'center' }}>
-        <div style={{ ...ABS, borderRadius: sc(10, dw), background:'rgba(255,255,255,0.15)' }} />
-        <div style={{ width:'65%', height:'65%', borderRadius: sc(8, dw), background:'rgba(255,255,255,0.4)' }} />
+    const dotSize  = sc(5, dw);
+    const dotSpace = sc(8, dw);
+    const dotPat   = `radial-gradient(circle, rgba(255,255,255,0.22) ${dotSize * 0.3}px, transparent ${dotSize * 0.3}px)`;
+
+    const visualSide = (
+      <div style={{ ...ABS, backgroundImage: dotPat, backgroundSize:`${dotSpace}px ${dotSpace}px`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {/* Central frosted card */}
+        <div style={{ width:'52%', height:'38%', borderRadius: sc(8, dw), background:'rgba(255,255,255,0.18)', border:'1px solid rgba(255,255,255,0.28)' }} />
       </div>
     );
 
     if (cat === 'sky') return (
       <div style={{ ...ABS, ...C, overflow:'hidden' }}>
-        <div style={{ flex:1.1, background: t.accent, display:'flex', alignItems:'center', justifyContent:'center' }}>{visual(36)}</div>
-        <div style={{ flex:1, background: t.bg, ...C, padding:`${sc(5, dw)}px ${sc(6, dw)}px`, gap: sc(4, dw) }}>
+        <div style={{ flex:1.1, background: t.accent, position:'relative' }}>{visualSide}</div>
+        <div style={{ flex:1, background: t.bg, ...C, padding:`${sc(5,dw)}px ${sc(6,dw)}px`, gap: sc(4, dw) }}>
           <div style={{ fontSize: sc(7, dw), fontWeight:800, color: t.fg, lineHeight:1.2 }}>{h25}</div>
           <Btn label={cta} t={t} dw={dw} full />
         </div>
@@ -359,8 +424,8 @@ function renderContent(
 
     if (cat === 'wide' || cat === 'rect') return (
       <div style={{ ...ABS, ...R, overflow:'hidden' }}>
-        <div style={{ flex:1, background: t.accent, height:'100%', display:'flex', alignItems:'center', justifyContent:'center' }}>{visual(44)}</div>
-        <div style={{ flex:1.3, ...C, padding:`${sc(8, dw)}px`, gap: sc(5, dw) }}>
+        <div style={{ flex:1, background: t.accent, height:'100%', position:'relative' }}>{visualSide}</div>
+        <div style={{ flex:1.3, ...C, padding:`${sc(8,dw)}px`, gap: sc(5, dw) }}>
           <Brand dw={dw} color={t.accent} />
           <div style={{ fontSize: sc(cat === 'wide' ? 12 : 9, dw), fontWeight:800, color: t.fg, lineHeight:1.2 }}>{h40}</div>
           <Btn label={cta} t={t} dw={dw} />
@@ -370,7 +435,7 @@ function renderContent(
 
     return (
       <div style={{ ...ABS, ...C, overflow:'hidden' }}>
-        <div style={{ flex: cat === 'tall' ? 1.3 : 1, background: t.accent, display:'flex', alignItems:'center', justifyContent:'center' }}>{visual(58)}</div>
+        <div style={{ flex: cat === 'tall' ? 1.3 : 1, background: t.accent, position:'relative' }}>{visualSide}</div>
         <div style={{ flex:1, background: t.bg, ...C, padding:`${p}px`, gap: sc(5, dw) }}>
           <Brand dw={dw} color={t.accent} />
           <div style={{ fontSize: sc(11, dw), fontWeight:800, color: t.fg, lineHeight:1.2 }}>{h40}</div>
@@ -380,20 +445,40 @@ function renderContent(
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // SOCIAL PROOF
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── SOCIAL PROOF ──────────────────────────────────────────────────────────
+  // Hero elements: avatar stack + rating pill + large decorative quote mark
   if (id === 'social-proof') {
-    const avatar = (
-      <div style={{ width: sc(18, dw), height: sc(18, dw), borderRadius:'50%', background: t.accent, flexShrink:0 }} />
+    const AVATAR_CLRS = ['#f59e0b', '#6366f1', '#10b981'];
+    const avatarStack = (
+      <div style={{ position:'relative', height: sc(16, dw), width: sc(36, dw), flexShrink:0 }}>
+        {AVATAR_CLRS.map((c, i) => (
+          <div key={i} style={{
+            position:'absolute', left: sc(i * 9, dw),
+            width: sc(16, dw), height: sc(16, dw), borderRadius:'50%',
+            background: c, border:`${Math.max(1, sc(1.5, dw))}px solid ${t.bg}`,
+            zIndex: 3 - i,
+          }} />
+        ))}
+      </div>
+    );
+
+    const ratingPill = (
+      <div style={{ ...R, gap: sc(3, dw), background:`${t.accent}18`, borderRadius: sc(10, dw), padding:`${sc(3,dw)}px ${sc(7,dw)}px`, alignSelf:'flex-start' }}>
+        <span style={{ fontSize: sc(9, dw), color: t.accent, lineHeight:1 }}>★</span>
+        <span style={{ fontSize: sc(8, dw), fontWeight:800, color: t.fg, lineHeight:1 }}>4.9</span>
+        <span style={{ fontSize: sc(7, dw), color: t.muted, lineHeight:1 }}>· 2,400+</span>
+      </div>
     );
 
     if (cat === 'sky') return (
       <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(4, dw) }}>
         <Brand dw={dw} color={t.accent} />
-        <Stars dw={dw} color={t.accent} />
-        <div style={{ fontSize: sc(7, dw), color: t.fg, fontStyle:'italic', lineHeight:1.3, flex:1 }}>"{h25}"</div>
-        <div style={{ fontSize: sc(6, dw), color: t.muted }}>— Sarah K.</div>
+        {ratingPill}
+        <div style={{ fontSize: sc(7, dw), color: t.fg, fontStyle:'italic', lineHeight:1.35, flex:1 }}>"{h25}"</div>
+        <div style={{ ...R, gap: sc(4, dw) }}>
+          <div style={{ width: sc(12, dw), height: sc(12, dw), borderRadius:'50%', background: t.accent, flexShrink:0 }} />
+          <div style={{ fontSize: sc(6, dw), color: t.muted }}>Sarah K. · Verified</div>
+        </div>
         <Btn label={cta} t={t} dw={dw} full />
       </div>
     );
@@ -401,11 +486,11 @@ function renderContent(
     if (cat === 'wide') return (
       <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${p}px`, gap: sc(10, dw), overflow:'hidden' }}>
         <div style={{ ...C, flex:1, gap: sc(5, dw) }}>
-          <Stars dw={dw} color={t.accent} />
-          <div style={{ fontSize: sc(12, dw), color: t.fg, fontStyle:'italic', fontWeight:500, lineHeight:1.2 }}>"{h40}"</div>
+          {ratingPill}
+          <div style={{ fontSize: sc(11, dw), color: t.fg, fontStyle:'italic', fontWeight:500, lineHeight:1.2 }}>"{h40}"</div>
           <div style={{ ...R, gap: sc(6, dw) }}>
-            {avatar}
-            <span style={{ fontSize: sc(7, dw), color: t.muted }}>Sarah K. · Verified buyer</span>
+            {avatarStack}
+            <span style={{ fontSize: sc(7, dw), color: t.muted }}>Sarah K. & 2,400 others</span>
           </div>
         </div>
         <div style={{ ...C, gap: sc(6, dw), alignItems:'flex-end', flexShrink:0 }}>
@@ -417,106 +502,157 @@ function renderContent(
 
     return col(
       <>
-        <Stars dw={dw} color={t.accent} />
-        <div style={{ fontSize: sc(cat === 'rect' ? 8 : 10, dw), color: t.fg, fontStyle:'italic', fontWeight:500, lineHeight:1.3, flex: cat === 'tall' ? 1 : 'none' }}>
-          "{cat === 'tall' ? h60 : h40}"
+        {ratingPill}
+        {/* Decorative large quote mark */}
+        <div style={{ fontFamily:'Georgia, serif', fontSize: sc(28, dw), lineHeight:0.8, color: t.accent, opacity:0.2 }}>"</div>
+        <div style={{ fontSize: sc(cat === 'rect' ? 8 : 9, dw), color: t.fg, fontStyle:'italic', fontWeight:500, lineHeight:1.35, flex: cat === 'tall' ? 1 : 'none', marginTop: sc(-6, dw) }}>
+          {cat === 'tall' ? h55 : h40}
         </div>
+        <div style={{ height: sc(1, dw), background:`${t.accent}22`, width:'100%' }} />
         <div style={{ ...R, gap: sc(5, dw) }}>
-          {avatar}
-          <div style={{ ...C, gap: 0 }}>
-            <span style={{ fontSize: sc(7, dw), color: t.fg, fontWeight:700 }}>Sarah K.</span>
-            <span style={{ fontSize: sc(6, dw), color: t.muted }}>Verified customer</span>
-          </div>
+          {avatarStack}
+          <span style={{ fontSize: sc(6, dw), color: t.muted }}>Sarah K. · Verified</span>
         </div>
-        {cat !== 'rect' && <div style={{ height: sc(1, dw), background:`${t.accent}33`, width:'100%' }} />}
         <Btn label={cta} t={t} dw={dw} full />
       </>,
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // STAT BOMB
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── STAT BOMB ─────────────────────────────────────────────────────────────
+  // Hero elements: mini bar chart + big ↑ number + supporting stat pair
   if (id === 'stat-bomb') {
+    const barData = [28, 55, 92];
+    const barChart = (maxH: number) => (
+      <div style={{ ...R, gap: sc(3, dw), alignItems:'flex-end', height: sc(maxH, dw), flexShrink:0 }}>
+        {barData.map((h, i) => (
+          <div key={i} style={{
+            width: sc(8, dw),
+            height: `${h}%`,
+            background: i === 2 ? t.accent : `${t.accent}35`,
+            borderRadius: `${sc(2, dw)}px ${sc(2, dw)}px 0 0`,
+          }} />
+        ))}
+      </div>
+    );
+
     if (cat === 'sky') return (
       <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(5, dw), alignItems:'center', justifyContent:'center' }}>
         <Brand dw={dw} color={t.accent} />
         <div style={{ height: sc(1, dw), background:`${t.accent}22`, width:'100%' }} />
-        <div style={{ fontSize: sc(28, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.05em', textAlign:'center' }}>312%</div>
-        <div style={{ fontSize: sc(6, dw), color: t.muted, textAlign:'center' }}>avg growth</div>
+        <div style={{ ...R, gap: sc(6, dw), alignItems:'flex-end' }}>
+          {barChart(38)}
+          <div style={{ ...C, gap: sc(1, dw) }}>
+            <div style={{ fontSize: sc(18, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.05em' }}>↑312%</div>
+            <div style={{ fontSize: sc(5, dw), color: t.muted }}>avg growth</div>
+          </div>
+        </div>
         <div style={{ height: sc(1, dw), background:`${t.accent}22`, width:'100%' }} />
         <Btn label={cta} t={t} dw={dw} full />
       </div>
     );
 
     if (cat === 'wide') return (
-      <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${sc(16, dw)}px`, gap: sc(14, dw), overflow:'hidden' }}>
-        <div style={{ fontSize: sc(46, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.06em', flexShrink:0 }}>312%</div>
+      <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${sc(14,dw)}px`, gap: sc(12, dw), overflow:'hidden' }}>
+        <div style={{ ...C, gap: sc(3, dw), flexShrink:0 }}>
+          <div style={{ fontSize: sc(38, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.06em' }}>↑312%</div>
+          <div style={{ fontSize: sc(6, dw), color: t.muted, letterSpacing:'0.04em', textTransform:'uppercase' as const }}>avg growth</div>
+          {barChart(26)}
+        </div>
+        <div style={{ width: sc(1, dw), height:'55%', background:`${t.accent}22`, flexShrink:0 }} />
         <div style={{ ...C, gap: sc(4, dw), flex:1 }}>
-          <div style={{ height: sc(2, dw), background: t.accent, width: sc(20, dw) }} />
+          <div style={{ height: sc(2, dw), background: t.accent, width: sc(20, dw), borderRadius: sc(1, dw) }} />
           <div style={{ fontSize: sc(10, dw), color: t.fg, fontWeight:700, lineHeight:1.2 }}>{h40}</div>
-          <div style={{ ...R, gap: sc(8, dw) }}>
-            <Btn label={cta} t={t} dw={dw} />
-            <Brand dw={dw} color={t.muted} />
-          </div>
+          <Btn label={cta} t={t} dw={dw} />
+          <Brand dw={dw} color={t.muted} />
         </div>
       </div>
     );
 
     return col(
       <>
-        <Brand dw={dw} color={t.accent} />
+        <div style={{ ...R, justifyContent:'space-between' }}>
+          <Brand dw={dw} color={t.accent} />
+          {barChart(cat === 'rect' ? 20 : 28)}
+        </div>
         <div style={{ height: sc(1, dw), background:`${t.accent}22`, width:'100%' }} />
         <div style={{ flex: cat === 'tall' ? 1 : 'none', display:'flex', alignItems:'center' }}>
-          <div style={{ fontSize: sc(cat === 'rect' ? 32 : 40, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.06em' }}>312%</div>
+          <div style={{ ...C, gap: sc(1, dw) }}>
+            <div style={{ fontSize: sc(cat === 'rect' ? 26 : 34, dw), fontWeight:900, color: t.accent, lineHeight:1, letterSpacing:'-0.06em' }}>↑312%</div>
+            <div style={{ fontSize: sc(cat === 'rect' ? 5 : 6, dw), color: t.muted, letterSpacing:'0.04em', textTransform:'uppercase' as const }}>average growth · 90 days</div>
+          </div>
         </div>
-        <div style={{ fontSize: sc(cat === 'rect' ? 7 : 8, dw), color: t.muted, lineHeight:1.3 }}>
-          average growth in 90 days
-        </div>
+        {cat !== 'rect' && (
+          <div style={{ ...R, gap: sc(6, dw) }}>
+            <div style={{ ...C, gap: sc(1, dw), flex:1 }}>
+              <div style={{ fontSize: sc(11, dw), fontWeight:900, color: t.fg }}>89%</div>
+              <div style={{ fontSize: sc(5, dw), color: t.muted }}>retention</div>
+            </div>
+            <div style={{ width: sc(1, dw), height: sc(20, dw), background:`${t.accent}22` }} />
+            <div style={{ ...C, gap: sc(1, dw), flex:1 }}>
+              <div style={{ fontSize: sc(11, dw), fontWeight:900, color: t.fg }}>4.8★</div>
+              <div style={{ fontSize: sc(5, dw), color: t.muted }}>avg NPS</div>
+            </div>
+          </div>
+        )}
         <div style={{ height: sc(1, dw), background:`${t.accent}22`, width:'100%' }} />
         <Btn label={cta} t={t} dw={dw} full />
       </>,
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // DARK MINIMAL
-  // ─────────────────────────────────────────────────────────────────────────
+  // ── DARK MINIMAL ──────────────────────────────────────────────────────────
+  // Hero elements: full-width 1.5px accent top-line + circle ring + ultra-wide tracking
   if (id === 'dark-minimal') {
+    const topLine = <div style={{ position:'absolute', top:0, left:0, right:0, height: sc(2, dw), background: t.accent }} />;
+    const ring    = (size: number) => (
+      <div style={{ width: sc(size, dw), height: sc(size, dw), borderRadius:'50%', border:`${Math.max(1, sc(1.5, dw))}px solid ${t.accent}`, flexShrink:0 }} />
+    );
+
     if (cat === 'sky') return (
-      <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(7, dw), justifyContent:'center' }}>
-        <div style={{ height: sc(2, dw), background: t.accent, width: sc(20, dw) }} />
-        <div style={{ fontSize: sc(9, dw), fontWeight:700, color: t.fg, lineHeight:1.3 }}>{h25}</div>
+      <div style={{ ...ABS, ...C, background: t.bg, padding: p, gap: sc(6, dw), position:'relative' }}>
+        {topLine}
+        <div style={{ ...R, justifyContent:'space-between', marginTop: sc(4, dw) }}>
+          <Brand dw={dw} color={t.muted} />
+          {ring(14)}
+        </div>
+        <div style={{ flex:1, ...C, justifyContent:'center', gap: sc(5, dw) }}>
+          <div style={{ height: sc(1, dw), background: t.accent, width: sc(16, dw) }} />
+          <div style={{ fontSize: sc(8, dw), fontWeight:700, color: t.fg, lineHeight:1.3 }}>{h25}</div>
+        </div>
         <div style={{ fontSize: sc(7, dw), color: t.accent }}>{cta} →</div>
-        <div style={{ marginTop:'auto' }}><Brand dw={dw} color={t.muted} /></div>
       </div>
     );
 
     if (cat === 'wide') return (
-      <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${p}px`, gap: sc(12, dw), overflow:'hidden' }}>
-        <div style={{ ...C, gap: sc(7, dw), flex:1 }}>
-          <div style={{ height: sc(1, dw), background: t.accent, width: sc(24, dw) }} />
-          <div style={{ fontSize: sc(14, dw), fontWeight:800, color: t.fg, lineHeight:1.05, letterSpacing:'-0.03em' }}>{h40}</div>
+      <div style={{ ...ABS, ...R, background: t.bg, padding:`0 ${p}px`, gap: sc(12, dw), overflow:'hidden', position:'relative' }}>
+        {topLine}
+        <div style={{ ...C, gap: sc(6, dw), flex:1 }}>
+          <div style={{ height: sc(1, dw), background: t.accent, width: sc(20, dw) }} />
+          <div style={{ fontSize: sc(13, dw), fontWeight:800, color: t.fg, lineHeight:1.05, letterSpacing:'-0.03em' }}>{h40}</div>
           <div style={{ ...R, gap: sc(10, dw) }}>
             <div style={{ fontSize: sc(8, dw), color: t.accent }}>{cta} →</div>
             <Brand dw={dw} color={t.muted} />
           </div>
         </div>
-        <div style={{ fontSize: sc(44, dw), color:`${t.accent}0a`, fontWeight:900, flexShrink:0, lineHeight:1 }}>◼</div>
+        {ring(36)}
       </div>
     );
 
     return col(
       <>
-        <Brand dw={dw} color={t.muted} />
+        {topLine}
+        <div style={{ ...R, justifyContent:'space-between', marginTop: sc(4, dw) }}>
+          <Brand dw={dw} color={t.muted} />
+          {ring(cat === 'rect' ? 14 : 20)}
+        </div>
         <div style={{ flex:1, ...C, justifyContent:'center', gap: sc(6, dw) }}>
           <div style={{ height: sc(1, dw), background: t.accent, width: sc(24, dw) }} />
-          <div style={{ fontSize: sc(cat === 'rect' ? 10 : cat === 'tall' ? 11 : 14, dw), fontWeight:800, color: t.fg, lineHeight:1.1, letterSpacing:'-0.03em' }}>{h40}</div>
+          <div style={{ fontSize: sc(cat === 'rect' ? 9 : cat === 'tall' ? 10 : 13, dw), fontWeight:800, color: t.fg, lineHeight:1.1, letterSpacing:'-0.03em' }}>{h40}</div>
           {cat !== 'rect' && <div style={{ fontSize: sc(7, dw), color: t.muted }}>{h25}</div>}
         </div>
         <div style={{ ...R, justifyContent:'space-between' }}>
           <div style={{ fontSize: sc(8, dw), color: t.accent }}>{cta} →</div>
-          {cat !== 'rect' && <div style={{ fontSize: sc(6, dw), color: t.muted, letterSpacing:'0.06em', textTransform:'uppercase' }}>brand.com</div>}
+          {cat !== 'rect' && <div style={{ fontSize: sc(5, dw), color: t.muted, letterSpacing:'0.1em', textTransform:'uppercase' as const }}>brand.com</div>}
         </div>
       </>,
     );
@@ -597,7 +733,6 @@ export function BannerGrid({ banners, headline, cta }: Props) {
   const toggleSize = (key: string) =>
     setActiveSize(prev => (prev === key ? null : key));
 
-  // Shared pill style factory
   const pill = (active: boolean): React.CSSProperties => ({
     display: 'inline-flex', alignItems: 'center', gap: 5,
     padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
@@ -612,7 +747,6 @@ export function BannerGrid({ banners, headline, cta }: Props) {
     const display = banners.length > 0 ? banners : SIZES.map(s => ({ size: s.key, imageUrl:'', headline }));
     return (
       <div style={{ display:'flex', flexDirection:'column', gap: 14, width:'100%', maxWidth: 520 }}>
-        {/* Size filter pills */}
         <div style={{ display:'flex', gap: 6, flexWrap:'wrap' }}>
           <button onClick={() => setActiveSize(null)} style={pill(activeSize === null)}>All</button>
           {display.map((b, i) => {
@@ -624,10 +758,9 @@ export function BannerGrid({ banners, headline, cta }: Props) {
             );
           })}
         </div>
-        {/* Grid */}
         <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap: 16 }}>
           {display.map((b, i) => {
-            const meta    = SIZES.find(s => s.key === b.size);
+            const meta     = SIZES.find(s => s.key === b.size);
             const isActive = activeSize === b.size;
             const isDimmed = activeSize !== null && !isActive;
             return (
@@ -677,7 +810,7 @@ export function BannerGrid({ banners, headline, cta }: Props) {
         ))}
       </div>
 
-      {/* Size grid — all visible, active one highlighted, others dimmed */}
+      {/* Banner grid — all visible, active highlighted, others dimmed */}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 14, alignItems:'start' }}>
         {SIZES.map(s => {
           const isActive = activeSize === s.key;
