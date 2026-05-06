@@ -6488,6 +6488,829 @@ function BannerPreview({ id, tone }: { id: string; tone: string }) {
     </div>
   );
 
+  // ── guarantee-badge ────────────────────────────────────────────────────────
+  if (id === 'guarantee-badge') return (
+    <div style={{ ...wrap, background: '#0f1117' }}>
+      <div style={{ position: 'relative', width: 80, height: 80, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+        <div style={{ position: 'absolute', inset: 5, borderRadius: '50%', border: `1px solid ${accent}44` }} />
+        <T s={11} color={accent} weight={900} align="center">100%</T>
+        <T s={7} color="#f1f5f9" weight={700} align="center">MONEY BACK</T>
+        <T s={6} color={muted} weight={600} align="center">GUARANTEE</T>
+      </div>
+      <T s={7} color={muted} align="center">30-day no-questions-asked refund</T>
+    </div>
+  );
+
+  // ── free-trial ──────────────────────────────────────────────────────────────
+  if (id === 'free-trial') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start' }}>
+      <T s={14} color="#1e293b" weight={900} spacing="-0.03em">Try it free.</T>
+      <T s={8} color="#64748b">No credit card required.</T>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+        {['Full access for 14 days', 'Cancel anytime', 'Setup in 5 minutes'].map((t, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Check color={accent} /><T s={8} color="#475569">{t}</T></div>
+        ))}
+      </div>
+      <Btn label="Start Free Trial →" bg={accent} />
+    </div>
+  );
+
+  // ── limited-drop ────────────────────────────────────────────────────────────
+  if (id === 'limited-drop') return (
+    <div style={{ ...wrap, background: '#09090b' }}>
+      <T s={7} color={accent} caps spacing="0.15em" weight={700}>Limited Drop</T>
+      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+        {['07','23','41'].map((n, i) => (
+          <React.Fragment key={i}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+              <div style={{ background: '#18181b', border: `1px solid ${accent}44`, borderRadius: 4, padding: '4px 8px' }}>
+                <T s={14} color="#f1f5f9" weight={900} align="center">{n}</T>
+              </div>
+              <T s={5} color={muted} align="center">{['HRS','MIN','SEC'][i]}</T>
+            </div>
+            {i < 2 && <T s={14} color={accent} weight={900}>:</T>}
+          </React.Fragment>
+        ))}
+      </div>
+      <T s={8} color={accent} weight={800} align="center">Only 12 left in stock</T>
+      <Btn label="Shop Now" bg={accent} />
+    </div>
+  );
+
+  // ── offer-announce ──────────────────────────────────────────────────────────
+  if (id === 'offer-announce') return (
+    <div style={{ ...wrap, background: accent, gap: 6 }}>
+      <T s={7} color="rgba(255,255,255,0.7)" caps spacing="0.12em">Flash Sale</T>
+      <T s={52} color="#fff" weight={900} spacing="-0.06em" align="center">30%</T>
+      <T s={10} color="rgba(255,255,255,0.85)" weight={700} align="center">OFF everything</T>
+      <Bar w={50} color="rgba(255,255,255,0.4)" h={1} />
+      <T s={7} color="rgba(255,255,255,0.6)" align="center">Today only · Ends at midnight</T>
+    </div>
+  );
+
+  // ── price-compare ───────────────────────────────────────────────────────────
+  if (id === 'price-compare') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'center', gap: 6 }}>
+      <T s={8} color="#64748b" align="center">Regular price</T>
+      <div style={{ fontSize: 16, color: '#94a3b8', fontWeight: 700, textDecoration: 'line-through' }}>$297</div>
+      <T s={34} color={accent} weight={900} spacing="-0.04em" align="center">$97</T>
+      <div style={{ background: `${accent}18`, border: `1px solid ${accent}44`, borderRadius: 6, padding: '3px 10px' }}>
+        <T s={8} color={accent} weight={800} align="center">You save $200 today</T>
+      </div>
+      <Btn label="Claim This Price" bg={accent} />
+    </div>
+  );
+
+  // ── award-winner ────────────────────────────────────────────────────────────
+  if (id === 'award-winner') return (
+    <div style={{ ...wrap, background: '#0f1117' }}>
+      <div style={{ position: 'relative', width: 82, height: 82, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, ${accent}88)`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, boxShadow: `0 0 28px ${accent}44` }}>
+        <T s={9} color="#fff" weight={900} align="center">VOTED</T>
+        <T s={22} color="#fff" weight={900} spacing="-0.04em" align="center">#1</T>
+        <T s={6} color="rgba(255,255,255,0.8)" align="center">2024</T>
+      </div>
+      <T s={8} color={muted} align="center">Best in class · Industry Awards</T>
+      <Btn label="See Why" bg={accent} />
+    </div>
+  );
+
+  // ── founder-story ───────────────────────────────────────────────────────────
+  if (id === 'founder-story') return (
+    <div style={{ ...wrap, background: '#fefce8', alignItems: 'flex-start', gap: 7 }}>
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', gap: 7, width: '100%' })}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #fb923c)`, flexShrink: 0 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <T s={9} color="#1c1917" weight={700}>Alex Chen</T>
+            <T s={7} color="#78716c">Founder & CEO</T>
+          </div>
+        </div>
+        <T s={9} color="#1c1917" weight={500}>"I built this after failing for 3 years. Here's what finally worked."</T>
+        <Bar w={40} color={accent} h={2} />
+        <Btn label="Read My Story →" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── review-card ─────────────────────────────────────────────────────────────
+  if (id === 'review-card') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
+      <Stars color={accent} />
+      <T s={9} color="#1e293b" weight={600}>"Changed everything about how I work. Worth every single penny."</T>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 20, height: 20, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)` }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <T s={7} color="#1e293b" weight={700}>Mark T.</T>
+          <T s={6} color="#94a3b8">✓ Verified Buyer</T>
+        </div>
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: accent }} />
+    </div>
+  );
+
+  // ── trust-bar ───────────────────────────────────────────────────────────────
+  if (id === 'trust-bar') return (
+    <div style={{ ...wrap, background: '#fff', gap: 12 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.1em">Trusted by thousands</T>
+      <div style={{ display: 'flex', width: '100%' }}>
+        {[['12K+','Customers'],['4.9★','Rating'],['97%','Retention']].map(([stat, label], i) => (
+          <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, borderRight: i < 2 ? '1px solid #e2e8f0' : 'none' }}>
+            <T s={14} color={accent} weight={900} align="center">{stat}</T>
+            <T s={6} color="#94a3b8" align="center">{label}</T>
+          </div>
+        ))}
+      </div>
+      <Btn label="Join Them" bg={accent} />
+    </div>
+  );
+
+  // ── news-frame ──────────────────────────────────────────────────────────────
+  if (id === 'news-frame') return (
+    <div style={{ ...wrap, background: '#fff', gap: 6, alignItems: 'stretch' }}>
+      <div style={{ background: '#1e293b', padding: '4px 8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <T s={8} color="#fff" weight={900} caps spacing="0.08em">Breaking News</T>
+        <T s={7} color={accent}>● LIVE</T>
+      </div>
+      <div style={{ border: '2px solid #1e293b', padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <T s={7} color={accent} caps spacing="0.08em" weight={700}>Exclusive Report</T>
+        <T s={11} color="#1e293b" weight={900} spacing="-0.02em">Industry disrupted by new approach</T>
+        <T s={7} color="#64748b">Jan 14, 2025 · Analysis Team</T>
+      </div>
+      <Btn label="Read Full Story" bg="#1e293b" />
+    </div>
+  );
+
+  // ── video-thumbnail ─────────────────────────────────────────────────────────
+  if (id === 'video-thumbnail') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
+      <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'rgba(255,255,255,0.08)', border: '3px solid rgba(255,255,255,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 0, height: 0, borderTop: '10px solid transparent', borderBottom: '10px solid transparent', borderLeft: `17px solid ${accent}`, marginLeft: 4 }} />
+      </div>
+      <T s={11} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">The Strategy Nobody Talks About</T>
+      <T s={7} color={muted} align="center">12:47 · 2.4M views</T>
+    </div>
+  );
+
+  // ── community-quote ─────────────────────────────────────────────────────────
+  if (id === 'community-quote') return (
+    <div style={{ ...wrap, background: '#0f1117', alignItems: 'flex-start', gap: 7 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 24, height: 24, borderRadius: '50%', background: accent, flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <T s={8} color="#f1f5f9" weight={700}>u/realcustomer</T>
+          <T s={6} color={muted}>Posted in r/results</T>
+        </div>
+      </div>
+      <T s={9} color="#f1f5f9" weight={500}>"This is the only thing that actually worked after trying everything else."</T>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <T s={7} color={accent} weight={700}>▲ 4,287</T>
+        <T s={7} color={muted}>💬 312 comments</T>
+      </div>
+    </div>
+  );
+
+  // ── stat-study ──────────────────────────────────────────────────────────────
+  if (id === 'stat-study') return (
+    <div style={{ ...wrap, background: '#fff', gap: 6 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.1em">New research confirms</T>
+      <T s={46} color={accent} weight={900} spacing="-0.06em" align="center">73%</T>
+      <T s={8} color="#1e293b" weight={700} align="center">of users see results within 30 days</T>
+      <Bar w={50} color="#e2e8f0" h={1} op={1} />
+      <T s={6} color="#94a3b8" align="center">Source: Harvard Business Review, 2024</T>
+      <Btn label="See The Research" bg={accent} />
+    </div>
+  );
+
+  // ── caption-style ───────────────────────────────────────────────────────────
+  if (id === 'caption-style') return (
+    <div style={{ ...wrap, background: '#111', padding: 0, gap: 0, justifyContent: 'flex-end' }}>
+      {photoLayer}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 52%)' }} />
+      <div style={{ position: 'relative', zIndex: 2, padding: '0 12px 12px', width: '100%', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)`, flexShrink: 0 }} />
+          <T s={8} color="#fff" weight={700}>@yourbrand</T>
+          <T s={7} color="rgba(255,255,255,0.5)">Sponsored</T>
+        </div>
+        <T s={8} color="#fff">The secret to 10x results that nobody shares…</T>
+      </div>
+    </div>
+  );
+
+  // ── chat-thread ─────────────────────────────────────────────────────────────
+  if (id === 'chat-thread') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 8 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.06em">Messages</T>
+      <div style={{ alignSelf: 'flex-start', background: '#e5e7eb', borderRadius: '12px 12px 12px 2px', padding: '6px 10px', maxWidth: '75%' }}>
+        <T s={8} color="#1f2937">"Is this actually worth it?"</T>
+      </div>
+      <div style={{ alignSelf: 'flex-end', background: accent, borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '75%' }}>
+        <T s={8} color="#fff">"Best decision I made this year."</T>
+      </div>
+      <Btn label="See For Yourself →" bg={accent} />
+    </div>
+  );
+
+  // ── meme-format ─────────────────────────────────────────────────────────────
+  if (id === 'meme-format') return (
+    <div style={{ ...wrap, background: '#fff', padding: 0, gap: 0, justifyContent: 'space-between' }}>
+      <div style={{ padding: '10px 14px', width: '100%' }}>
+        <T s={11} color="#1e293b" weight={900} align="center" spacing="-0.01em">ME BEFORE THIS</T>
+      </div>
+      <div style={{ flex: 1, background: '#f1f5f9', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 60, height: 60, borderRadius: 8, background: `${accent}18`, border: `2px dashed ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ fontSize: 28 }}>😅</span>
+        </div>
+      </div>
+      <div style={{ padding: '10px 14px', width: '100%' }}>
+        <T s={11} color={accent} weight={900} align="center" spacing="-0.01em">ME AFTER THIS</T>
+      </div>
+    </div>
+  );
+
+  // ── comment-reply ───────────────────────────────────────────────────────────
+  if (id === 'comment-reply') return (
+    <div style={{ ...wrap, background: '#09090b', alignItems: 'flex-start', gap: 8 }}>
+      <div style={{ background: '#1c1c1e', borderRadius: 20, padding: '3px 10px', alignSelf: 'flex-start' }}>
+        <T s={7} color="rgba(255,255,255,0.5)">↩ Replying to @question</T>
+      </div>
+      <div style={{ flex: 1, width: '100%', background: '#18181b', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 40 }}>
+        <T s={7} color="rgba(255,255,255,0.2)" align="center">your content here</T>
+      </div>
+      <T s={9} color="#f1f5f9" weight={600}>"Here's the real answer nobody gives you…"</T>
+      <Btn label="See Full Reply" bg={accent} />
+    </div>
+  );
+
+  // ── poll-card ───────────────────────────────────────────────────────────────
+  if (id === 'poll-card') return (
+    <div style={{ ...wrap, background: '#0f172a', gap: 8 }}>
+      <T s={10} color="#f1f5f9" weight={800} align="center">Which do you prefer?</T>
+      {[['Option A','72%'],['Option B','28%']].map(([label, pct], i) => (
+        <div key={i} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: pct, background: i === 0 ? accent : 'rgba(255,255,255,0.08)', borderRadius: 8 }} />
+          <div style={{ position: 'relative', padding: '6px 10px', display: 'flex', justifyContent: 'space-between' }}>
+            <T s={8} color="#fff" weight={700}>{label}</T>
+            <T s={8} color={i === 0 ? '#fff' : muted} weight={700}>{pct}</T>
+          </div>
+        </div>
+      ))}
+      <T s={6} color={muted} align="center">1,247 votes · Closes in 2h</T>
+    </div>
+  );
+
+  // ── hot-take ────────────────────────────────────────────────────────────────
+  if (id === 'hot-take') return (
+    <div style={{ ...wrap, background: accent, gap: 8 }}>
+      <T s={7} color="rgba(255,255,255,0.65)" caps spacing="0.12em">Hot Take 🔥</T>
+      <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">"Most people are doing this completely wrong."</T>
+      <Bar w={40} color="rgba(255,255,255,0.3)" h={2} />
+      <T s={8} color="rgba(255,255,255,0.75)" align="center">Change your approach →</T>
+    </div>
+  );
+
+  // ── leaderboard ─────────────────────────────────────────────────────────────
+  if (id === 'leaderboard') return (
+    <div style={{ ...wrap, background: '#0f1117', alignItems: 'stretch', gap: 7 }}>
+      <T s={8} color={accent} caps spacing="0.1em" weight={700} align="center">Top Performers</T>
+      {[['🥇','Strategy A','↑312%'],['🥈','Strategy B','↑187%'],['🥉','Strategy C','↑94%']].map(([icon, name, stat]) => (
+        <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 13 }}>{icon}</span>
+          <T s={8} color="#f1f5f9" weight={600}>{name}</T>
+          <div style={{ flex: 1 }} />
+          <T s={8} color={accent} weight={800}>{stat}</T>
+        </div>
+      ))}
+      <Btn label="See Full Rankings" bg={accent} />
+    </div>
+  );
+
+  // ── checklist-viral ─────────────────────────────────────────────────────────
+  if (id === 'checklist-viral') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
+      <T s={9} color="#1e293b" weight={800}>Check what applies to you:</T>
+      {['You feel stuck','You want more results','You\'ve tried before','You\'re ready now'].map((item, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 14, height: 14, borderRadius: 3, border: `2px solid ${accent}`, flexShrink: 0, background: i < 3 ? accent : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {i < 3 && <span style={{ fontSize: 7, color: '#fff', fontWeight: 900 }}>✓</span>}
+          </div>
+          <T s={8} color="#374151">{item}</T>
+        </div>
+      ))}
+      <Btn label="This Is For You →" bg={accent} />
+    </div>
+  );
+
+  // ── myth-reality ────────────────────────────────────────────────────────────
+  if (id === 'myth-reality') return (
+    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: '#1e293b', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
+        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Myth</T>
+        <T s={9} color="rgba(255,255,255,0.7)" weight={600}>"You need a huge budget to compete."</T>
+        <Cross />
+      </div>
+      <div style={{ width: 3, background: accent, flexShrink: 0 }} />
+      <div style={{ flex: 1, height: '100%', background: `${accent}18`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
+        <T s={7} color={accent} caps spacing="0.1em">Reality</T>
+        <T s={9} color="#1e293b" weight={600}>"Strategy beats spend every single time."</T>
+        <Check color={accent} />
+      </div>
+    </div>
+  );
+
+  // ── event-card ──────────────────────────────────────────────────────────────
+  if (id === 'event-card') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 7 }}>
+      <div style={{ width: 42, height: 42, borderRadius: 8, background: `${accent}22`, border: `1px solid ${accent}55`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0 }}>
+        <T s={6} color={accent} caps spacing="0.06em">JAN</T>
+        <T s={14} color="#f1f5f9" weight={900}>14</T>
+      </div>
+      <T s={12} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">Live Workshop</T>
+      <T s={7} color={muted} align="center">2:00 PM EST · Online · Free</T>
+      <Bar w={80} color={`${accent}33`} h={1} op={1} />
+      <Btn label="Reserve Your Spot" bg={accent} />
+    </div>
+  );
+
+  // ── three-reasons ───────────────────────────────────────────────────────────
+  if (id === 'three-reasons') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <T s={32} color={accent} weight={900} spacing="-0.04em">3</T>
+        <T s={11} color="#1e293b" weight={800} spacing="-0.02em">reasons it works</T>
+      </div>
+      {['Solves the real problem','Proven by 10,000 users','Takes under 10 minutes'].map((reason, i) => (
+        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 4, width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <T s={7} color="#fff" weight={900}>{i + 1}</T>
+            </div>
+            <T s={8} color="#374151">{reason}</T>
+          </div>
+          {i < 2 && <div style={{ height: 1, background: '#e2e8f0', width: '100%' }} />}
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── timeline-journey ────────────────────────────────────────────────────────
+  if (id === 'timeline-journey') return (
+    <div style={{ ...wrap, background: '#fff', gap: 10 }}>
+      <T s={9} color="#1e293b" weight={800} align="center">Your Journey to Results</T>
+      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+        {['Start','Learn','Apply','Win'].map((step, i) => (
+          <React.Fragment key={i}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, flex: 1 }}>
+              <div style={{ width: 24, height: 24, borderRadius: '50%', background: i <= 1 ? accent : `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <T s={8} color={i <= 1 ? '#fff' : accent} weight={900}>{i + 1}</T>
+              </div>
+              <T s={6} color="#64748b" align="center">{step}</T>
+            </div>
+            {i < 3 && <div style={{ height: 2, flex: 1, background: i < 1 ? accent : `${accent}30`, marginBottom: 14 }} />}
+          </React.Fragment>
+        ))}
+      </div>
+      <Btn label="Start Your Journey" bg={accent} />
+    </div>
+  );
+
+  // ── brutalist ───────────────────────────────────────────────────────────────
+  if (id === 'brutalist') return (
+    <div style={{ ...wrap, background: '#fff', border: '4px solid #1e293b', padding: 12, gap: 8 }}>
+      <div style={{ position: 'absolute', top: 6, left: 6, right: 6, bottom: 6, border: '1px solid #1e293b', pointerEvents: 'none' }} />
+      <T s={22} color="#1e293b" weight={900} align="center" spacing="-0.05em">THE TRUTH</T>
+      <div style={{ height: 3, background: accent, width: '100%' }} />
+      <T s={9} color="#374151" align="center">No filters. No fluff. Just results.</T>
+      <Btn label="Read It" bg="#1e293b" />
+    </div>
+  );
+
+  // ── collage-cutout ──────────────────────────────────────────────────────────
+  if (id === 'collage-cutout') return (
+    <div style={{ ...wrap, background: '#fef9f0', padding: 0, gap: 0 }}>
+      <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+        <div style={{ position: 'absolute', top: '8%', left: '8%', width: '55%', height: '50%', background: accent, borderRadius: 4, transform: 'rotate(-4deg)' }} />
+        <div style={{ position: 'absolute', top: '22%', left: '30%', width: '50%', height: '44%', background: '#1e293b', borderRadius: 4, transform: 'rotate(3deg)' }} />
+        <div style={{ position: 'absolute', top: '42%', left: '12%', width: '46%', height: '42%', background: `${accent}99`, borderRadius: 4, transform: 'rotate(-2deg)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', right: '8%', background: '#fff', padding: '4px 8px', borderRadius: 4, boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}>
+          <T s={8} color="#1e293b" weight={800}>Your Brand</T>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── aurora-gradient ─────────────────────────────────────────────────────────
+  if (id === 'aurora-gradient') return (
+    <div style={{ ...wrap, background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #0e7490 55%, #065f46 100%)', gap: 8 }}>
+      <T s={7} color="rgba(255,255,255,0.55)" align="center" caps spacing="0.12em">Aurora Series</T>
+      <T s={16} color="#fff" weight={900} align="center" spacing="-0.04em">Beyond ordinary</T>
+      <T s={8} color="rgba(255,255,255,0.65)" align="center">Experience the difference</T>
+      <Btn label="Explore Now" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+    </div>
+  );
+
+  // ── duotone-photo ───────────────────────────────────────────────────────────
+  if (id === 'duotone-photo') return (
+    <div style={{ ...wrap, padding: 0, gap: 0, justifyContent: 'flex-end', background: '#1e1b4b' }}>
+      {photoLayer}
+      {!hasPhoto && <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${accent}cc, #1e1b4b)` }} />}
+      <div style={{ position: 'relative', zIndex: 2, padding: 14, width: '100%', background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%)' }}>
+        <T s={14} color="#fff" weight={900} spacing="-0.03em" align="center">Bold. Vivid. Unforgettable.</T>
+        <div style={{ marginTop: 6 }}><Btn label="See More" bg={accent} /></div>
+      </div>
+    </div>
+  );
+
+  // ── mono-editorial ──────────────────────────────────────────────────────────
+  if (id === 'mono-editorial') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8, alignItems: 'flex-start' }}>
+      <div style={{ height: 3, background: '#1e293b', width: '100%' }} />
+      <T s={16} color="#1e293b" weight={900} spacing="-0.05em">The case for doing less.</T>
+      <div style={{ height: 1, background: '#1e293b', width: '60%' }} />
+      <T s={8} color="#64748b">A long read on focus, craft, and what actually matters in modern work.</T>
+      <div style={{ height: 1, background: '#1e293b', width: '100%' }} />
+      <T s={7} color="#94a3b8" caps spacing="0.1em">Brand · Issue 47</T>
+    </div>
+  );
+
+  // ── risograph-print ─────────────────────────────────────────────────────────
+  if (id === 'risograph-print') return (
+    <div style={{ ...wrap, background: '#fef3c7', padding: 0, gap: 0 }}>
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <div style={{ position: 'absolute', top: '10%', left: '5%', width: '70%', height: '60%', background: '#f9a8d4', opacity: 0.7, borderRadius: 4 }} />
+        <div style={{ position: 'absolute', top: '25%', left: '25%', width: '65%', height: '55%', background: accent, opacity: 0.65, borderRadius: 4 }} />
+        <div style={{ position: 'absolute', top: '40%', left: '10%', width: '60%', height: '45%', background: '#86efac', opacity: 0.55, borderRadius: 4 }} />
+      </div>
+      <div style={{ position: 'relative', zIndex: 2, padding: 12, width: '100%' }}>
+        <T s={13} color="#1c1917" weight={900} spacing="-0.03em">Crafted with care.</T>
+      </div>
+    </div>
+  );
+
+  // ── chart-reveal ────────────────────────────────────────────────────────────
+  if (id === 'chart-reveal') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.08em">Growth over 90 days</T>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 52, width: '80%' }}>
+        {[18, 30, 42, 55, 66, 82, 100].map((h, i) => (
+          <div key={i} style={{ flex: 1, height: `${h}%`, background: i === 6 ? accent : `${accent}44`, borderRadius: '2px 2px 0 0' }} />
+        ))}
+      </div>
+      <T s={28} color={accent} weight={900} spacing="-0.05em" align="center">↑ 312%</T>
+      <T s={6} color="#94a3b8" align="center">Source: Internal analytics · Q4 2024</T>
+      <Btn label="Get the Report" bg={accent} />
+    </div>
+  );
+
+  // ── steps-infographic ───────────────────────────────────────────────────────
+  if (id === 'steps-infographic') return (
+    <div style={{ ...wrap, background: '#fff', gap: 7, alignItems: 'flex-start' }}>
+      <T s={10} color="#1e293b" weight={800} spacing="-0.02em">4 steps to results</T>
+      {[['Sign up','2 min'],['Set your goal','5 min'],['Follow the system','Daily'],['See results','30 days']].map(([step, time], i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%' }}>
+          <div style={{ width: 20, height: 20, borderRadius: '50%', background: i === 0 ? accent : `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <T s={8} color={i === 0 ? '#fff' : accent} weight={900}>{i + 1}</T>
+          </div>
+          <T s={8} color="#374151" weight={600}>{step}</T>
+          <div style={{ flex: 1 }} />
+          <T s={7} color="#94a3b8">{time}</T>
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── vs-table ────────────────────────────────────────────────────────────────
+  if (id === 'vs-table') return (
+    <div style={{ ...wrap, background: '#fff', gap: 0, padding: 10 }}>
+      <div style={{ display: 'flex', width: '100%' }}>
+        <div style={{ flex: 1.5 }} />
+        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0', background: accent, borderRadius: '4px 4px 0 0' }}><T s={8} color="#fff" weight={800} align="center">Us</T></div>
+        <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}><T s={8} color="#94a3b8" weight={600} align="center">Them</T></div>
+      </div>
+      {[['Speed','✓','✗'],['Price','✓','✗'],['Support','✓','✗'],['Results','✓','~']].map(([feat, us, them]) => (
+        <div key={feat} style={{ display: 'flex', width: '100%', borderTop: '1px solid #f1f5f9' }}>
+          <div style={{ flex: 1.5, padding: '4px 0' }}><T s={7} color="#64748b">{feat}</T></div>
+          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0', background: `${accent}08` }}><T s={9} color={accent} align="center" weight={700}>{us}</T></div>
+          <div style={{ flex: 1, textAlign: 'center', padding: '4px 0' }}><T s={9} color="#ef4444" align="center" weight={700}>{them}</T></div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // ── flat-lay ────────────────────────────────────────────────────────────────
+  if (id === 'flat-lay') return (
+    <div style={{ ...wrap, background: '#f8fafc', gap: 8 }}>
+      {photoLayer}
+      <div style={pz({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 })}>
+        <div style={{ width: 82, height: 82, borderRadius: 10, background: `${accent}18`, border: `1px solid ${accent}33`, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <T s={34} color={accent} align="center">✦</T>
+        </div>
+        <T s={10} color="#1e293b" weight={700} align="center">Product Name</T>
+        <T s={14} color={accent} weight={900} align="center">$49</T>
+        <Btn label="Shop Now" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── app-mockup ──────────────────────────────────────────────────────────────
+  if (id === 'app-mockup') return (
+    <div style={{ ...wrap, background: '#f8fafc', flexDirection: 'row', gap: 10, alignItems: 'center', padding: 12 }}>
+      <div style={{ width: 54, height: 90, borderRadius: 8, border: '2.5px solid #1e293b', background: '#1e293b', flexShrink: 0, display: 'flex', flexDirection: 'column', padding: 5, gap: 3 }}>
+        <div style={{ height: 4, background: 'rgba(255,255,255,0.15)', borderRadius: 2 }} />
+        <div style={{ flex: 1, background: `${accent}44`, borderRadius: 3 }} />
+        <div style={{ height: 10, background: accent, borderRadius: 2 }} />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+        <T s={9} color="#1e293b" weight={800} spacing="-0.02em">Built for mobile-first</T>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {['Fast onboarding','Push notifications','Offline mode'].map((f, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check color={accent} /><T s={7} color="#64748b">{f}</T></div>
+          ))}
+        </div>
+        <Btn label="Try Free" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── photo-grid ──────────────────────────────────────────────────────────────
+  if (id === 'photo-grid') return (
+    <div style={{ ...wrap, background: '#0f1117', padding: 10, gap: 6 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, width: '100%', flex: 1 }}>
+        {[`${accent}44`, `${accent}66`, `${accent}55`, `${accent}80`].map((bg, i) => (
+          <div key={i} style={{ borderRadius: 4, background: bg, border: '1px solid rgba(255,255,255,0.1)', aspectRatio: '1', display: 'flex', alignItems: 'flex-end', padding: 4 }}>
+            <T s={6} color="rgba(255,255,255,0.65)">Item {i + 1}</T>
+          </div>
+        ))}
+      </div>
+      <T s={8} color="#f1f5f9" weight={700} align="center">Shop the Collection</T>
+    </div>
+  );
+
+  // ── brand-awareness ─────────────────────────────────────────────────────────
+  if (id === 'brand-awareness') return (
+    <div style={{ ...wrap, background: '#09090b', gap: 10 }}>
+      <div style={{ width: 58, height: 58, borderRadius: '50%', background: `${accent}22`, border: `2px solid ${accent}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <T s={22} color={accent} weight={900} align="center">B</T>
+      </div>
+      <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">YourBrand</T>
+      <Bar w={40} color={`${accent}55`} h={1} op={1} />
+      <T s={8} color={muted} align="center">Building the future, one step at a time.</T>
+    </div>
+  );
+
+  // ── tweet-screenshot ────────────────────────────────────────────────────────
+  if (id === 'tweet-screenshot') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 26, height: 26, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #818cf8)`, flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <T s={8} color="#0f172a" weight={700}>Real Customer</T>
+          <T s={7} color="#94a3b8">@realcustomer · 2h</T>
+        </div>
+      </div>
+      <T s={9} color="#0f172a">"Just got my results. This changed everything. 3x my output in 30 days. I can't believe I didn't start sooner."</T>
+      <div style={{ display: 'flex', gap: 14 }}>
+        <T s={7} color="#94a3b8">💬 47</T>
+        <T s={7} color="#94a3b8">🔁 312</T>
+        <T s={7} color="#ef4444">♥ 4,291</T>
+      </div>
+    </div>
+  );
+
+  // ── tiktok-native ───────────────────────────────────────────────────────────
+  if (id === 'tiktok-native') return (
+    <div style={{ ...wrap, background: '#09090b', padding: 0, gap: 0 }}>
+      {photoLayer}
+      <div style={{ position: 'absolute', right: 8, top: '28%', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', zIndex: 2 }}>
+        {[['♥','42K'],['💬','312'],['↗','Share']].map(([icon, count]) => (
+          <div key={icon} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 18, lineHeight: 1 }}>{icon}</span>
+            <T s={6} color="rgba(255,255,255,0.85)" align="center">{count}</T>
+          </div>
+        ))}
+      </div>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 40, padding: '12px 10px', zIndex: 2, background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)' }}>
+        <T s={8} color="#fff" weight={700}>@yourbrand</T>
+        <T s={8} color="rgba(255,255,255,0.85)">The strategy that changed everything ✨</T>
+        <T s={7} color="rgba(255,255,255,0.55)" weight={700}>♫ Original Audio</T>
+      </div>
+    </div>
+  );
+
+  // ── reddit-thread ───────────────────────────────────────────────────────────
+  if (id === 'reddit-thread') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 6 }}>
+      <T s={7} color="#ff4500" weight={700} caps spacing="0.04em">r/Success · Posted by u/member</T>
+      <T s={10} color="#1c1c1c" weight={700}>"The one framework that got me to $10k/month [full breakdown]"</T>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <T s={8} color={accent} weight={800}>▲</T>
+          <T s={8} color="#1c1c1c" weight={700}>8,293</T>
+          <T s={8} color={accent} weight={800}>▼</T>
+        </div>
+        <T s={7} color="#94a3b8">💬 847 comments</T>
+      </div>
+      <Btn label="Read Thread" bg="#ff4500" />
+    </div>
+  );
+
+  // ── email-mockup ────────────────────────────────────────────────────────────
+  if (id === 'email-mockup') return (
+    <div style={{ ...wrap, background: '#f8fafc', padding: 0, gap: 0, alignItems: 'stretch' }}>
+      <div style={{ background: '#1e293b', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ width: 14, height: 14, borderRadius: '50%', background: accent }} />
+        <T s={8} color="#fff" weight={700}>YourBrand</T>
+        <div style={{ flex: 1 }} />
+        <T s={6} color="rgba(255,255,255,0.4)">2:14 PM</T>
+      </div>
+      <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <T s={9} color="#1e293b" weight={800}>"You're leaving money on the table"</T>
+        <T s={7} color="#64748b">Hi [First Name], most people miss this one thing…</T>
+        <Btn label="Read Now →" bg={accent} />
+      </div>
+    </div>
+  );
+
+  // ── receipt-style ───────────────────────────────────────────────────────────
+  if (id === 'receipt-style') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'stretch', gap: 0, padding: 12 }}>
+      <div style={{ border: '1px dashed #cbd5e1', borderRadius: 4, padding: 10, display: 'flex', flexDirection: 'column', gap: 5 }}>
+        <T s={9} color="#1e293b" weight={800} align="center">What You Get</T>
+        <div style={{ height: 1, background: '#e2e8f0' }} />
+        {['Full access','Templates library','1-on-1 support','Lifetime updates'].map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
+            <T s={8} color="#374151">{item}</T>
+            <div style={{ flex: 1 }} />
+            <T s={8} color={accent} weight={700}>✓</T>
+          </div>
+        ))}
+        <div style={{ height: 1, background: '#e2e8f0' }} />
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <T s={9} color="#1e293b" weight={800}>Total Value</T>
+          <div style={{ flex: 1 }} />
+          <T s={9} color={accent} weight={900}>$997</T>
+        </div>
+      </div>
+      <div style={{ marginTop: 8 }}><Btn label="Get All This" bg={accent} /></div>
+    </div>
+  );
+
+  // ── bundle-stack ─────────────────────────────────────────────────────────────
+  if (id === 'bundle-stack') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
+      <div style={{ position: 'relative', width: 84, height: 64, alignSelf: 'center' }}>
+        <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%) rotate(-6deg)', width: 62, height: 46, background: `${accent}44`, borderRadius: 6, border: `1px solid ${accent}66` }} />
+        <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%) rotate(-3deg)', width: 62, height: 46, background: `${accent}70`, borderRadius: 6 }} />
+        <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', width: 62, height: 46, background: accent, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <T s={8} color="#fff" weight={800} align="center">Bundle</T>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ fontSize: 14, color: '#94a3b8', textDecoration: 'line-through', fontWeight: 600 }}>$597</div>
+        <T s={20} color={accent} weight={900} spacing="-0.03em">$197</T>
+      </div>
+      <T s={7} color="#94a3b8" align="center">Save $400 on the complete bundle</T>
+      <Btn label="Get Bundle" bg={accent} />
+    </div>
+  );
+
+  // ── testimonial-card ────────────────────────────────────────────────────────
+  if (id === 'testimonial-card') return (
+    <div style={{ ...wrap, background: '#fff', alignItems: 'flex-start', gap: 7 }}>
+      <Stars color={accent} />
+      <T s={9} color="#1e293b" weight={600}>"Doubled my revenue in 60 days. I was skeptical, but the results speak for themselves."</T>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ width: 26, height: 26, borderRadius: '50%', background: `linear-gradient(135deg, ${accent}, #f472b6)`, flexShrink: 0 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <T s={8} color="#1e293b" weight={700}>Sarah M. · CEO</T>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <T s={7} color="#00b67a" weight={700}>★</T>
+            <T s={6} color="#64748b">Verified on Trustpilot</T>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── versus-slide ────────────────────────────────────────────────────────────
+  if (id === 'versus-slide') return (
+    <div style={{ ...wrap, flexDirection: 'row', padding: 0, gap: 0 }}>
+      <div style={{ flex: 1, height: '100%', background: '#1e293b', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
+        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Without</T>
+        {['Wasted time','Guessing game','No system','Stuck forever'].map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Cross /><T s={7} color="rgba(255,255,255,0.55)">{item}</T></div>
+        ))}
+      </div>
+      <div style={{ width: 26, background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <T s={7} color={accent} weight={900} align="center">VS</T>
+      </div>
+      <div style={{ flex: 1, height: '100%', background: `${accent}18`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6, padding: 12 }}>
+        <T s={7} color={accent} caps spacing="0.1em">With Us</T>
+        {['Clear roadmap','Proven system','Fast results','Real growth'].map((item, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}><Check color={accent} /><T s={7} color="#1e293b">{item}</T></div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── before-after-slide ──────────────────────────────────────────────────────
+  if (id === 'before-after-slide') return (
+    <div style={{ ...wrap, padding: 0, gap: 0, justifyContent: 'stretch' }}>
+      <div style={{ flex: 1, background: 'linear-gradient(135deg,#1e293b,#334155)', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, padding: 12 }}>
+        <T s={7} color="rgba(255,255,255,0.4)" caps spacing="0.1em">Before</T>
+        <T s={10} color="rgba(255,255,255,0.75)" weight={600}>Struggling. No clear path. Trying everything.</T>
+      </div>
+      <div style={{ height: 28, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <T s={10} color="#fff" weight={900} align="center">↓ THE SHIFT ↓</T>
+      </div>
+      <div style={{ flex: 1, background: `${accent}20`, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, padding: 12 }}>
+        <T s={7} color={accent} caps spacing="0.1em">After</T>
+        <T s={10} color="#1e293b" weight={600}>Confident. On track. Seeing real results daily.</T>
+      </div>
+    </div>
+  );
+
+  // ── press-slide ─────────────────────────────────────────────────────────────
+  if (id === 'press-slide') return (
+    <div style={{ ...wrap, background: '#fff', gap: 8 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.12em">As Seen In</T>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+        {['Forbes','TechCrunch','Inc.','Wired'].map(pub => (
+          <T key={pub} s={8} color="#64748b" weight={800} align="center">{pub}</T>
+        ))}
+      </div>
+      <div style={{ height: 1, background: '#e2e8f0', width: '80%' }} />
+      <T s={9} color="#1e293b" weight={600} align="center">"A game-changer for the entire industry."</T>
+      <T s={7} color="#94a3b8" align="center">— Forbes, Jan 2025</T>
+      <Btn label="Read Coverage" bg={accent} />
+    </div>
+  );
+
+  // ── point-out-slide ─────────────────────────────────────────────────────────
+  if (id === 'point-out-slide') return (
+    <div style={{ ...wrap, background: '#fff', gap: 0, padding: 10 }}>
+      <T s={9} color="#1e293b" weight={800} align="center" spacing="-0.02em">Every detail matters</T>
+      <div style={{ position: 'relative', width: '100%', flex: 1, marginTop: 6 }}>
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', width: 52, height: 52, borderRadius: 8, background: `${accent}18`, border: `2px solid ${accent}55`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <T s={22} color={accent} align="center">✦</T>
+        </div>
+        {[['← Feature 1','8%','8%'],['← Feature 2','68%','8%'],['← Feature 3','8%','68%']].map(([label, l, t]) => (
+          <div key={label} style={{ position: 'absolute', left: l, top: t, background: '#fff', border: `1px solid ${accent}33`, borderRadius: 4, padding: '2px 6px', fontSize: 6, fontWeight: 700, color: '#374151', whiteSpace: 'nowrap', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+            {label}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // ── gallery-slide ───────────────────────────────────────────────────────────
+  if (id === 'gallery-slide') return (
+    <div style={{ ...wrap, padding: 0, gap: 0, background: '#0f1117' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, flex: 1, width: '100%' }}>
+        {[`${accent}55`, `${accent}33`, `${accent}66`, `${accent}44`].map((bg, i) => (
+          <div key={i} style={{ background: bg, display: 'flex', alignItems: 'flex-end', padding: 5 }}>
+            <T s={6} color="rgba(255,255,255,0.75)" weight={600}>Look {i + 1}</T>
+          </div>
+        ))}
+      </div>
+      <div style={{ padding: '8px 10px', width: '100%', background: '#0f1117' }}>
+        <T s={9} color="#f1f5f9" weight={700}>Shop the collection →</T>
+      </div>
+    </div>
+  );
+
+  // ── chat-native ─────────────────────────────────────────────────────────────
+  if (id === 'chat-native') return (
+    <div style={{ ...wrap, background: '#f9fafb', alignItems: 'flex-start', gap: 8, padding: 12 }}>
+      <T s={7} color="#94a3b8" align="center" caps spacing="0.06em">Messages</T>
+      <div style={{ alignSelf: 'flex-start', background: '#e5e7eb', borderRadius: '12px 12px 12px 2px', padding: '6px 10px', maxWidth: '70%' }}>
+        <T s={8} color="#1f2937">"How do I get started?"</T>
+      </div>
+      <div style={{ alignSelf: 'flex-end', background: '#1d9bf0', borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '70%' }}>
+        <T s={8} color="#fff">"Just click the link below 👇"</T>
+      </div>
+      <div style={{ alignSelf: 'flex-end', background: accent, borderRadius: '12px 12px 2px 12px', padding: '6px 10px', maxWidth: '80%' }}>
+        <T s={8} color="#fff">"We set everything up for you."</T>
+      </div>
+    </div>
+  );
+
+  // ── offer-drop ──────────────────────────────────────────────────────────────
+  if (id === 'offer-drop') return (
+    <div style={{ ...wrap, background: '#0f1117', gap: 8 }}>
+      <div style={{ background: `${accent}18`, border: `1px solid ${accent}44`, borderRadius: 20, padding: '2px 10px' }}>
+        <T s={7} color={accent} caps spacing="0.1em">⚡ Flash Drop</T>
+      </div>
+      <div style={{ width: 92, height: 92, borderRadius: '50%', border: `3px solid ${accent}`, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1, boxShadow: `0 0 30px ${accent}33` }}>
+        <T s={8} color={muted} align="center" caps spacing="0.06em">Save</T>
+        <T s={24} color={accent} weight={900} align="center" spacing="-0.04em">40%</T>
+        <T s={7} color={muted} align="center">Today only</T>
+      </div>
+      <Btn label="Claim Offer" bg={accent} />
+    </div>
+  );
+
   // fallback for any unmapped id
   return (
     <div style={{ ...wrap, gap: 8 }}>
