@@ -558,7 +558,7 @@ function BannerPreview({ banners, imagesReady }: { banners: BannerData[]; images
               border:     `1px solid ${i === active ? 'var(--accent)' : 'var(--border)'}`,
               color:      i === active ? '#fff' : 'var(--sub)',
             }}>
-              {b.size}
+              {({'1080x1080':'Square','1200x628':'Landscape','1080x1920':'Story','300x250':'Rectangle','728x90':'Leaderboard','160x600':'Skyscraper'} as Record<string,string>)[b.size] ?? b.size}
             </button>
           ))}
         </div>
