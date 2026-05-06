@@ -1291,100 +1291,100 @@ function Fallback({ id, tone }: { id: string; tone: string }) {
 // ─── Carousel slide preview (animated) ───────────────────────────────────────
 
 const TEMPLATE_STYLES: Record<string, { bg: string; light: boolean }> = {
-  'full-bleed':         { bg: 'linear-gradient(160deg,#78350f,#d97706)',           light: false },
-  'bold-headline':      { bg: '#000',                                               light: false },
-  'minimal':            { bg: '#ffffff',                                            light: true  },
-  'ugc-style':          { bg: '#fafafa',                                            light: true  },
-  'testimonial':        { bg: '#ffffff',                                            light: true  },
-  'stats-hero':         { bg: '#020617',                                            light: false },
-  'feature-list':       { bg: '#ffffff',                                            light: true  },
-  'cta-final':          { bg: 'linear-gradient(135deg,#450a0a,#7f1d1d)',            light: false },
-  'gradient-pop':       { bg: 'linear-gradient(135deg,#059669,#0891b2,#6366f1)',    light: false },
-  'dark-luxury':        { bg: 'linear-gradient(160deg,#020617,#0f172a,#1c1917)',    light: false },
-  'bright-minimal':     { bg: '#ffffff',                                            light: true  },
-  'story-hook':         { bg: 'linear-gradient(160deg,#022c22,#064e3b)',            light: false },
-  'problem-slide':      { bg: 'linear-gradient(135deg,#1c0505,#450a0a)',            light: false },
-  'text-only-bold':     { bg: '#f8fafc',                                            light: true  },
-  'product-center':     { bg: '#f8fafc',                                            light: true  },
-  'neon-dark':          { bg: '#020617',                                            light: false },
-  'magazine-editorial': { bg: '#ffffff',                                            light: true  },
-  'color-block':        { bg: '#f8fafc',                                            light: true  },
-  'floating-card':      { bg: 'linear-gradient(135deg,#052e16,#14532d)',            light: false },
-  'countdown-urgency':  { bg: 'linear-gradient(135deg,#1c0505,#7f1d1d)',            light: false },
-  'social-proof-grid':  { bg: '#ffffff',                                            light: true  },
-  'headline-badge':     { bg: '#18181b',                                            light: false },
-  'side-by-side':       { bg: '#ffffff',                                            light: true  },
-  'diagonal-split':     { bg: '#1c1917',                                            light: false },
-  'overlay-card':       { bg: 'linear-gradient(160deg,#1a1a2e,#16213e,#0f3460)',   light: false },
-  'number-list':        { bg: '#ffffff',                                            light: true  },
-  'brand-manifesto':    { bg: '#18181b',                                            light: false },
-  'product-demo':       { bg: '#f8fafc',                                            light: true  },
-  'retro-bold':         { bg: '#fef3c7',                                            light: true  },
-  'split-panel':        { bg: '#f8fafc',                                            light: true  },
-  'offer-stack':        { bg: 'linear-gradient(135deg,#450a0a,#991b1b)',           light: false },
-  'value-math':         { bg: 'linear-gradient(135deg,#020617,#0c1a3a)',           light: false },
-  'case-study':         { bg: '#ffffff',                                            light: true  },
-  'insight-frame':      { bg: '#ffffff',                                            light: true  },
-  'pain-diagnostic':    { bg: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)',          light: false },
-  'mistake-alert':      { bg: 'linear-gradient(135deg,#1c0505,#431407)',           light: false },
-  'empathy-card':       { bg: 'linear-gradient(135deg,#fff7f0,#fce7f3)',           light: true  },
-  'validation-card':    { bg: 'linear-gradient(135deg,#f5f3ff,#ede9fe)',           light: true  },
-  'do-dont':            { bg: '#ffffff',                                            light: true  },
-  'transform-split':    { bg: '#ffffff',                                            light: true  },
+  'full-bleed':         { bg: '#92400e',   light: false },
+  'bold-headline':      { bg: '#000000',   light: false },
+  'minimal':            { bg: '#ffffff',   light: true  },
+  'ugc-style':          { bg: '#fafafa',   light: true  },
+  'testimonial':        { bg: '#ffffff',   light: true  },
+  'stats-hero':         { bg: '#020617',   light: false },
+  'feature-list':       { bg: '#ffffff',   light: true  },
+  'cta-final':          { bg: '#7f1d1d',   light: false },
+  'gradient-pop':       { bg: '#4f46e5',   light: false },
+  'dark-luxury':        { bg: '#0a0f1e',   light: false },
+  'bright-minimal':     { bg: '#ffffff',   light: true  },
+  'story-hook':         { bg: '#064e3b',   light: false },
+  'problem-slide':      { bg: '#3b0a0a',   light: false },
+  'text-only-bold':     { bg: '#f8fafc',   light: true  },
+  'product-center':     { bg: '#f8fafc',   light: true  },
+  'neon-dark':          { bg: '#020617',   light: false },
+  'magazine-editorial': { bg: '#ffffff',   light: true  },
+  'color-block':        { bg: '#f8fafc',   light: true  },
+  'floating-card':      { bg: '#052e16',   light: false },
+  'countdown-urgency':  { bg: '#7f1d1d',   light: false },
+  'social-proof-grid':  { bg: '#ffffff',   light: true  },
+  'headline-badge':     { bg: '#18181b',   light: false },
+  'side-by-side':       { bg: '#ffffff',   light: true  },
+  'diagonal-split':     { bg: '#1c1917',   light: false },
+  'overlay-card':       { bg: '#0f172a',   light: false },
+  'number-list':        { bg: '#ffffff',   light: true  },
+  'brand-manifesto':    { bg: '#18181b',   light: false },
+  'product-demo':       { bg: '#f8fafc',   light: true  },
+  'retro-bold':         { bg: '#fef3c7',   light: true  },
+  'split-panel':        { bg: '#f8fafc',   light: true  },
+  'offer-stack':        { bg: '#991b1b',   light: false },
+  'value-math':         { bg: '#0c1a3a',   light: false },
+  'case-study':         { bg: '#ffffff',   light: true  },
+  'insight-frame':      { bg: '#ffffff',   light: true  },
+  'pain-diagnostic':    { bg: '#0f0a1a',   light: false },
+  'mistake-alert':      { bg: '#431407',   light: false },
+  'empathy-card':       { bg: '#fdf2f8',   light: true  },
+  'validation-card':    { bg: '#ede9fe',   light: true  },
+  'do-dont':            { bg: '#ffffff',   light: true  },
+  'transform-split':    { bg: '#ffffff',   light: true  },
   // ── Batch 5 ───────────────────────────────────────────────────────────────────
-  'guarantee-badge':    { bg: '#f0fdf4',                                            light: true  },
-  'free-trial':         { bg: '#f0f9ff',                                            light: true  },
-  'limited-drop':       { bg: 'linear-gradient(135deg,#0a0a0a,#1a0505)',           light: false },
-  'offer-announce':     { bg: 'linear-gradient(135deg,#7c1d1d,#b45309)',           light: false },
-  'price-compare':      { bg: '#ffffff',                                            light: true  },
-  'bundle-stack':       { bg: '#fafaf9',                                            light: true  },
-  'award-winner':       { bg: 'linear-gradient(160deg,#1c1400,#291e00)',           light: false },
-  'founder-story':      { bg: 'linear-gradient(135deg,#fef3c7,#fde68a)',           light: true  },
-  'review-card':        { bg: '#ffffff',                                            light: true  },
-  'trust-bar':          { bg: '#ffffff',                                            light: true  },
-  'news-frame':         { bg: '#ffffff',                                            light: true  },
-  'video-thumbnail':    { bg: '#000000',                                            light: false },
-  'community-quote':    { bg: '#f8fafc',                                            light: true  },
-  'stat-study':         { bg: '#ffffff',                                            light: true  },
-  'caption-style':      { bg: '#0a0a0a',                                            light: false },
-  'chat-thread':        { bg: '#f0fdf4',                                            light: true  },
-  'meme-format':        { bg: '#ffffff',                                            light: true  },
-  'comment-reply':      { bg: '#fff7ed',                                            light: true  },
-  'poll-card':          { bg: '#1a1a2e',                                            light: false },
-  'hot-take':           { bg: 'linear-gradient(135deg,#1c0505,#3b0a0a)',           light: false },
-  'leaderboard':        { bg: '#ffffff',                                            light: true  },
-  'checklist-viral':    { bg: '#ffffff',                                            light: true  },
-  'myth-reality':       { bg: 'linear-gradient(135deg,#0f0720,#1a0a2e)',           light: false },
-  'event-card':         { bg: 'linear-gradient(135deg,#1e0a3c,#2d1060)',           light: false },
-  'three-reasons':      { bg: '#ffffff',                                            light: true  },
-  'timeline-journey':   { bg: '#ffffff',                                            light: true  },
-  'tiktok-native':      { bg: '#000000',                                            light: false },
-  'tweet-screenshot':   { bg: '#ffffff',                                            light: true  },
-  'reddit-thread':      { bg: '#f8fafc',                                            light: true  },
-  'email-mockup':       { bg: '#ffffff',                                            light: true  },
-  'receipt-style':      { bg: '#fefce8',                                            light: true  },
-  'aurora-gradient':    { bg: 'linear-gradient(135deg,#0d0221,#1a0438,#062a0a)',  light: false },
-  'duotone-photo':      { bg: 'linear-gradient(135deg,#1e0a3c,#0d0a1e)',          light: false },
-  'mono-editorial':     { bg: '#ffffff',                                            light: true  },
-  'risograph-print':    { bg: '#fef9c3',                                            light: true  },
-  'collage-cutout':     { bg: '#f8fafc',                                            light: true  },
-  'brutalist':          { bg: '#e7e5e4',                                            light: true  },
-  'chart-reveal':       { bg: '#ffffff',                                            light: true  },
-  'steps-infographic':  { bg: '#ffffff',                                            light: true  },
-  'vs-table':           { bg: '#ffffff',                                            light: true  },
-  'flat-lay':           { bg: '#faf7f5',                                            light: true  },
-  'app-mockup':         { bg: '#f0f9ff',                                            light: true  },
-  'photo-grid':         { bg: '#ffffff',                                            light: true  },
-  'brand-awareness':    { bg: '#18181b',                                            light: false },
+  'guarantee-badge':    { bg: '#f0fdf4',   light: true  },
+  'free-trial':         { bg: '#f0f9ff',   light: true  },
+  'limited-drop':       { bg: '#0a0a0a',   light: false },
+  'offer-announce':     { bg: '#7c1d1d',   light: false },
+  'price-compare':      { bg: '#ffffff',   light: true  },
+  'bundle-stack':       { bg: '#fafaf9',   light: true  },
+  'award-winner':       { bg: '#1c1400',   light: false },
+  'founder-story':      { bg: '#fef3c7',   light: true  },
+  'review-card':        { bg: '#ffffff',   light: true  },
+  'trust-bar':          { bg: '#ffffff',   light: true  },
+  'news-frame':         { bg: '#ffffff',   light: true  },
+  'video-thumbnail':    { bg: '#000000',   light: false },
+  'community-quote':    { bg: '#f8fafc',   light: true  },
+  'stat-study':         { bg: '#ffffff',   light: true  },
+  'caption-style':      { bg: '#0a0a0a',   light: false },
+  'chat-thread':        { bg: '#f0fdf4',   light: true  },
+  'meme-format':        { bg: '#ffffff',   light: true  },
+  'comment-reply':      { bg: '#fff7ed',   light: true  },
+  'poll-card':          { bg: '#1a1a2e',   light: false },
+  'hot-take':           { bg: '#1c0505',   light: false },
+  'leaderboard':        { bg: '#ffffff',   light: true  },
+  'checklist-viral':    { bg: '#ffffff',   light: true  },
+  'myth-reality':       { bg: '#0f0720',   light: false },
+  'event-card':         { bg: '#1e0a3c',   light: false },
+  'three-reasons':      { bg: '#ffffff',   light: true  },
+  'timeline-journey':   { bg: '#ffffff',   light: true  },
+  'tiktok-native':      { bg: '#000000',   light: false },
+  'tweet-screenshot':   { bg: '#ffffff',   light: true  },
+  'reddit-thread':      { bg: '#f8fafc',   light: true  },
+  'email-mockup':       { bg: '#ffffff',   light: true  },
+  'receipt-style':      { bg: '#fefce8',   light: true  },
+  'aurora-gradient':    { bg: '#0d0221',   light: false },
+  'duotone-photo':      { bg: '#0d0a1e',   light: false },
+  'mono-editorial':     { bg: '#ffffff',   light: true  },
+  'risograph-print':    { bg: '#fef9c3',   light: true  },
+  'collage-cutout':     { bg: '#f8fafc',   light: true  },
+  'brutalist':          { bg: '#e7e5e4',   light: true  },
+  'chart-reveal':       { bg: '#ffffff',   light: true  },
+  'steps-infographic':  { bg: '#ffffff',   light: true  },
+  'vs-table':           { bg: '#ffffff',   light: true  },
+  'flat-lay':           { bg: '#faf7f5',   light: true  },
+  'app-mockup':         { bg: '#f0f9ff',   light: true  },
+  'photo-grid':         { bg: '#ffffff',   light: true  },
+  'brand-awareness':    { bg: '#18181b',   light: false },
   // ── Creative angle batch ──────────────────────────────────────────────────────
-  'testimonial-card':   { bg: '#ffffff',                                            light: true  },
-  'versus-slide':       { bg: '#f0ebe0',                                            light: true  },
-  'before-after-slide': { bg: '#f0ebe0',                                            light: true  },
-  'press-slide':        { bg: '#111111',                                            light: false },
-  'point-out-slide':    { bg: '#111111',                                            light: false },
-  'gallery-slide':      { bg: '#ffffff',                                            light: true  },
-  'chat-native':        { bg: '#f2f2f7',                                            light: true  },
-  'offer-drop':         { bg: '#0f172a',                                            light: false },
+  'testimonial-card':   { bg: '#ffffff',   light: true  },
+  'versus-slide':       { bg: '#f0ebe0',   light: true  },
+  'before-after-slide': { bg: '#f0ebe0',   light: true  },
+  'press-slide':        { bg: '#111111',   light: false },
+  'point-out-slide':    { bg: '#111111',   light: false },
+  'gallery-slide':      { bg: '#ffffff',   light: true  },
+  'chat-native':        { bg: '#f2f2f7',   light: true  },
+  'offer-drop':         { bg: '#0f172a',   light: false },
 };
 
 const TONE_ACCENTS: Record<string, string> = {
@@ -1506,6 +1506,9 @@ const PHOTO_TEMPLATE_IDS = new Set([
   'caption-style','tiktok-native','video-thumbnail','duotone-photo',
   'hot-take','poll-card','offer-announce','limited-drop',
   'event-card','award-winner','aurora-gradient',
+  // ── Extended – product/lifestyle templates ────────────────────────────────
+  'flat-lay','photo-grid','split-panel','before-after-slide',
+  'collage-cutout','retro-bold',
 ]);
 
 const PHOTO_OVERLAYS: Record<string, string> = {
@@ -1530,6 +1533,13 @@ const PHOTO_OVERLAYS: Record<string, string> = {
   'event-card':         'linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.82) 100%)',
   'award-winner':       'linear-gradient(135deg, rgba(0,0,0,0.62) 0%, rgba(0,0,0,0.42) 100%)',
   'aurora-gradient':    'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.55) 100%)',
+  // ── Extended batch ──────────────────────────────────────────────────────────
+  'flat-lay':           'linear-gradient(to bottom, rgba(255,255,255,0.0) 0%, rgba(255,255,255,0.70) 100%)',
+  'photo-grid':         'linear-gradient(to bottom, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.52) 100%)',
+  'split-panel':        'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.0) 55%)',
+  'before-after-slide': 'linear-gradient(to bottom, rgba(0,0,0,0.12) 0%, rgba(0,0,0,0.62) 100%)',
+  'collage-cutout':     'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.50) 100%)',
+  'retro-bold':         'linear-gradient(to bottom, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.55) 100%)',
 };
 
 interface PhotoMeta {
@@ -1761,35 +1771,35 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
 
   if (id === 'offer-stack') {
     if (slide === 2) return <div style={{ ...s, background: '#ef4444' }}><div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 120%, rgba(255,255,255,0.08), transparent 70%)' }} /></div>;
-    return <div style={{ ...s, background: 'linear-gradient(135deg,#450a0a,#991b1b)' }}><div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, rgba(239,68,68,0.15) 1px, transparent 1px)`, backgroundSize: '14px 14px' }} /></div>;
+    return <div style={{ ...s, background: '#991b1b' }}><div style={{ position: 'absolute', inset: 0, backgroundImage: `radial-gradient(circle, rgba(239,68,68,0.15) 1px, transparent 1px)`, backgroundSize: '14px 14px' }} /></div>;
   }
   if (id === 'value-math') {
-    if (slide === 2) return <div style={{ ...s, background: 'linear-gradient(135deg,#052e16,#065f46)' }} />;
-    return <div style={{ ...s, background: 'linear-gradient(160deg,#020617,#0c1a3a)' }}><div style={{ position: 'absolute', inset: 0, background: `linear-gradient(${accent}08 1px, transparent 1px), linear-gradient(90deg, ${accent}08 1px, transparent 1px)`, backgroundSize: '20px 20px' }} /></div>;
+    if (slide === 2) return <div style={{ ...s, background: '#065f46' }} />;
+    return <div style={{ ...s, background: '#0c1a3a' }}><div style={{ position: 'absolute', inset: 0, background: `linear-gradient(${accent}08 1px, transparent 1px), linear-gradient(90deg, ${accent}08 1px, transparent 1px)`, backgroundSize: '20px 20px' }} /></div>;
   }
   if (id === 'case-study') {
     if (slide === 2) return <div style={{ ...s, background: accent }} />;
     return <div style={{ ...s, background: '#ffffff' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent }} /></div>;
   }
   if (id === 'insight-frame') {
-    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg, ${accent}, ${accent}cc)` }} />;
+    if (slide === 2) return <div style={{ ...s, background: accent }} />;
     return <div style={{ ...s, background: '#ffffff' }}><div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: 3, background: accent }} /></div>;
   }
   if (id === 'pain-diagnostic') {
     if (slide === 2) return <div style={{ ...s, background: accent }} />;
-    return <div style={{ ...s, background: 'linear-gradient(135deg,#0a0a0f,#1a0a1a)' }}>{blob('-10%','-10%',200,'#f43f5e',0.06)}{blob('60%','60%',180,'#7c3aed',0.06)}</div>;
+    return <div style={{ ...s, background: '#0f0a1a' }}>{blob('-10%','-10%',200,'#f43f5e',0.06)}{blob('60%','60%',180,'#7c3aed',0.06)}</div>;
   }
   if (id === 'mistake-alert') {
-    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#1c0505,#431407)` }} />;
-    return <div style={{ ...s, background: 'linear-gradient(135deg,#1c0505,#431407)' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} /></div>;
+    if (slide === 2) return <div style={{ ...s, background: '#431407' }} />;
+    return <div style={{ ...s, background: '#431407' }}><div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#f97316' }} /></div>;
   }
   if (id === 'empathy-card') {
-    if (slide === 2) return <div style={{ ...s, background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }} />;
-    return <div style={{ ...s, background: 'linear-gradient(160deg,#fff7f0,#fce7f3)' }}>{blob('60%','-20%',180,'#ec4899',0.1)}</div>;
+    if (slide === 2) return <div style={{ ...s, background: '#7c3aed' }} />;
+    return <div style={{ ...s, background: '#fdf2f8' }}>{blob('60%','-20%',180,'#ec4899',0.1)}</div>;
   }
   if (id === 'validation-card') {
-    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#4c1d95,#6d28d9)` }} />;
-    return <div style={{ ...s, background: 'linear-gradient(135deg,#f5f3ff,#ede9fe)' }}>{blob('60%','60%',200,'#a78bfa',0.15)}</div>;
+    if (slide === 2) return <div style={{ ...s, background: '#4c1d95' }} />;
+    return <div style={{ ...s, background: '#ede9fe' }}>{blob('60%','60%',200,'#a78bfa',0.15)}</div>;
   }
   if (id === 'do-dont') {
     if (slide === 2) return <div style={{ ...s, background: '#f0fdf4' }} />;
@@ -1802,11 +1812,11 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
     );
   }
   if (id === 'transform-split') {
-    if (slide === 2) return <div style={{ ...s, background: `linear-gradient(135deg,#042f2e,#0f766e)` }} />;
+    if (slide === 2) return <div style={{ ...s, background: '#0f766e' }} />;
     return (
       <div style={{ ...s, flexDirection: 'column', padding: 0, gap: 0 }}>
-        <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#1e293b,#334155)' }} />
-        <div style={{ flex: 1, width: '100%', background: 'linear-gradient(135deg,#042f2e,#0f766e)' }} />
+        <div style={{ flex: 1, width: '100%', background: '#334155' }} />
+        <div style={{ flex: 1, width: '100%', background: '#0f766e' }} />
       </div>
     );
   }
@@ -1848,7 +1858,7 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
   );
 
   // Group C: Warm/social
-  if (id === 'founder-story') return <div style={{ ...s, background: 'linear-gradient(135deg, #fef3c7, #fde68a)' }} />;
+  if (id === 'founder-story') return <div style={{ ...s, background: '#fef3c7' }} />;
   if (id === 'community-quote' || id === 'reddit-thread') return <div style={{ ...s, background: '#f1f5f9' }} />;
   if (id === 'chat-thread' || id === 'tweet-screenshot' || id === 'meme-format' || id === 'receipt-style' || id === 'photo-grid') return <div style={{ ...s, background: '#fff' }} />;
   if (id === 'comment-reply') return <div style={{ ...s, background: '#000' }}>{blob('40%','30%',130,accent,0.18)}</div>;
@@ -1869,7 +1879,14 @@ function SlideBg({ id, slide, accent, photoMeta }: { id: string; slide: 0|1|2; a
       <div style={{ flex:1, background: accent }} />
     </div>
   );
-  if (id === 'aurora-gradient') return <div style={{ ...s, background: 'linear-gradient(135deg, #c084fc 0%, #818cf8 30%, #38bdf8 60%, #34d399 100%)' }} />;
+  if (id === 'aurora-gradient') return (
+    <div style={{ ...s, background: '#0d0221', overflow: 'hidden' }}>
+      {/* Aurora arc bands — pure CSS, no gradient background */}
+      <div style={{ position: 'absolute', top: '-40%', left: '-20%', width: '110%', height: '80%', borderRadius: '50%', background: '#a855f7', opacity: 0.18, filter: 'blur(40px)' }} />
+      <div style={{ position: 'absolute', top: '-10%', left: '30%', width: '90%', height: '60%', borderRadius: '50%', background: '#38bdf8', opacity: 0.14, filter: 'blur(50px)' }} />
+      <div style={{ position: 'absolute', bottom: '-20%', left: '-10%', width: '80%', height: '55%', borderRadius: '50%', background: '#34d399', opacity: 0.12, filter: 'blur(45px)' }} />
+    </div>
+  );
   if (id === 'duotone-photo') return (
     <div style={{ ...s, background: slide === 2 ? accent : '#000' }}>
       {slide !== 2 && <div style={{ position:'absolute', inset:0, background: `linear-gradient(135deg, ${accent}66, transparent)` }} />}
@@ -1960,12 +1977,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={9} color="rgba(255,255,255,0.7)" align="center">Start for free today</T>
-          <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">Get Access Now</T>
-          <div style={{ background: '#fff', borderRadius: 30, padding: '8px 20px', marginTop: 4, boxShadow: '0 4px 20px rgba(0,0,0,0.3)' }}>
-            <T s={9} color={accent} weight={800}>Claim Free Trial →</T>
+        <div style={{ ...z, alignItems:'flex-start', justifyContent:'flex-end', padding:'0 14px 20px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.2)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left" spacing="0.01em">That's the full story. What you do next is up to you.</T>
+            <T s={7.5} color="rgba(255,255,255,0.45)" align="left">The scroll stops here. The action starts now.</T>
+            <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -1997,13 +2016,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 10 }}>
+        <div style={{ ...zc, gap: 9, padding:'0 16px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: accent, zIndex: 2 }} />
-          <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">Ready to start?</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
-            <T s={9} color="#fff" weight={800}>GET STARTED →</T>
-          </div>
+          <div style={{ height:2, background:accent, width:32, marginTop:8 }} />
+          <T s={8} color="rgba(241,245,249,0.45)" weight={300} align="center" spacing="0.06em" caps>Built for people who</T>
+          <T s={14} color="#f1f5f9" weight={900} align="center" spacing="-0.04em">never settle for less.</T>
+          <T s={7} color="rgba(241,245,249,0.3)" align="center">Not for everyone.</T>
         </div>
       );
     }
@@ -2033,12 +2053,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={8} color="rgba(255,255,255,0.65)" align="center">Limited time</T>
-          <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Start Free Today</T>
-          <div style={{ background: '#fff', borderRadius: 30, padding: '8px 22px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
-            <T s={9} color="#7c3aed" weight={800}>Claim Offer →</T>
+        <div style={{ ...zc, gap: 10, padding:'0 16px' }}>
+          <div style={{ background:'rgba(255,255,255,0.12)', backdropFilter:'blur(8px)', borderRadius:12, padding:'16px 14px', width:'90%', display:'flex', flexDirection:'column', gap:8, border:'1px solid rgba(255,255,255,0.2)' }}>
+            <T s={8} color="rgba(255,255,255,0.5)" weight={300} align="center" spacing="0.06em" caps>For those who</T>
+            <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">pop when others blend in.</T>
+            <T s={7} color="rgba(255,255,255,0.35)" align="center">Not for the background.</T>
           </div>
         </div>
       );
@@ -2074,13 +2095,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={11} color="#fff" weight={900} align="center" spacing="-0.02em">Ready to switch sides?</T>
-            <div style={{ background: '#fff', borderRadius: 30, padding: '8px 20px', boxShadow: '0 6px 18px rgba(0,0,0,0.25)' }}>
-              <T s={9} color={accent} weight={800}>Start Free →</T>
-            </div>
+        <div style={{ ...z, background: accent, alignItems:'flex-start', justifyContent:'flex-end', padding:'18px 18px 22px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.3)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left">That's the before. You've already seen the after. The question is: which side will you be on?</T>
+            <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -2108,13 +2129,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement (neon)
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={9} color="rgba(255,255,255,0.4)" align="center">Join the future</T>
-          <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">Start Glowing Today</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: glow }}>
-            <T s={9} color="#fff" weight={800}>Join Now →</T>
-          </div>
+        <div style={{ ...zc, gap: 9, padding:'0 16px' }}>
+          <div style={{ height:2, background:accent, width:30, boxShadow:glow }} />
+          <T s={8} color="rgba(255,255,255,0.4)" weight={300} align="center" spacing="0.06em" caps>Built for brands that</T>
+          <div style={{ textShadow:glow }}><T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">glow in the dark.</T></div>
+          <T s={7} color="rgba(255,255,255,0.25)" align="center">Not for the dim ones.</T>
         </div>
       );
     }
@@ -2148,14 +2169,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement (retro)
       return (
-        <div style={{ ...z, background: '#1e293b' }}>
-          <div style={{ ...zc, gap: 8 }}>
-            <T s={7} color="rgba(254,243,199,0.6)" caps spacing="0.12em" align="center">Final offer</T>
-            <T s={13} color="#fef3c7" weight={900} align="center" spacing="-0.02em">Join the legacy.</T>
-            <div style={{ background: '#fef3c7', borderRadius: 6, padding: '7px 18px', marginTop: 4 }}>
-              <T s={9} color="#1e293b" weight={800}>Shop Now →</T>
-            </div>
+        <div style={{ ...z, background: '#1e293b', alignItems:'center', justifyContent:'center' }}>
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8, padding:'0 16px' }}>
+            <div style={{ height:3, background:'#fef3c7', width:32 }} />
+            <T s={8} color="rgba(254,243,199,0.45)" weight={300} align="center" spacing="0.08em" caps>Made for people who</T>
+            <T s={14} color="#fef3c7" weight={900} align="center" spacing="-0.02em">respect what lasts.</T>
+            <T s={7} color="rgba(254,243,199,0.3)" align="center">Not for the trend-chasers.</T>
           </div>
         </div>
       );
@@ -2188,15 +2209,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Cart Card (color-block split version)
       return (
         <div style={{ ...z, flexDirection: 'row' }}>
-          <div style={{ flex: 1, background: '#0f172a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <T s={10} color="#f1f5f9" weight={900} align="center">Start today.</T>
-            <div style={{ background: accent, borderRadius: 6, padding: '6px 14px' }}>
-              <T s={8} color="#fff" weight={700}>Get It →</T>
+          <div style={{ flex: 1, background: '#0f172a', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap:5, padding:'14px 12px' }}>
+            <Stars color="#f59e0b" />
+            <T s={9} color="#f1f5f9" weight={800}>The Bold Bundle</T>
+            <div style={{ display:'flex', gap:5, alignItems:'baseline' }}>
+              <div style={{ textDecoration:'line-through' }}><T s={6} color="#475569">$99</T></div>
+              <T s={14} color={accent} weight={900}>$49</T>
+            </div>
+            <div style={{ background:accent, borderRadius:5, padding:'5px 10px', width:'100%', textAlign:'center' }}>
+              <T s={7.5} color="#fff" weight={700} align="center">Get It →</T>
             </div>
           </div>
-          <div style={{ flex: 1, background: accent }} />
+          <div style={{ flex: 1, background: accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <T s={22} color="rgba(255,255,255,0.2)" weight={900} align="center" spacing="-0.06em">BOLD.</T>
+          </div>
         </div>
       );
     }
@@ -2225,15 +2254,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <div style={{ background: `${accent}22`, border: `1px solid ${accent}55`, borderRadius: 20, padding: '3px 12px' }}>
-            <T s={6} color={accent} weight={700}>Limited spots</T>
+        <div style={{ ...zc, gap: 9, padding:'0 16px' }}>
+          <div style={{ background: `${accent}18`, border: `1px solid ${accent}33`, borderRadius: 20, padding: '3px 12px' }}>
+            <T s={6} color={accent} weight={700}>✦ Brand philosophy</T>
           </div>
-          <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Join the winners.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
-            <T s={9} color="#fff" weight={800}>Get Access →</T>
-          </div>
+          <T s={8} color="rgba(241,245,249,0.45)" weight={300} align="center" spacing="0.06em" caps>For those who</T>
+          <T s={13} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">hook before they sell.</T>
+          <T s={7} color="rgba(241,245,249,0.3)" align="center">Not for the pushy ones.</T>
         </div>
       );
     }
@@ -2258,13 +2287,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={10} color="#0f172a" weight={700} align="center" spacing="-0.01em">Simple is powerful.</T>
-          <div style={{ background: '#0f172a', borderRadius: 6, padding: '8px 22px' }}>
-            <T s={9} color="#fff" weight={700}>Get Started</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this principle</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px', width:'100%' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Complexity is a bug, not a feature. The best tools are the ones you don't have to think about.</T>
           </div>
-          <T s={7} color="#94a3b8" align="center">Free forever plan available</T>
+          <T s={7} color="#64748b">Share this with your team before the next tool debate.</T>
+          <T s={7.5} color={accent} weight={700}>yourbrand.com →</T>
         </div>
       );
     }
@@ -2295,13 +2326,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={10} color="#0f172a" weight={800} align="center">Start in minutes.</T>
-          <div style={{ background: accent, borderRadius: 30, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Get Started →</T>
-          </div>
-          <T s={7} color="#94a3b8">No credit card required</T>
+        <div style={{ ...zc, gap: 10, padding: '0 16px' }}>
+          <div style={{ height: 1, background: '#e2e8f0', width: 40 }} />
+          <T s={8} color="#94a3b8" weight={300} align="center" spacing="0.08em" caps>Built for people who</T>
+          <T s={14} color="#0f172a" weight={900} align="center" spacing="-0.03em">like things that just work.</T>
+          <T s={7} color="#cbd5e1" align="center">Not for everyone. That's fine.</T>
+          <T s={7.5} color={accent} weight={700}>yourbrand.com →</T>
         </div>
       );
     }
@@ -2322,12 +2354,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={11} color="#fff" weight={800} align="center" spacing="-0.02em">It doesn't have to be that way.</T>
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={12} color="#fff" weight={900} align="center" spacing="-0.02em">Change starts now.</T>
-          <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 8, padding: '8px 20px' }}>
-            <T s={9} color="#fff" weight={700}>Take Action →</T>
-          </div>
+        <div style={{ ...zc, gap: 9, padding:'0 16px' }}>
+          <div style={{ height:1, background:'rgba(255,255,255,0.3)', width:40 }} />
+          <T s={8} color="rgba(255,255,255,0.4)" weight={300} align="center" spacing="0.06em" caps>For those who</T>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">say what no one else will.</T>
+          <T s={7} color="rgba(255,255,255,0.3)" align="center">Not for everyone. That's the point.</T>
+          <T s={7.5} color="rgba(255,255,255,0.6)" weight={700}>yourbrand.com</T>
         </div>
       );
     }
@@ -2362,13 +2396,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={10} color="#0f172a" weight={800} align="center">Which side are you on?</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 18px rgba(0,0,0,0.2)` }}>
-              <T s={9} color={accent} weight={800}>Join the winners →</T>
-            </div>
+        <div style={{ ...z, background: accent, alignItems:'flex-start', justifyContent:'flex-end', padding:'18px 18px 22px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.3)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left">That's the transformation. Slow to start, impossible to stop once it clicks.</T>
+            <T s={7.5} color="rgba(255,255,255,0.6)" align="left">The only thing left? Your first step.</T>
+            <T s={7.5} color="rgba(255,255,255,0.9)" weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -2413,14 +2448,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={7} color="rgba(255,255,255,0.6)" caps spacing="0.12em" align="center">Your story starts now</T>
-            <T s={13} color="#fff" weight={900} align="center" spacing="-0.03em">Join 14,000+ creators who rewrote theirs.</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '8px 22px', boxShadow: '0 6px 24px rgba(0,0,0,0.25)', marginTop: 2 }}>
-              <T s={9} color={accent} weight={800}>Start Free →</T>
-            </div>
+        <div style={{ ...z, background: accent, alignItems:'flex-start', justifyContent:'flex-end', padding:'18px 18px 22px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.3)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left" spacing="0.01em">That's the whole story. From zero to something real. That's what it looks like.</T>
+            <T s={7.5} color="rgba(255,255,255,0.6)" align="left">The next chapter is unwritten.</T>
+            <T s={7.5} color="rgba(255,255,255,0.9)" weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -2454,13 +2489,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Permission Slip
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={11} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Fix it today.</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '8px 20px', boxShadow: '0 6px 20px rgba(0,0,0,0.25)' }}>
-              <T s={9} color={accent} weight={800}>Get the Fix →</T>
-            </div>
+        <div style={{ ...z, background: '#1a0a1e', alignItems:'center', justifyContent:'center', padding:18 }}>
+          <div style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:12, padding:'16px 14px', width:'90%', display:'flex', flexDirection:'column', gap:8 }}>
+            <T s={7} color={accent} weight={700} caps spacing="0.1em" align="center">A note for you</T>
+            <T s={9} color="#f1f5f9" weight={600} align="center" spacing="-0.01em">It's not your fault the old strategy stopped working. The game changed. You just need a new one.</T>
+            <div style={{ height:1, background:'rgba(255,255,255,0.1)', width:'100%' }} />
+            <T s={7} color="rgba(241,245,249,0.45)" align="center">The solution already exists. You're looking at it.</T>
           </div>
         </div>
       );
@@ -2495,13 +2531,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Brand Statement (manifesto version)
       return (
-        <div style={{ ...zc, gap: 10 }}>
+        <div style={{ ...zc, gap: 9, padding:'0 16px' }}>
           <div style={{ position:'absolute', top:0, left:0, right:0, height:4, background:accent }} />
-          <T s={14} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">Be part of something real.</T>
-          <div style={{ background:accent, borderRadius:8, padding:'9px 22px', boxShadow:`0 6px 20px ${accent}55` }}>
-            <T s={9} color="#fff" weight={800}>Join the Mission →</T>
-          </div>
+          <div style={{ height:2, background:accent, width:32, marginTop:8 }} />
+          <T s={8} color="rgba(241,245,249,0.45)" weight={300} align="center" spacing="0.06em" caps>This is for people who</T>
+          <T s={13} color="#f1f5f9" weight={900} align="center" spacing="-0.03em">build movements, not just businesses.</T>
+          <T s={7} color="rgba(241,245,249,0.3)" align="center">Not for the passive ones.</T>
         </div>
       );
     }
@@ -2543,14 +2580,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={10} color="#fff" weight={800} align="center">Want the same results?</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '9px 0', width: '80%', textAlign: 'center', boxShadow: '0 6px 18px rgba(0,0,0,0.2)' }}>
-              <T s={9} color={accent} weight={800} align="center">Start Free Today →</T>
-            </div>
-            <T s={7} color="rgba(255,255,255,0.65)" align="center">Join 14,000+ people like Sarah</T>
+        <div style={{ ...z, background: accent, alignItems:'flex-start', justifyContent:'flex-end', padding:'18px 18px 22px' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:8, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.3)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left" spacing="0.01em">That's day 47. $10K month. The most surprising part? She almost didn't start.</T>
+            <T s={7.5} color="rgba(255,255,255,0.6)" align="left">14,000+ people like her chose to start anyway.</T>
+            <T s={7.5} color="rgba(255,255,255,0.9)" weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -2583,13 +2620,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8, background: '#0f172a' }}>
-          <T s={7} color="#94a3b8" caps spacing="0.1em" align="center">Don't miss an issue</T>
-          <T s={12} color="#f1f5f9" weight={800} align="center" spacing="-0.02em">Subscribe free.</T>
-          <div style={{ background: accent, borderRadius: 6, padding: '7px 18px' }}>
-            <T s={8} color="#fff" weight={700}>Subscribe →</T>
-          </div>
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'14px 16px 20px', justifyContent:'flex-end', gap:7 }}>
+          <div style={{ height:2, background:accent, width:24 }} />
+          <T s={7} color="#94a3b8" caps spacing="0.12em" align="left">Editorial perspective</T>
+          <T s={13} color="#0f172a" weight={900} align="left" spacing="-0.03em">Built for people who read to lead.</T>
+          <T s={7.5} color="#64748b" align="left">Not everyone picks up the pen. You do.</T>
+          <T s={7.5} color={accent} weight={700} align="left">yourbrand.com/subscribe →</T>
         </div>
       );
     }
@@ -2620,12 +2658,18 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={10} color="#0f172a" weight={800} align="center" spacing="-0.01em">Join 10,000+ happy customers.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Read All Reviews →</T>
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ display:'flex' }}>
+            {['#6366f1','#ec4899','#f59e0b','#22c55e','#0ea5e9'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
           </div>
+          <T s={22} color="#0f172a" weight={900} align="center" spacing="-0.03em">10,000+</T>
+          <T s={7.5} color="#64748b" align="center">verified 5-star customers</T>
+          <Stars color="#f59e0b" />
+          <Btn label="Read All Reviews →" bg={accent} />
         </div>
       );
     }
@@ -2660,15 +2704,21 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={7} color="#94a3b8" align="center">Verified by independent audit</T>
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={9} color="rgba(255,255,255,0.75)" align="center">Don't be left behind</T>
-            <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">Join the community.</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '8px 20px', boxShadow: '0 6px 18px rgba(0,0,0,0.2)' }}>
-              <T s={9} color={accent} weight={800}>Join Now →</T>
-            </div>
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ display:'flex' }}>
+            {['#6366f1','#ec4899','#f59e0b','#10b981','#3b82f6'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
           </div>
+          <T s={20} color="#0f172a" weight={900} align="center" spacing="-0.04em">47,000+</T>
+          <T s={7.5} color="#64748b" align="center">creators growing with us</T>
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <Stars color="#f59e0b" />
+            <T s={7} color="#94a3b8">4.9 avg</T>
+          </div>
+          <Btn label="Join the Community →" bg={accent} />
         </div>
       );
     }
@@ -2708,13 +2758,20 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={7} color="rgba(241,245,249,0.35)" caps spacing="0.1em" align="center">Be in the 312%</T>
-          <T s={13} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Your turn to 10x.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 20px', boxShadow: `0 6px 20px ${accent}55` }}>
-            <T s={9} color="#fff" weight={800}>Get Started Free →</T>
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ display:'flex' }}>
+            {['#f1f5f9','rgba(241,245,249,0.8)','rgba(241,245,249,0.6)','rgba(241,245,249,0.4)','rgba(241,245,249,0.25)'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:`2px solid ${accent}33`, marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
           </div>
+          <T s={22} color="#f1f5f9" weight={900} align="center" spacing="-0.04em">5,000+</T>
+          <T s={7.5} color="rgba(241,245,249,0.55)" align="center">companies averaging 312% revenue growth</T>
+          <div style={{ display:'flex', gap:4 }}>
+            {[1,2,3,4,5].map(i => <div key={i} style={{ fontSize:13, color:'#fbbf24' }}>★</div>)}
+          </div>
+          <T s={7} color={accent} weight={600}>Link in bio →</T>
         </div>
       );
     }
@@ -2745,12 +2802,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={8} color="#64748b" align="center">Start free · Upgrade anytime</T>
-          <T s={11} color="#0f172a" weight={900} align="center" spacing="-0.02em">Try it today.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Get Free Access →</T>
+        <div style={{ ...zc, gap: 0, padding: 12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'92%', boxShadow:`0 6px 24px ${accent}22`, display:'flex', flexDirection:'column', gap:6, border:`1px solid ${accent}18` }}>
+            <div style={{ height:44, background:`${accent}14`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ width:30, height:30, borderRadius:8, background:`linear-gradient(135deg,${accent},#818cf8)`, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <div style={{ width:10, height:10, borderRadius:3, background:'rgba(255,255,255,0.5)' }} />
+              </div>
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">Pro Workflow Suite</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <T s={13} color={accent} weight={900}>Free</T>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center' }}>
+              <T s={8} color="#fff" weight={800} align="center">Get Free Access →</T>
+            </div>
           </div>
         </div>
       );
@@ -2791,11 +2859,25 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <T s={10} color="#0f172a" weight={800} align="center" spacing="-0.01em">Ready to see yours?</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Watch Demo →</T>
+        <div style={{ ...zc, gap: 0, padding: 12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'92%', boxShadow:'0 6px 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ height:44, background:'#1e293b', borderRadius:6, display:'flex', alignItems:'center', padding:'0 8px', gap:4 }}>
+              {['#ef4444','#fbbf24','#22c55e'].map(c => <div key={c} style={{ width:5, height:5, borderRadius:'50%', background:c }} />)}
+              <div style={{ flex:1, background:'rgba(255,255,255,0.1)', borderRadius:3, height:4, marginLeft:4 }} />
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">AI Ad Generator</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <div style={{ display:'flex', gap:5, alignItems:'baseline' }}>
+                <div style={{ textDecoration:'line-through' }}><T s={6} color="#94a3b8">$99</T></div>
+                <T s={13} color={accent} weight={900}>Free</T>
+              </div>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center' }}>
+              <T s={8} color="#fff" weight={800} align="center">Watch Demo →</T>
+            </div>
           </div>
         </div>
       );
@@ -2881,14 +2963,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <T s={8} color="#64748b" align="center">Start free · No credit card</T>
-          <T s={12} color="#0f172a" weight={900} align="center" spacing="-0.02em">Pick your plan today.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', width: '90%', textAlign: 'center', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800} align="center">Start Free — Upgrade Later →</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this comparison</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px', width:'100%' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">The tool with the most features isn't always the best one. The best one is the one you'll actually use.</T>
           </div>
-          <T s={6} color="#94a3b8" align="center">Cancel anytime</T>
+          <T s={7} color="#64748b">Share this with your team before they buy the expensive one.</T>
+          <T s={7.5} color={accent} weight={700}>Full comparison at: yourbrand.com →</T>
         </div>
       );
     }
@@ -2925,13 +3008,16 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...z, background: accent }}>
-          <div style={{ ...zc, gap: 10 }}>
-            <T s={11} color="#fff" weight={900} align="center" spacing="-0.02em">Start step 1 right now.</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '8px 22px', boxShadow: '0 6px 18px rgba(0,0,0,0.25)' }}>
-              <T s={9} color={accent} weight={800}>Begin Free →</T>
+        <div style={{ ...z, background: accent, alignItems:'flex-start', justifyContent:'center', padding:16 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:7, width:'100%' }}>
+            <T s={7} color="rgba(255,255,255,0.55)" caps spacing="0.12em">📌 The 3-step shortcut</T>
+            <div style={{ background:'rgba(255,255,255,0.12)', border:'1px solid rgba(255,255,255,0.2)', borderRadius: 8, padding:'10px 12px' }}>
+              <T s={8.5} color="#fff" weight={700} align="left">Most people skip step 1. That's why they're stuck.</T>
             </div>
+            <T s={7} color="rgba(255,255,255,0.55)">Save this. Your future self will thank you.</T>
+            <T s={7.5} color="rgba(255,255,255,0.9)" weight={700}>yourbrand.com →</T>
           </div>
         </div>
       );
@@ -2970,16 +3056,20 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Cart Card (split-panel version)
       return (
         <div style={{ ...z, flexDirection: 'row' }}>
-          <div style={{ flex: 1.1, background: accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">Try free.</T>
+          <div style={{ flex: 1.1, background: accent, display: 'flex', flexDirection:'column', alignItems: 'center', justifyContent: 'center', gap:4 }}>
+            <T s={22} color="#fff" weight={900} align="center" spacing="-0.04em">$0</T>
+            <T s={7} color="rgba(255,255,255,0.65)" align="center">to start</T>
           </div>
-          <div style={{ flex: 1, background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(8px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 }}>
-            <div style={{ background: accent, borderRadius: 6, padding: '6px 12px', width: '100%', textAlign: 'center' }}>
-              <T s={8} color="#fff" weight={700} align="center">Start Now →</T>
+          <div style={{ flex: 1, background: 'rgba(255,255,255,0.9)', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 5, padding: 10 }}>
+            <Stars color="#f59e0b" />
+            <T s={8} color="#0f172a" weight={800}>Ads that work.</T>
+            <T s={6.5} color="#64748b">10k+ creators</T>
+            <div style={{ background: accent, borderRadius: 5, padding: '5px 10px', width: '100%', textAlign: 'center', marginTop:2 }}>
+              <T s={7.5} color="#fff" weight={700} align="center">Start Free →</T>
             </div>
-            <T s={6} color="#94a3b8" align="center">No card needed</T>
           </div>
         </div>
       );
@@ -3019,16 +3109,16 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
         <div style={{ ...z }}>
           <div style={{ ...topZone, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <T s={13} color="rgba(255,255,255,0.9)" weight={900} align="center" spacing="-0.02em">Start free.</T>
+            <T s={13} color="rgba(255,255,255,0.6)" weight={300} align="center" spacing="0.02em">The transformation is real.</T>
           </div>
           <div style={glassCard}>
-            <div style={{ background: '#fff', borderRadius: 6, padding: '8px 0', textAlign: 'center' }}>
-              <T s={9} color="#7c3aed" weight={800} align="center">Claim Free Trial →</T>
-            </div>
-            <T s={7} color="rgba(255,255,255,0.5)" align="center">No credit card · Cancel anytime</T>
+            <div style={{ height:1, background:'rgba(255,255,255,0.2)', width:'100%' }} />
+            <T s={8} color="#fff" weight={300} align="left" spacing="0.01em">That's what happened when we stopped talking and started building.</T>
+            <T s={7.5} color="#7c3aed" weight={600}>@brand · link in bio →</T>
           </div>
         </div>
       );
@@ -3061,16 +3151,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...z, background: red }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: NOISE_SVG, backgroundSize: '200px 200px', opacity: 0.04 }} />
-          <div style={{ ...zc, gap: 8 }}>
-            <T s={8} color="rgba(255,255,255,0.75)" align="center" caps spacing="0.1em">Last chance</T>
-            <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Grab it before it's gone.</T>
-            <div style={{ background: '#fff', borderRadius: 8, padding: '9px 22px', boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
-              <T s={9} color={red} weight={800}>CLAIM 50% OFF →</T>
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">What you get today</T>
+          <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Templates bundle','$197'],['AI copy engine','$97'],['Lifetime updates','$49']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color="rgba(255,255,255,0.35)" weight={400}>{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(255,255,255,0.07)', borderTop:'1px solid rgba(255,255,255,0.15)' }}>
+              <T s={7.5} color="rgba(255,255,255,0.7)" weight={700}>Today only</T>
+              <T s={15} color={red} weight={900}>$97</T>
             </div>
           </div>
+          <Btn label="Claim 50% Off →" bg={red} />
         </div>
       );
     }
@@ -3105,15 +3202,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <div style={{ background: 'rgba(239,68,68,0.18)', border: '1px solid rgba(239,68,68,0.45)', borderRadius: 6, padding: '3px 10px' }}>
-            <T s={7} color="#ef4444" weight={700}>Clock is ticking</T>
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">Before the timer hits zero</T>
+          <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Full access','$299 value'],['Priority support','$99 value'],['Locked-in rate','Priceless']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color="rgba(255,255,255,0.35)">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(255,255,255,0.07)', borderTop:'1px solid rgba(255,255,255,0.15)' }}>
+              <T s={7.5} color="rgba(255,255,255,0.7)" weight={700}>Your price</T>
+              <T s={15} color="#ef4444" weight={900}>$97</T>
+            </div>
           </div>
-          <T s={12} color="#f1f5f9" weight={900} align="center" spacing="-0.02em">Shop before it's gone.</T>
-          <div style={{ background: '#ef4444', borderRadius: 8, padding: '8px 22px', boxShadow: '0 6px 20px rgba(239,68,68,0.5)' }}>
-            <T s={9} color="#fff" weight={800}>Grab the Deal →</T>
-          </div>
+          <Btn label="Grab the Deal →" bg="#ef4444" />
         </div>
       );
     }
@@ -3141,13 +3246,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement (luxury version)
       return (
-        <div style={{ ...zc, gap: 10 }}>
-          <div style={{ height: 1, background: gold, width: 50, opacity: 0.55 }} />
-          <T s={10} color="#f5f0e8" weight={300} align="center" spacing="0.04em">Begin your story.</T>
-          <div style={{ border: `1px solid ${gold}66`, borderRadius: 4, padding: '8px 22px' }}>
-            <T s={8} color={gold} weight={500} spacing="0.08em">Explore</T>
-          </div>
+        <div style={{ ...zc, gap: 9, padding:'0 20px' }}>
+          <div style={{ height:1, background:gold, width:50, opacity:0.55 }} />
+          <T s={8} color="rgba(245,240,232,0.35)" weight={300} align="center" spacing="0.1em" caps>Crafted for those who</T>
+          <T s={13} color="#f5f0e8" weight={300} align="center" spacing="0.02em">know the difference.</T>
+          <div style={{ height:1, background:gold, width:30, opacity:0.4 }} />
+          <T s={7} color="rgba(245,240,232,0.25)" align="center" spacing="0.06em">Not for everyone.</T>
         </div>
       );
     }
@@ -3173,12 +3279,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
-          <T s={10} color="rgba(255,255,255,0.55)" caps spacing="0.08em">Don't miss this</T>
-          <T s={18} color="#fff" weight={900} align="center" spacing="-0.03em">Offer closes at midnight.</T>
-          <Btn label="Get 50% Off Now →" bg={accent} color="#fff" />
-          <T s={7} color="rgba(255,255,255,0.35)" align="center">No code needed. Auto-applied at checkout.</T>
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">What's in the bundle</T>
+          <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Full platform access','$297'],['All future templates','$147'],['1-on-1 onboarding','$99']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color="rgba(255,255,255,0.35)">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(255,255,255,0.07)', borderTop:'1px solid rgba(255,255,255,0.15)' }}>
+              <T s={7.5} color="rgba(255,255,255,0.7)" weight={700}>Today only</T>
+              <T s={15} color={accent} weight={900}>$97</T>
+            </div>
+          </div>
+          <Btn label="Get 50% Off Now →" bg={accent} />
         </div>
       );
     }
@@ -3208,11 +3325,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={8} color="rgba(255,255,255,0.45)" align="center">Same results. Lower cost. No brainer.</T>
         </div>
       );
+      // slide 2 — Value Receipt (savings math version)
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#052e16,#065f46)' }}>
-          <T s={9} color={accent} caps spacing="0.08em">Start saving today</T>
-          <T s={16} color="#fff" weight={900} align="center" spacing="-0.02em">$202 back in your pocket every month.</T>
-          <Btn label="Switch Now →" bg={accent} color="#fff" />
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">The math doesn't lie</T>
+          <div style={{ width: '100%', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Competitor A','$299/mo'],['Competitor B','$199/mo'],['Industry avg','$247/mo']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.5)" weight={400}><s>{name}</s></T>
+                <T s={7} color="rgba(255,255,255,0.3)"><s>{val}</s></T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(16,185,129,0.12)', borderTop:'1px solid rgba(16,185,129,0.3)' }}>
+              <T s={8} color={accent} weight={800}>You pay</T>
+              <T s={16} color={accent} weight={900}>$97/mo</T>
+            </div>
+          </div>
+          <T s={6.5} color="rgba(255,255,255,0.35)" align="center">Save $202 every month. No compromise.</T>
+          <Btn label="Switch Now →" bg={accent} />
         </div>
       );
     }
@@ -3249,11 +3379,17 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={8} color={muted} align="center">"We never expected results this fast." — CEO, Acme</T>
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: accent }}>
-          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Want results like this?</T>
-          <T s={16} color="#fff" weight={900} align="center" spacing="-0.02em">See how we did it.</T>
-          <Btn label="Read Full Case Study →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...zc, gap: 7, padding: 18, background: accent }}>
+          <div style={{ display:'flex' }}>
+            {['#fff','rgba(255,255,255,0.8)','rgba(255,255,255,0.6)','rgba(255,255,255,0.4)','rgba(255,255,255,0.25)'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid rgba(255,255,255,0.3)', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
+          </div>
+          <T s={22} color="#fff" weight={900} align="center" spacing="-0.04em">340%</T>
+          <T s={7.5} color="rgba(255,255,255,0.7)" align="center">avg revenue growth in 60 days</T>
+          <T s={7} color="rgba(255,255,255,0.5)" align="center">Verified · 5,000+ companies</T>
         </div>
       );
     }
@@ -3290,11 +3426,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: `linear-gradient(135deg,${accent},${accent}cc)` }}>
-          <T s={7} color="rgba(255,255,255,0.65)" caps spacing="0.1em" align="center">Free breakdown</T>
-          <T s={15} color="#fff" weight={900} align="center" spacing="-0.025em">Get the full guide — no email required.</T>
-          <Btn label="Get the Guide →" bg="rgba(255,255,255,0.22)" color="#fff" border="1px solid rgba(255,255,255,0.35)" />
+        <div style={{ ...z, alignItems: 'flex-start', justifyContent: 'center', gap: 7, padding: '18px 16px', background: '#fff' }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this framework</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px', width:'100%' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">The bottleneck isn't your effort. It's the one decision you keep avoiding.</T>
+          </div>
+          <T s={7} color="#64748b">Share this with someone who needs to hear it.</T>
+          <T s={7.5} color={accent} weight={700}>Full guide at: yourbrand.com →</T>
         </div>
       );
     }
@@ -3323,11 +3463,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Permission Slip
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: accent }}>
-          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">There's a better way</T>
-          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Stop guessing. Start solving.</T>
-          <Btn label="See The Fix →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', padding: 18, background: '#0f0a1a' }}>
+          <div style={{ background:'rgba(255,255,255,0.06)', border:'1px solid rgba(255,255,255,0.1)', borderRadius:12, padding:'16px 14px', width:'90%', display:'flex', flexDirection:'column', gap:8 }}>
+            <T s={7} color={accent} weight={700} caps spacing="0.1em" align="center">A note for you</T>
+            <T s={9} color="#f1f5f9" weight={600} align="center" spacing="-0.01em">You're not stuck because you're lazy. You're stuck because the approach was wrong. That ends now.</T>
+            <div style={{ height:1, background:'rgba(255,255,255,0.08)', width:'100%' }} />
+            <T s={7} color="rgba(241,245,249,0.35)" align="center">The fix is simpler than you think.</T>
+          </div>
         </div>
       );
     }
@@ -3358,11 +3502,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Permission Slip
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18 }}>
-          <T s={9} color="rgba(255,255,255,0.55)" caps spacing="0.08em">Fix it today</T>
-          <T s={15} color={maTxt} weight={900} align="center" spacing="-0.02em">Avoid all 3. Get better results this week.</T>
-          <Btn label="Show Me How →" bg="#f97316" color="#fff" />
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', padding: 18 }}>
+          <div style={{ background:'rgba(249,115,22,0.08)', border:'1px solid rgba(249,115,22,0.2)', borderRadius:12, padding:'16px 14px', width:'90%', display:'flex', flexDirection:'column', gap:8 }}>
+            <T s={7} color="#f97316" weight={700} caps spacing="0.1em" align="center">A reminder</T>
+            <T s={9} color={maTxt} weight={600} align="center" spacing="-0.01em">Knowing the mistake isn't enough. What matters is what you do about it starting today.</T>
+            <div style={{ height:1, background:'rgba(249,115,22,0.15)', width:'100%' }} />
+            <T s={7} color={maMuted} align="center">You already know which one to fix first.</T>
+          </div>
         </div>
       );
     }
@@ -3388,11 +3536,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <Stars color={accent} />
         </div>
       );
+      // slide 2 — Permission Slip
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#7c3aed,#ec4899)' }}>
-          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Start your journey</T>
-          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Feel what you've been missing.</T>
-          <Btn label="Begin Now →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', padding: 18, background: '#fdf2f8' }}>
+          <div style={{ background:'#fff', borderRadius:12, padding:'16px 14px', width:'90%', boxShadow:'0 4px 20px rgba(124,58,237,0.1)', display:'flex', flexDirection:'column', gap:8 }}>
+            <T s={7} color="#7c3aed" weight={700} caps spacing="0.1em" align="center">You're allowed to</T>
+            <T s={9} color={emTxt} weight={700} align="center" spacing="-0.01em">want more for yourself. That's not selfish — it's called growth.</T>
+            <div style={{ height:1, background:'#ede9fe', width:'100%' }} />
+            <T s={7} color={emMuted} align="center">Take the first step when you're ready. Not before.</T>
+          </div>
         </div>
       );
     }
@@ -3423,11 +3575,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Permission Slip
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: 'linear-gradient(135deg,#4c1d95,#6d28d9)' }}>
-          <T s={9} color="rgba(255,255,255,0.65)" caps spacing="0.08em">You belong here</T>
-          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">Join 14,000+ people who stopped going it alone.</T>
-          <Btn label="Join Free →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: '#ede9fe' }}>
+          <div style={{ background:'#fff', borderRadius:12, padding:'16px 14px', width:'90%', boxShadow:'0 4px 20px rgba(109,40,217,0.12)', display:'flex', flexDirection:'column', gap:8 }}>
+            <T s={7} color="#7c3aed" weight={700} caps spacing="0.1em" align="center">A note for you</T>
+            <T s={9} color="#2e1065" weight={600} align="center" spacing="-0.01em">You're allowed to need support. That's not weakness — that's how we grow.</T>
+            <div style={{ height:1, background:'#ede9fe', width:'100%' }} />
+            <T s={7} color="#7c3aed" align="center">14,000+ people agree. You're not alone.</T>
+          </div>
         </div>
       );
     }
@@ -3464,11 +3620,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: '#f0fdf4' }}>
-          <T s={9} color="#16a34a" caps spacing="0.08em">Make the switch</T>
-          <T s={15} color="#0f172a" weight={900} align="center" spacing="-0.02em">Stop doing it the hard way.</T>
-          <Btn label="Do This Instead →" bg="#16a34a" color="#fff" />
+        <div style={{ ...z, alignItems: 'flex-start', justifyContent: 'center', gap: 7, padding: 18 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this rule</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px', width:'100%' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Every hour spent doing the wrong thing is an hour of not doing the right one.</T>
+          </div>
+          <T s={7} color="#64748b">Bookmark this. Share it with your team.</T>
+          <T s={7.5} color="#16a34a" weight={700}>yourbrand.com →</T>
         </div>
       );
     }
@@ -3500,11 +3660,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...z, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 18, background: `linear-gradient(135deg,${accent}dd,${accent})` }}>
-          <T s={9} color="rgba(255,255,255,0.7)" caps spacing="0.08em">Start your transformation</T>
-          <T s={15} color="#fff" weight={900} align="center" spacing="-0.02em">From where you are to where you want to be.</T>
-          <Btn label="Begin the Journey →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...z, alignItems: 'flex-start', justifyContent: 'flex-end', gap: 8, padding: '18px 18px 22px', background:`linear-gradient(135deg,#042f2e,#0f766e)` }}>
+          <div style={{ height:1, background:`${accent}55`, width:'100%' }} />
+          <T s={8.5} color="#fff" weight={300} align="left" spacing="0.01em">That's the transformation. Real, measurable, repeatable.</T>
+          <T s={7.5} color="rgba(255,255,255,0.5)" align="left">The only difference between "before" and "after" is the decision to start.</T>
+          <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
         </div>
       );
     }
@@ -3530,11 +3692,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt (guarantee receipt)
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <T s={13} color="#fff" weight={900} align="center">Try Risk Free</T>
-          <T s={8} color="rgba(255,255,255,0.6)" align="center">30-Day Guarantee</T>
-          <Btn label="Start Now →" bg={accent} />
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">Your guarantee covers</T>
+          <div style={{ width: '100%', border: `1px solid ${accent}33`, borderRadius: 8, overflow: 'hidden' }}>
+            {[['Full refund','Within 30 days'],['Keep everything','No questions asked'],['Cancel easily','One click']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color={accent} weight={600}>{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}18`, borderTop:`1px solid ${accent}44` }}>
+              <T s={7.5} color="rgba(255,255,255,0.8)" weight={700}>Your risk</T>
+              <T s={15} color={accent} weight={900}>$0</T>
+            </div>
+          </div>
+          <Btn label="Start Risk-Free →" bg={accent} />
         </div>
       );
     }
@@ -3560,11 +3734,19 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <Stars color="#fbbf24" />
-          <T s={13} color="#fff" weight={900} align="center">Join the Winners</T>
-          <Btn label="Get Award-Winner →" bg={accent} />
+        <div style={{ ...zc, gap: 6 }}>
+          <div style={{ display:'flex' }}>
+            {['#fbbf24','#f59e0b','#fcd34d','#fbbf24','#f59e0b'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid rgba(0,0,0,0.3)', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
+          </div>
+          <T s={22} color="#fff" weight={900} align="center" spacing="-0.04em">4.9 ★</T>
+          <T s={7.5} color="rgba(255,255,255,0.55)" align="center">from 10,000+ verified buyers</T>
+          <div style={{ background:'#fbbf24', borderRadius:6, padding:'3px 10px' }}>
+            <T s={7} color="#000" weight={800} caps spacing="0.06em">Best in Category 2026</T>
+          </div>
         </div>
       );
     }
@@ -3585,17 +3767,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt (scarcity version)
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Claim Yours Now</T>
-          <Row gap={4}>
-            {['02','47','33'].map((n,i) => (
-              <div key={i} style={{ background:'rgba(255,255,255,0.1)', border:`1px solid ${accent}`, borderRadius:4, padding:'4px 7px' }}>
-                <T s={11} color={accent} weight={900}>{n}</T>
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">47 units left — what you get</T>
+          <div style={{ width: '100%', border: `1px solid ${accent}33`, borderRadius: 8, overflow: 'hidden' }}>
+            {[['The product','$197 value'],['Exclusive packaging','$29 value'],['Priority shipping','Free']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? `1px solid rgba(255,255,255,0.07)` : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color="rgba(255,255,255,0.35)">{val}</T>
               </div>
             ))}
-          </Row>
-          <Btn label="Buy Now" bg={accent} />
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}18`, borderTop:`1px solid ${accent}44` }}>
+              <T s={7.5} color="rgba(255,255,255,0.8)" weight={700}>Drop price</T>
+              <T s={15} color={accent} weight={900}>$97</T>
+            </div>
+          </div>
+          <Btn label="Claim Yours →" bg={accent} />
         </div>
       );
     }
@@ -3630,11 +3818,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <T s={13} color="#fff" weight={900} align="center">Agree or disagree?</T>
-          <T s={8} color="rgba(255,255,255,0.5)" align="center">Drop your take below 👇</T>
-          <Btn label="Share This →" bg="rgba(255,255,255,0.15)" color="#fff" border="1px solid rgba(255,255,255,0.35)" />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 32 }}>👇</div>
+          <T s={15} color="#fff" weight={900} align="center" spacing="-0.03em">Tag someone who needs to hear this.</T>
+          <T s={7.5} color="rgba(255,255,255,0.45)" align="center">They'll thank you later. Or argue with you. Both are wins.</T>
         </div>
       );
     }
@@ -3655,11 +3844,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <T s={13} color="#000" weight={900}>BRAND</T>
-          <T s={7} color="#666" caps spacing="0.14em">Since 2019</T>
-          <Btn label="Shop" bg="#000" color="#fff" />
+        <div style={{ ...zc, gap: 8, padding: '16px' }}>
+          <div style={{ height: 2, background: '#000', width: 32 }} />
+          <T s={9} color="#000" weight={300} align="center" spacing="0.06em" caps>Built for people who</T>
+          <T s={14} color="#000" weight={900} align="center" spacing="-0.02em">refuse to be ordinary.</T>
+          <T s={7} color="#666" align="center" weight={400}>Not for everyone.</T>
+          <T s={7.5} color="#000" align="center" spacing="0.04em">yourbrand.com</T>
         </div>
       );
     }
@@ -3701,13 +3893,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={9} color="#fff" weight={800} align="center">@brand · Follow for more real talk</T>
-          <div style={{ height:2, width:50, background:accent, borderRadius:1 }} />
-          <div style={{ background:accent, borderRadius:8, padding:'7px 20px', boxShadow:`0 6px 18px ${accent}55` }}>
-            <T s={9} color="#fff" weight={800}>Follow →</T>
-          </div>
+        <div style={{ ...zp('flex-start','flex-end'), padding:'0 12px 20px', gap: 8 }}>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.2)', width: '100%' }} />
+          <T s={8.5} color="#fff" weight={300} align="left" spacing="0.01em">That's day 30. And that's how it changed everything.</T>
+          <T s={7.5} color="rgba(255,255,255,0.5)" align="left">The rest of the story is yours to write.</T>
+          <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
         </div>
       );
     }
@@ -3735,13 +3927,18 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={13} color="#fff" weight={900} align="center" spacing="-0.02em">You just discovered the best X.</T>
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...zc, gap: 9 }}>
+        <div style={{ ...z, alignItems: 'flex-start', justifyContent: 'flex-end', padding: '0 12px 20px' }}>
           <div style={{ position:'absolute', top:6, left:8, right:8, display:'flex', gap:3 }}>
-            {[0,1,2].map(i => <div key={i} style={{ flex:1, height:2, background: '#fff', borderRadius:1 }} />)}
+            {[0,1,2].map(i => <div key={i} style={{ flex:1, height:2, background: '#fff', borderRadius:1, opacity: i < 3 ? 1 : 0.4 }} />)}
           </div>
-          <T s={11} color="#fff" weight={800} align="center">Follow for part 2 👀</T>
-          <Btn label="Follow @brand" bg={accent} />
+          <div style={{ display:'flex', flexDirection:'column', gap:7, width:'100%' }}>
+            <div style={{ height:1, background:'rgba(255,255,255,0.2)', width:'100%' }} />
+            <T s={8.5} color="#fff" weight={300} align="left">And that's where the POV ends. The rest is yours to discover.</T>
+            <T s={7.5} color="rgba(255,255,255,0.5)" align="left">Follow for more unfiltered content.</T>
+            <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
+          </div>
         </div>
       );
     }
@@ -3765,11 +3962,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement (brutalist version)
       return (
-        <div style={{ ...z, padding:8 }}>
+        <div style={{ ...z, padding:8, alignItems:'center', justifyContent:'center' }}>
           <div style={{ position:'absolute', inset:6, border:'2px solid #000' }} />
-          <div style={{ position:'absolute', bottom:14, left:14, right:14, background:'#000', padding:'10px 0' }}>
-            <T s={12} color="#fff" weight={900} align="center" spacing="0.06em">BUY NOW</T>
+          <div style={{ position:'relative', zIndex:2, display:'flex', flexDirection:'column', alignItems:'center', gap:6, padding:'0 16px' }}>
+            <div style={{ height:3, background:'#000', width:36 }} />
+            <T s={9} color="#000" weight={400} align="center" spacing="0.08em" caps>Made for those who</T>
+            <T s={14} color="#000" weight={900} align="center" spacing="-0.04em">DON'T FOLLOW RULES.</T>
+            <T s={7} color="#555" align="center">Not for everyone.</T>
           </div>
         </div>
       );
@@ -3791,11 +3992,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...zc, gap: 7 }}>
-          <T s={13} color="#0f172a" weight={900} align="center">Try 14 Days Free</T>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Your 14-day trial includes</T>
+          <div style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Everything in Pro','$49/mo'],['Dedicated support','$19/mo'],['Templates library','$29/mo']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none', background: i % 2 === 0 ? '#fafafa' : '#fff' }}>
+                <T s={7.5} color="#334155" weight={500}>{name}</T>
+                <T s={7} color="#94a3b8">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}0f`, borderTop:`1px solid ${accent}33` }}>
+              <T s={8} color="#0f172a" weight={700}>Trial cost</T>
+              <T s={15} color={accent} weight={900}>$0</T>
+            </div>
+          </div>
           <Btn label="Start Free →" bg={accent} />
-          <T s={6} color="#94a3b8">Cancel anytime</T>
+          <T s={6} color="#94a3b8" align="center">No card required · Cancel anytime</T>
         </div>
       );
     }
@@ -3825,11 +4039,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={13} color={accent} weight={900} align="center">SAVE 50% TODAY</T>
-          <Btn label="Claim Discount →" bg={accent} />
-          <T s={6} color="#94a3b8">Ends midnight tonight</T>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Price comparison</T>
+          <div style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Competitor A','$199/mo'],['Competitor B','$149/mo'],['Industry avg','$174/mo']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none', background: i % 2 === 0 ? '#fafafa' : '#fff' }}>
+                <T s={7.5} color="#94a3b8" weight={400}><s>{name}</s></T>
+                <T s={7} color="#cbd5e1"><s>{val}</s></T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}0f`, borderTop:`1px solid ${accent}33` }}>
+              <T s={8} color="#0f172a" weight={700}>You pay</T>
+              <T s={15} color={accent} weight={900}>$99/mo</T>
+            </div>
+          </div>
+          <Btn label="Save 50% Now →" bg={accent} />
+          <T s={6} color="#94a3b8" align="center">Offer ends midnight</T>
         </div>
       );
     }
@@ -3859,10 +4086,18 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Join 10,000+ happy customers</T>
-          <Btn label="Get Started" bg={accent} />
+        <div style={{ ...zc, gap: 7 }}>
+          <div style={{ display:'flex' }}>
+            {['#6366f1','#ec4899','#f59e0b','#22c55e','#0ea5e9'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
+          </div>
+          <T s={22} color="#0f172a" weight={900} align="center" spacing="-0.03em">10,247</T>
+          <T s={7.5} color="#64748b" align="center">verified 5-star reviews this month</T>
+          <Stars color="#fbbf24" />
+          <Btn label="Read Reviews →" bg={accent} />
         </div>
       );
     }
@@ -3893,10 +4128,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </Row>
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Trusted worldwide</T>
-          <Btn label="Join Now →" bg={accent} />
+        <div style={{ ...zc, gap: 6 }}>
+          <div style={{ display:'flex' }}>
+            {['#3b82f6','#22c55e','#f59e0b','#ec4899'].map((c,i) => (
+              <div key={i} style={{ width:24, height:24, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i > 0 ? -8 : 0, zIndex: 4-i }} />
+            ))}
+          </div>
+          <T s={20} color="#0f172a" weight={900} align="center" spacing="-0.03em">10M+</T>
+          <T s={7} color="#64748b" align="center">teams trust us worldwide</T>
+          <div style={{ display:'flex', gap:6 }}>
+            {['Forbes','TechCrunch','Wired'].map((b,i) => (
+              <div key={i} style={{ background:'#f1f5f9', padding:'3px 7px', borderRadius:3 }}>
+                <T s={6} color="#475569" weight={800}>{b}</T>
+              </div>
+            ))}
+          </div>
+          <Btn label="Join Free →" bg={accent} />
         </div>
       );
     }
@@ -3930,12 +4179,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Get the full checklist</T>
-          <div style={{ background:accent, borderRadius:8, padding:'8px 20px', boxShadow:`0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Download Free →</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this checklist</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">The difference between people who grow and people who plateau is this list.</T>
           </div>
+          <T s={7} color="#64748b" align="left">Bookmark this. Come back when you feel stuck.</T>
+          <T s={7.5} color={accent} weight={700} align="left">Full guide at: yourlink.com →</T>
         </div>
       );
     }
@@ -3989,11 +4241,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={12} color="#0f172a" weight={900} align="center">Make the switch today</T>
-          <Btn label="Compare Live →" bg={accent} />
-          <T s={6} color="#94a3b8" align="center">Free forever · No credit card</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Key takeaway</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Before you choose a tool, compare on what actually matters. Speed, setup time, and support — not just price.</T>
+          </div>
+          <T s={7} color="#64748b">Save this. Share it with your team.</T>
+          <T s={7.5} color={accent} weight={700}>See the full comparison →</T>
         </div>
       );
     }
@@ -4026,12 +4282,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Start with reason #1 today</T>
-          <div style={{ background:accent, borderRadius:8, padding:'8px 20px', boxShadow:`0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Get Started Free →</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 3 reasons — saved</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">If you can't name 3 reasons why your thing is better, your customer can't either. That's where growth stalls.</T>
           </div>
+          <T s={7} color="#64748b">Screenshot this. Review before your next pitch.</T>
+          <T s={7.5} color={accent} weight={700}>More frameworks at: yourlink.com →</T>
         </div>
       );
     }
@@ -4039,35 +4298,41 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     // timeline-journey
     if (id === 'timeline-journey') {
       if (slide === 0) return (
-        <div style={{ ...zp('flex-start','center'), gap: 8 }}>
-          <T s={8} color={accent} weight={700} caps spacing="0.1em">Your journey</T>
-          <Row gap={0}>
-            {['Day 1','Week 2','Month 3'].map((l,i) => (
-              <Row key={i} gap={0}>
-                <Col align="center" gap={2}>
-                  <div style={{ width:10, height:10, borderRadius:'50%', background: accent }} />
-                  <T s={6} color="#475569" weight={600}>{l}</T>
-                </Col>
-                {i < 2 && <div style={{ width:24, height:2, background:`${accent}55`, alignSelf:'flex-start', marginTop:4, marginLeft:4, marginRight:4 }} />}
-              </Row>
-            ))}
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Real transformation timeline</T>
+          <div style={{ fontSize:34, fontWeight:900, color:'#0f172a', letterSpacing:'-0.05em', lineHeight:1 }}>90 days.<br/>Everything changes.</div>
+          <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:4 }}>
+            <div style={{ height:3, flex:1, background:`${accent}33`, borderRadius:2 }} />
+            <div style={{ height:3, flex:1, background:`${accent}66`, borderRadius:2 }} />
+            <div style={{ height:3, flex:1, background:accent, borderRadius:2 }} />
+          </div>
+          <Row gap={6}>
+            <T s={6} color="#94a3b8">Day 1</T>
+            <div style={{ flex:1 }} />
+            <T s={6} color="#94a3b8">Day 90</T>
           </Row>
         </div>
       );
       if (slide === 1) return (
-        <div style={{ ...zp(), gap: 7 }}>
-          {[['Day 1','First win'],['Week 2','Habit forms'],['Month 3','Real results']].map(([t,r],i) => (
-            <Row key={i} gap={8}>
-              <T s={7} color={accent} weight={700}>{t}</T>
-              <T s={8} color="#1e293b">{r}</T>
-            </Row>
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">What actually happens</T>
+          {[['Day 1','Clarity — you stop guessing what works'],['Week 3','Momentum — first real traction hits'],['Day 60','System locked in — results compound'],['Day 90','$2.1k → $8.7k. Real numbers.']].map(([t,d],i) => (
+            <div key={i} style={{ display:'flex', gap:8, alignItems:'flex-start', paddingBottom:5, borderBottom:i<3?'1px solid #f1f5f9':'none' }}>
+              <div style={{ minWidth:42, flexShrink:0 }}><T s={6.5} color={accent} weight={800}>{t}</T></div>
+              <T s={7} color="#475569" weight={i===3?700:400}>{d}</T>
+            </div>
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Start your Day 1 today</T>
-          <Btn label="Begin Journey →" bg={accent} />
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Your roadmap, saved</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Every transformation starts with a Day 1. The map is simple — what changes is whether you take the first step.</T>
+          </div>
+          <T s={7} color="#64748b">Save this for when you need a reminder.</T>
+          <T s={7.5} color={accent} weight={700}>Start your journey at: yourlink.com →</T>
         </div>
       );
     }
@@ -4075,32 +4340,48 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     // steps-infographic
     if (id === 'steps-infographic') {
       if (slide === 0) return (
-        <div style={{ ...zp('flex-start','center'), gap: 8 }}>
-          <T s={9} color="#0f172a" weight={800}>How it works</T>
-          <Row gap={0}>
-            {[1,2,3,4].map((n,i) => (
-              <Row key={i} gap={0}>
-                <div style={{ width:18, height:18, borderRadius:'50%', background: accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:900 }}>{n}</div>
-                {i < 3 && <div style={{ width:14, height:2, background:`${accent}66` }} />}
-              </Row>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Most people skip step 3.</T>
+          <div style={{ fontSize:28, fontWeight:900, color:'#0f172a', letterSpacing:'-0.04em', lineHeight:1.05 }}>That's why they never launch.</div>
+          <div style={{ display:'flex', gap:5, alignItems:'center', marginTop:6 }}>
+            {['Sign up','Pick template','Customize','🚀 Launch'].map((t,i) => (
+              <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, flex:1 }}>
+                <div style={{ width:22, height:22, borderRadius:'50%', background: i===2?'#ef4444':accent, display:'flex', alignItems:'center', justifyContent:'center', boxShadow: i===2?'0 0 10px rgba(239,68,68,0.4)':'none' }}>
+                  <T s={8} color="#fff" weight={900}>{i+1}</T>
+                </div>
+                <T s={5} color={i===2?'#ef4444':'#94a3b8'} align="center" weight={i===2?700:400}>{t}</T>
+              </div>
             ))}
-          </Row>
+          </div>
+          <T s={6.5} color="#ef4444" weight={600}>Step 3 is where 80% stop. Swipe to fix that.</T>
         </div>
       );
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 5 }}>
-          {[['1','Sign up free'],['2','Pick template'],['3','Customize'],['4','Launch']].map(([n,t],i) => (
-            <Row key={i} gap={6}>
-              <div style={{ width:14, height:14, borderRadius:'50%', background: accent, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:7, fontWeight:900, flexShrink:0 }}>{n}</div>
-              <T s={7} color="#1e293b">{t}</T>
-            </Row>
+          <T s={7.5} color={accent} weight={700} caps spacing="0.1em">Step 3 — the full breakdown</T>
+          <div style={{ height:1, background:'#e2e8f0', width:'100%' }} />
+          {[['Pick your niche','Don\'t try to appeal to everyone'],['Use a proven hook format','Swipe file > starting from scratch'],['Schedule release','Wed/Thu/Fri 9–11am wins'],['Hit publish','Good enough beats perfect, always']].map(([t,d],i) => (
+            <div key={i} style={{ display:'flex', gap:8, paddingBottom:5, borderBottom:i<3?'1px solid #f8fafc':'none' }}>
+              <div style={{ width:16, height:16, borderRadius:'50%', background:`${accent}18`, border:`1.5px solid ${accent}55`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, marginTop:1 }}>
+                <T s={6.5} color={accent} weight={900}>{i+1}</T>
+              </div>
+              <div>
+                <T s={7.5} color="#0f172a" weight={700} align="left">{t}</T>
+                <T s={6.5} color="#94a3b8">{d}</T>
+              </div>
+            </div>
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={12} color="#0f172a" weight={900} align="center">Start Step 1 Now</T>
-          <Btn label="Begin →" bg={accent} />
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 The 4-step process</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Sign up → pick a template → customize → launch. That's it. Most people overthink step 4 and never start.</T>
+          </div>
+          <T s={7} color="#64748b">Screenshot this. Start step 1 today.</T>
+          <T s={7.5} color={accent} weight={700}>Get started at: yourlink.com →</T>
         </div>
       );
     }
@@ -4144,12 +4425,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Save This (data version)
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Get these results</T>
-          <div style={{ background:accent, borderRadius:8, padding:'8px 20px', boxShadow:`0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Show Me How →</T>
+        <div style={{ ...zp(), gap: 7 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 The 312% insight</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">Growth isn't linear — it compounds. The brands that grew 312% didn't work 312% harder. They found 1 lever and pulled it.</T>
           </div>
+          <T s={7} color="#64748b">Save this. Revisit in 30 days.</T>
+          <T s={7.5} color={accent} weight={700}>Full study at: yourlink.com →</T>
         </div>
       );
     }
@@ -4191,12 +4475,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ ...zc, gap: 9 }}>
-          <T s={7} color="#94a3b8" align="center" caps spacing="0.1em">Limited stock available</T>
-          <T s={14} color={accent} weight={900} spacing="-0.03em">{`$49`}</T>
-          <div style={{ background:accent, borderRadius:8, padding:'8px 22px', boxShadow:`0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Add to Cart →</T>
+        <div style={{ ...zc, gap: 0, padding: 12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'90%', boxShadow:'0 6px 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ height:44, background:`${accent}14`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ width:28, height:22, background:`${accent}88`, borderRadius:4 }} />
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">The Essentials Set</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <div style={{ display:'flex', gap:6, alignItems:'baseline' }}>
+                <div style={{ textDecoration:'line-through' }}><T s={6} color="#94a3b8">$79</T></div>
+                <T s={13} color={accent} weight={900}>$49</T>
+              </div>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center', boxShadow:`0 4px 12px ${accent}44` }}>
+              <T s={8} color="#fff" weight={800} align="center">Add to Cart →</T>
+            </div>
           </div>
         </div>
       );
@@ -4205,28 +4501,42 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     // leaderboard
     if (id === 'leaderboard') {
       if (slide === 0) return (
-        <div style={{ ...zp(), gap: 6 }}>
-          <T s={8} color="#0f172a" weight={800} caps spacing="0.1em">Top Picks 2026</T>
-          {[['01','Our Brand','#fbbf24'],['02','Brand B','#cbd5e1'],['03','Brand C','#f97316']].map(([n,b,c],i) => (
-            <Row key={i} gap={6}>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Independent ranking · 2026</T>
+          {[['🥇','#1','Our Brand','50,221 reviews','#fbbf24'],['🥈','#2','Brand B','12,400 reviews','#94a3b8'],['🥉','#3','Brand C','8,900 reviews','#f97316']].map(([e,n,b,r,c],i) => (
+            <div key={i} style={{ display:'flex', alignItems:'center', gap:7, padding:'6px 8px', background: i===0?`${accent}0d`:'transparent', borderRadius:6, border: i===0?`1px solid ${accent}22`:'1px solid transparent' }}>
+              <div style={{ fontSize:14 }}>{e}</div>
+              <div style={{ flex:1 }}>
+                <T s={8} color={i===0?accent:'#475569'} weight={i===0?800:600} align="left">{b as string}</T>
+                <T s={5.5} color="#94a3b8">{r as string}</T>
+              </div>
               <T s={9} color={c as string} weight={900}>{n}</T>
-              <T s={8} color={i===0?accent:'#475569'} weight={i===0?800:600}>{b}</T>
-            </Row>
+            </div>
           ))}
         </div>
       );
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 7 }}>
-          <T s={8} color={accent} weight={700} caps spacing="0.1em">Why we're #1</T>
-          {['Best value','Top rated','Fastest support'].map((t,i) => (
-            <Row key={i} gap={6}><Check color={accent} /><T s={8} color="#1e293b">{t}</T></Row>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">Why we ranked #1</T>
+          <div style={{ height:1, background:'#f1f5f9', width:'100%' }} />
+          {[['Response time','Under 2 min','3+ hours'],['Setup speed','5 minutes','Half a day'],['NPS score','87 (world class)','42 (average)'],['Price per seat','$29/mo','$89/mo']].map(([f,a,b],i) => (
+            <div key={i} style={{ display:'flex', gap:4, alignItems:'center', paddingBottom:5, borderBottom:i<3?'1px solid #f8fafc':'none' }}>
+              <T s={6.5} color="#475569" weight={500} align="left">{f}</T>
+              <div style={{ flex:1 }} />
+              <T s={7} color={accent} weight={800}>{a}</T>
+              <T s={6} color="#cbd5e1" weight={400}>vs {b}</T>
+            </div>
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Try the #1 rated</T>
-          <Btn label="Get Started →" bg={accent} />
+        <div style={{ ...zc, gap: 7 }}>
+          <T s={28} color={accent} weight={900} spacing="-0.04em">#1</T>
+          <T s={8.5} color="#0f172a" weight={800} align="center">Rated by 50,000+ users in 2026</T>
+          <Stars color="#fbbf24" />
+          <T s={7} color="#64748b" align="center">Across 12 independent review platforms</T>
+          <Btn label="See Why →" bg={accent} />
         </div>
       );
     }
@@ -4234,26 +4544,40 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     // stat-study
     if (id === 'stat-study') {
       if (slide === 0) return (
-        <div style={{ ...zc, gap: 5 }}>
-          <T s={6} color="#64748b" caps spacing="0.14em">New Study Reveals</T>
-          <div style={{ fontSize: 38, color: accent, fontWeight: 900, lineHeight: 1 }}>73%</div>
-          <T s={8} color="#1e293b" weight={600} align="center">of users see results in week 1</T>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={6} color="#94a3b8" caps spacing="0.14em">Brand Labs Study · 5,000 users · 90 days</T>
+          <div style={{ fontSize: 42, color: accent, fontWeight: 900, lineHeight: 1, letterSpacing:'-0.05em' }}>73%</div>
+          <T s={9} color="#1e293b" weight={700} spacing="-0.01em">saw measurable results<br/>in the first 7 days.</T>
+          <div style={{ height:1, background:'#e2e8f0', width:'100%', marginTop:2 }} />
+          <T s={6.5} color="#94a3b8">The other 27%? They didn't follow the system.</T>
         </div>
       );
       if (slide === 1) return (
         <div style={{ ...zp(), gap: 6 }}>
-          <T s={6} color="#94a3b8" caps spacing="0.1em">Study by Brand Labs · 2026</T>
-          <T s={8} color="#1e293b" weight={600}>Surveyed 5,000 active users over 90 days.</T>
-          <Row gap={8}>
-            <Col gap={1}><T s={11} color={accent} weight={900}>89%</T><T s={6} color="#94a3b8">Satisfied</T></Col>
-            <Col gap={1}><T s={11} color={accent} weight={900}>4.8★</T><T s={6} color="#94a3b8">Rating</T></Col>
-          </Row>
+          <T s={7} color={accent} weight={700} caps spacing="0.1em">Full data breakdown</T>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:5, width:'100%' }}>
+            {[['73%','Results in week 1'],['89%','Would recommend'],['4.8★','Avg user rating'],['3.1×','ROI at 90 days']].map(([n,l],i) => (
+              <div key={i} style={{ background:'#f8fafc', borderRadius:6, padding:'7px 8px', border:'1px solid #e2e8f0', display:'flex', flexDirection:'column', gap:1 }}>
+                <T s={13} color={accent} weight={900} spacing="-0.03em">{n}</T>
+                <T s={6} color="#64748b" align="left">{l}</T>
+              </div>
+            ))}
+          </div>
+          <T s={6} color="#94a3b8">Source: Brand Labs · 2026 · n=5,000</T>
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={13} color="#0f172a" weight={900} align="center">Be in the 73%</T>
-          <Btn label="Start Today →" bg={accent} />
+        <div style={{ ...zc, gap: 6 }}>
+          <T s={32} color={accent} weight={900} spacing="-0.04em">73%</T>
+          <T s={8} color="#0f172a" weight={700} align="center">of users see results in week 1</T>
+          <div style={{ display:'flex' }}>
+            {['#6366f1','#ec4899','#f59e0b','#22c55e'].map((c,i) => (
+              <div key={i} style={{ width:20, height:20, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i>0 ? -6 : 0 }} />
+            ))}
+          </div>
+          <T s={7} color="#64748b" align="center">5,000 users surveyed · Brand Labs 2026</T>
+          <Btn label="Join the 73% →" bg={accent} />
         </div>
       );
     }
@@ -4273,10 +4597,17 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Read the full story</T>
-          <Btn label="Read More →" bg={accent} />
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Also featured in</T>
+          {[['Forbes','#1 Tool for Modern Brands'],['TechCrunch','Reshaping the industry'],['Wired','Built differently']].map(([pub,quote],i) => (
+            <div key={i} style={{ borderLeft:`2px solid ${accent}`, paddingLeft:8, paddingTop:2, paddingBottom:2 }}>
+              <T s={7} color={accent} weight={800} caps>{pub}</T>
+              <T s={7.5} color="#1e293b" weight={500}>"{quote}"</T>
+            </div>
+          ))}
+          <Btn label="Read the Story →" bg={accent} />
         </div>
       );
     }
@@ -4284,28 +4615,35 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
     // brand-awareness
     if (id === 'brand-awareness') {
       if (slide === 0) return (
-        <div style={{ ...zc, gap: 8 }}>
-          <div style={{ width:42, height:42, borderRadius:'50%', background: accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
-            <T s={18} color="#fff" weight={900}>B</T>
+        <div style={{ ...zc, gap: 9 }}>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            {[0,1,2].map(i => (
+              <div key={i} style={{ width:28, height:28, borderRadius:5, background: i===1 ? accent : 'rgba(255,255,255,0.08)', border: i===1 ? 'none' : '1px solid rgba(255,255,255,0.12)', boxShadow: i===1 ? `0 0 16px ${accent}66` : 'none', transition:'all 0.2s' }} />
+            ))}
           </div>
-          <T s={9} color="#0f172a" weight={600}>Crafted for creators.</T>
+          <T s={16} color="#fff" weight={900} align="center" spacing="-0.03em">One brand<br/>gets remembered.</T>
+          <T s={7} color="rgba(255,255,255,0.35)" align="center">Most blend in. Here's the difference.</T>
         </div>
       );
       if (slide === 1) return (
-        <div style={{ ...zc, gap: 6 }}>
-          <Row gap={10}>
-            {['BOLD','HONEST','REAL'].map((w,i) => (
-              <T key={i} s={10} color="#0f172a" weight={900} caps spacing="0.06em">{w}</T>
-            ))}
-          </Row>
-          <div style={{ height:2, width:50, background: accent }} />
+        <div style={{ ...zp(), gap: 8 }}>
+          <T s={7} color={accent} weight={700} caps spacing="0.12em">What brand awareness buys you</T>
+          {[['73%','of buyers choose brands they recognize'],['3×','higher conversion from warm audiences'],['7×','more trust before you say a word']].map(([n,t],i) => (
+            <div key={i} style={{ display:'flex', gap:10, alignItems:'center', paddingBottom:8, borderBottom: i<2?'1px solid rgba(255,255,255,0.08)':'none' }}>
+              <T s={16} color={accent} weight={900} spacing="-0.04em">{n}</T>
+              <T s={7} color="rgba(255,255,255,0.55)" weight={400}>{t}</T>
+            </div>
+          ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={9} color="rgba(255,255,255,0.6)" caps spacing="0.12em">brand.com</T>
-          <T s={13} color="#fff" weight={900}>Visit us</T>
-          <Btn label="Explore →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ height: 2, background: accent, width: 32 }} />
+          <T s={9} color="rgba(255,255,255,0.55)" weight={300} align="center" spacing="0.06em" caps>Built for people who</T>
+          <T s={14} color={accent} weight={900} align="center" spacing="-0.02em">refuse to be forgettable.</T>
+          <T s={7.5} color="rgba(255,255,255,0.35)" align="center" weight={400}>Not for everyone.</T>
+          <T s={7.5} color="rgba(255,255,255,0.6)" align="center" spacing="0.04em">yourbrand.com</T>
         </div>
       );
     }
@@ -4329,10 +4667,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Value Receipt (email capture version)
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Open your inbox</T>
-          <Btn label="Get Email →" bg={accent} />
+        <div style={{ ...zp(), gap: 6 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">When you subscribe you get</T>
+          <div style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Weekly growth tips','Free'],['Exclusive discounts','Members only'],['Early access','Always first']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none', background: i % 2 === 0 ? '#fafafa' : '#fff' }}>
+                <T s={7.5} color="#334155" weight={500}>{name}</T>
+                <T s={7} color={accent} weight={600}>{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}0f`, borderTop:`1px solid ${accent}33` }}>
+              <T s={8} color="#0f172a" weight={700}>Your cost</T>
+              <T s={14} color={accent} weight={900}>$0</T>
+            </div>
+          </div>
+          <Btn label="Subscribe Free →" bg={accent} />
         </div>
       );
     }
@@ -4373,13 +4724,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={9} color="#92400e" align="center">Every brand has an origin story.</T>
-          <T s={13} color="#451a03" weight={900} align="center" spacing="-0.02em">Read ours — it's worth it.</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Read the Story →</T>
-          </div>
+        <div style={{ ...zp(), gap: 8, padding: '24px 16px' }}>
+          <div style={{ height: 1, background: '#fde68a', width: '100%' }} />
+          <T s={11} color="#451a03" weight={300} align="left" spacing="0.01em">That's the real story. The rest is yours to write.</T>
+          <T s={7.5} color="#92400e" align="left">We built this so you wouldn't have to start from scratch like we did.</T>
+          <T s={7.5} color={accent} weight={700} align="left">yourlink.com/story →</T>
         </div>
       );
     }
@@ -4409,10 +4760,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Join the conversation</T>
-          <Btn label="See Thread →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#0f172a" weight={900} align="center" spacing="-0.02em">Tag someone in the comments who needs to see this.</T>
+          <T s={7.5} color="#64748b" align="center">They'll thank you. Or argue with you. Either way — engagement.</T>
         </div>
       );
     }
@@ -4442,10 +4795,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Start your conversation</T>
-          <Btn label="Try Brand X →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#0f172a" weight={900} align="center" spacing="-0.02em">Tag someone you need to send this to.</T>
+          <T s={7.5} color="#64748b" align="center">DM it. Send it. Just don't keep it to yourself.</T>
         </div>
       );
     }
@@ -4476,10 +4831,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Join 12k+ followers</T>
-          <Btn label="Follow" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#0f172a" weight={900} align="center" spacing="-0.02em">Tag someone who tweets this stuff every day.</T>
+          <T s={7.5} color="#64748b" align="center">They'll either love you or mute you. Win-win.</T>
         </div>
       );
     }
@@ -4510,10 +4867,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Upvote if this helped</T>
-          <Btn label="Read Thread →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#0f172a" weight={900} align="center" spacing="-0.02em">Tag someone who needs to read this thread.</T>
+          <T s={7.5} color="#64748b" align="center">14k upvotes don't lie. Share it.</T>
         </div>
       );
     }
@@ -4535,10 +4894,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <div style={{ background:'#dcfce7', height:30, width:'100%', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center', fontSize: 16 }}>✨</div>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#000" weight={900} align="center">Tag someone who needs this</T>
-          <Btn label="Share →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 32 }}>😂</div>
+          <T s={14} color="#000" weight={900} align="center" spacing="-0.03em">Tag the friend who needs to see this.</T>
+          <T s={7.5} color="#555" align="center">Save them from themselves.</T>
         </div>
       );
     }
@@ -4560,10 +4921,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           <T s={8} color="#fff" weight={500}>I tried it for 30 days. Tracked everything. Here's what I learned: it just works.</T>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Follow for more</T>
-          <Btn label="Follow @brand" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Tag someone who needs to see this reply.</T>
+          <T s={7.5} color="rgba(255,255,255,0.5)" align="center">Sometimes the comment is better than the post.</T>
         </div>
       );
     }
@@ -4605,11 +4968,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Comment your answer 👇</T>
-          <T s={8} color="rgba(255,255,255,0.45)" align="center">We read every reply</T>
-          <Btn label="See Our Solution →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.02em">Drop your answer in the comments.</T>
+          <T s={7.5} color="rgba(255,255,255,0.5)" align="center">Then tag someone who'd vote differently.</T>
         </div>
       );
     }
@@ -4635,10 +4999,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt (receipt style — light theme)
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Claim your order</T>
-          <Btn label="Get Bundle →" bg={accent} />
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Your order summary</T>
+          <div style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden', fontFamily: 'monospace' }}>
+            {[['Course access','$197'],['Template pack','$97'],['Lifetime updates','$49']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none', background: i % 2 === 0 ? '#fafafa' : '#fff' }}>
+                <T s={7.5} color="#334155" weight={500}>{name}</T>
+                <T s={7} color="#94a3b8">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}0f`, borderTop:`1px solid ${accent}33` }}>
+              <T s={8} color="#0f172a" weight={900}>Total value</T>
+              <T s={15} color={accent} weight={900}>$97</T>
+            </div>
+          </div>
+          <Btn label="Claim This Offer →" bg={accent} />
+          <T s={6} color="#94a3b8" align="center">Limited-time pricing</T>
         </div>
       );
     }
@@ -4666,9 +5044,22 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Get the bundle</T>
+        <div style={{ ...zp(), gap: 5 }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">Bundle breakdown</T>
+          <div style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+            {[['Item 1','$99 value'],['Item 2','$99 value'],['Item 3','$99 value']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid #f1f5f9' : 'none', background: i % 2 === 0 ? '#fafafa' : '#fff' }}>
+                <T s={7.5} color="#334155" weight={500}>{name}</T>
+                <T s={7} color="#94a3b8">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}0f`, borderTop:`1px solid ${accent}33` }}>
+              <T s={8} color="#0f172a" weight={700}>Bundle price</T>
+              <T s={15} color={accent} weight={900}>$97</T>
+            </div>
+          </div>
           <Btn label="Save 67% →" bg={accent} />
         </div>
       );
@@ -4715,11 +5106,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Shop the full collection</T>
-          <div style={{ background: accent, borderRadius: 8, padding: '8px 22px', boxShadow: `0 6px 18px ${accent}44` }}>
-            <T s={9} color="#fff" weight={800}>Browse All →</T>
+        <div style={{ ...zc, gap: 0, padding: 12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'90%', boxShadow:'0 6px 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ height:44, background:`${accent}14`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <T s={7} color={accent} weight={700}>📸 The Collection</T>
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">Lifestyle Grid Bundle</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <div style={{ display:'flex', gap:6, alignItems:'baseline' }}>
+                <div style={{ textDecoration:'line-through' }}><T s={6} color="#94a3b8">$79</T></div>
+                <T s={13} color={accent} weight={900}>$49</T>
+              </div>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center' }}>
+              <T s={8} color="#fff" weight={800} align="center">Shop Collection →</T>
+            </div>
           </div>
         </div>
       );
@@ -4744,10 +5148,24 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#0f172a" weight={900} align="center">Download free</T>
-          <Btn label="Get the App →" bg={accent} />
+        <div style={{ ...zc, gap: 0, padding: 12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'90%', boxShadow:'0 6px 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ height:44, background:`${accent}14`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ width:28, height:28, borderRadius:8, background:accent, display:'flex', alignItems:'center', justifyContent:'center' }}>
+                <T s={14} color="#fff" weight={900}>📱</T>
+              </div>
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">App Pro — All Features</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <T s={13} color={accent} weight={900}>Free</T>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center' }}>
+              <T s={8} color="#fff" weight={800} align="center">Download Now →</T>
+            </div>
+          </div>
         </div>
       );
     }
@@ -4772,10 +5190,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Value Receipt
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Reserve your spot</T>
-          <Btn label="Save Seat →" bg={accent} />
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">What you get (free)</T>
+          <div style={{ width: '100%', border: `1px solid ${accent}33`, borderRadius: 8, overflow: 'hidden' }}>
+            {[['Live masterclass','$197 value'],['Replay access','$97 value'],['Q&A session','$49 value']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? 'rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color="rgba(255,255,255,0.35)">{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:`${accent}18`, borderTop:`1px solid ${accent}44` }}>
+              <T s={7.5} color="rgba(255,255,255,0.8)" weight={700}>Your cost</T>
+              <T s={15} color={accent} weight={900}>$0</T>
+            </div>
+          </div>
+          <Btn label="Save My Seat →" bg={accent} />
         </div>
       );
     }
@@ -4802,11 +5233,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </Row>
         </div>
       );
+      // slide 2 — Value Receipt (scarcity flash-sale version)
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={9} color="rgba(255,255,255,0.7)">Don't miss out</T>
+        <div style={{ ...zp('flex-start'), gap: 6 }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">Today's offer includes</T>
+          <div style={{ width: '100%', border:'1px solid rgba(255,255,255,0.15)', borderRadius: 8, overflow: 'hidden' }}>
+            {[['All products','40% off'],['Free shipping','$0'],['Priority access','Included']].map(([name,val],i) => (
+              <div key={i} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'6px 10px', borderBottom: i < 2 ? '1px solid rgba(255,255,255,0.07)' : 'none', background: i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'transparent' }}>
+                <T s={7.5} color="rgba(255,255,255,0.7)" weight={500}>{name}</T>
+                <T s={7} color={accent} weight={700}>{val}</T>
+              </div>
+            ))}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'7px 10px', background:'rgba(255,255,255,0.08)', borderTop:'1px solid rgba(255,255,255,0.15)' }}>
+              <T s={7.5} color="rgba(255,255,255,0.8)" weight={700}>Ends midnight</T>
+              <T s={13} color="#fff" weight={900}>Tonight only</T>
+            </div>
+          </div>
           <Btn label="Shop Now →" bg="#fff" color={accent} />
-          <T s={6} color="rgba(255,255,255,0.7)">Offer ends midnight</T>
         </div>
       );
     }
@@ -4838,10 +5281,12 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </Col>
         </div>
       );
+      // slide 2 — Tag Someone
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Know the truth</T>
-          <Btn label="Learn More →" bg="rgba(255,255,255,0.2)" color="#fff" border="1px solid rgba(255,255,255,0.4)" />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ fontSize: 28 }}>👇</div>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">Tag someone still living in the myth.</T>
+          <T s={7.5} color="rgba(255,255,255,0.5)" align="center">Save them the hard way of finding out.</T>
         </div>
       );
     }
@@ -4863,10 +5308,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Get Early Access</T>
-          <Btn label="Join Waitlist →" bg="#fff" color="#7c3aed" />
+        <div style={{ ...zc, gap: 10, padding: '0 16px' }}>
+          <div style={{ height: 1, background: 'rgba(255,255,255,0.2)', width: 40 }} />
+          <T s={8} color="rgba(255,255,255,0.5)" weight={300} align="center" spacing="0.08em" caps>Built for people who</T>
+          <T s={14} color="#fff" weight={900} align="center" spacing="-0.03em">see what others can't yet.</T>
+          <T s={7} color="rgba(255,255,255,0.35)" align="center">Not for everyone.</T>
         </div>
       );
     }
@@ -4886,10 +5334,14 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={12} color="#fff" weight={900} align="center">See it in motion</T>
-          <Btn label="Watch Demo →" bg="#fff" color={accent} />
+        <div style={{ ...zc, gap: 10, padding: '0 16px' }}>
+          <div style={{ height: 2, background: accent, width: 32 }} />
+          <T s={8} color="rgba(255,255,255,0.45)" weight={300} align="center" spacing="0.06em" caps>A brand built for</T>
+          <T s={13} color="#fff" weight={900} align="center" spacing="-0.03em">people who do bold differently.</T>
+          <T s={7} color="rgba(255,255,255,0.35)" align="center">Not for everyone.</T>
+          <T s={7.5} color={accent} weight={600} align="center">yourbrand.com</T>
         </div>
       );
     }
@@ -4915,10 +5367,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={12} color="#451a03" weight={900} align="center">Shop the collection</T>
-          <Btn label="Browse →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ height: 2, background: '#ef4444', width: 28 }} />
+          <T s={8} color="#7c2d12" weight={300} align="center" spacing="0.06em" caps>Crafted for people who</T>
+          <T s={13} color="#451a03" weight={900} align="center" spacing="-0.02em">still believe handmade matters.</T>
+          <T s={7} color="#92400e" align="center">Not for the mass-produced crowd.</T>
         </div>
       );
     }
@@ -4945,10 +5400,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Brand Statement
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={12} color="#0f172a" weight={900} align="center">See for yourself</T>
-          <Btn label="Get It →" bg={accent} />
+        <div style={{ ...zc, gap: 8, padding: '0 16px' }}>
+          <div style={{ height: 3, background: '#0f172a', width: 28 }} />
+          <T s={8} color="#475569" weight={300} align="center" spacing="0.06em" caps>Made for people who</T>
+          <T s={13} color="#0f172a" weight={900} align="center" spacing="-0.03em">refuse to blend in.</T>
+          <T s={7} color="#64748b" align="center">BOLD. RAW. REAL.</T>
         </div>
       );
     }
@@ -4972,10 +5430,20 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ ...zc, gap: 8 }}>
-          <T s={11} color="#fff" weight={900} align="center">Watch now</T>
-          <Btn label="Play Video →" bg={accent} />
+        <div style={{ ...zc, gap: 7 }}>
+          <T s={24} color="#fff" weight={900} align="center" spacing="-0.04em">2.4M</T>
+          <T s={7.5} color="rgba(255,255,255,0.55)" align="center">views in 48 hours</T>
+          <div style={{ display:'flex', gap:12, alignItems:'center' }}>
+            {[['♥','48K'],['💬','2.1K'],['↗','12K']].map(([e,n],i) => (
+              <div key={i} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
+                <div style={{ fontSize:13 }}>{e}</div>
+                <T s={6.5} color="rgba(255,255,255,0.7)" weight={700}>{n}</T>
+              </div>
+            ))}
+          </div>
+          <T s={7} color={accent} weight={700} align="center">Link in bio →</T>
         </div>
       );
     }
@@ -5016,14 +5484,20 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
         <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
+          <div style={{ display:'flex' }}>
+            {['#6366f1','#ec4899','#f59e0b','#22c55e','#0ea5e9'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid #fff', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
+          </div>
           <T s={28} color="#1e293b" weight={900} align="center" spacing="-0.03em">10,247</T>
           <T s={8} color="#64748b" align="center">verified 5-star reviews</T>
           <div style={{ display:'flex', gap:3 }}>
             {[1,2,3,4,5].map(i => <T key={i} s={12} color="#f59e0b">★</T>)}
           </div>
-          <Btn label="Read reviews →" bg={accent} />
+          <Btn label="Read All Reviews →" bg={accent} />
         </div>
       );
     }
@@ -5060,10 +5534,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ].map((t,i) => <T key={i} s={7} color="#334155" weight={500} align="left">{t}</T>)}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-          <T s={11} color={accent} weight={900} align="center">Ready to switch?</T>
-          <Btn label="Try It Free →" bg={accent} />
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px', gap:7, justifyContent:'center' }}>
+          <T s={7} color="#94a3b8" caps spacing="0.12em">📌 Save this framework</T>
+          <div style={{ background:`${accent}0f`, border:`1px solid ${accent}2a`, borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#0f172a" weight={700} align="left">The mistake isn't doing the wrong thing — it's doing the right thing too late.</T>
+          </div>
+          <T s={7} color="#64748b">Bookmark this. It'll hit differently when you need it.</T>
+          <T s={7.5} color={accent} weight={700}>Full breakdown at: yourbrand.com →</T>
         </div>
       );
     }
@@ -5102,10 +5581,13 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ].map((t,i) => <T key={i} s={7} color="#334155" weight={500} align="left">{t}</T>)}
         </div>
       );
+      // slide 2 — Chapter Epilogue
       return (
-        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-          <T s={11} color={accent} weight={900} align="center">Start your transformation</T>
-          <Btn label="Get Results →" bg={accent} />
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px 20px', justifyContent:'flex-end', gap:8 }}>
+          <div style={{ height:1, background:`${accent}44`, width:'100%' }} />
+          <T s={8.5} color={accent} weight={300} align="left" spacing="0.01em">That's the full before and after. The rest is up to you.</T>
+          <T s={7.5} color="#64748b" align="left">Most people stop at "before." You don't have to.</T>
+          <T s={7.5} color={accent} weight={600}>@brand · link in bio →</T>
         </div>
       );
     }
@@ -5134,10 +5616,23 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Social Proof Stamp
       return (
-        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px 32px', justifyContent:'center', alignItems:'flex-start', gap:8 }}>
-          <T s={13} color="#fff" weight={900} spacing="-0.02em" align="left">Trusted by{'\n'}industry leaders.</T>
-          <Btn label="Learn More →" bg={accent} />
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:7, padding:'0 16px' }}>
+          <div style={{ display:'flex' }}>
+            {['#3b82f6','#f59e0b','#ec4899','#22c55e','#8b5cf6'].map((c,i) => (
+              <div key={i} style={{ width:22, height:22, borderRadius:'50%', background:c, border:'2px solid rgba(0,0,0,0.4)', marginLeft: i > 0 ? -7 : 0, zIndex: 5-i }} />
+            ))}
+          </div>
+          <T s={22} color="#fff" weight={900} align="center" spacing="-0.04em">50K+</T>
+          <T s={7.5} color="rgba(255,255,255,0.55)" align="center">readers follow our editorial</T>
+          <div style={{ display:'flex', gap:6 }}>
+            {['Forbes','TC','Wired'].map((b,i) => (
+              <div key={i} style={{ background:'rgba(255,255,255,0.12)', padding:'3px 8px', borderRadius:3 }}>
+                <T s={6} color="rgba(255,255,255,0.7)" weight={800}>{b}</T>
+              </div>
+            ))}
+          </div>
         </div>
       );
     }
@@ -5167,10 +5662,15 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           ))}
         </div>
       );
+      // slide 2 — Save This
       return (
-        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px 32px', justifyContent:'center', alignItems:'flex-start', gap:8 }}>
-          <T s={12} color="#fff" weight={900} spacing="-0.02em" align="left">See it in action.</T>
-          <Btn label="Explore →" bg="#dc2626" />
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', padding:'12px 14px 24px', gap:7, justifyContent:'center' }}>
+          <T s={7} color="rgba(255,255,255,0.45)" caps spacing="0.12em">📌 Word to remember</T>
+          <div style={{ background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding:'10px 12px' }}>
+            <T s={8.5} color="#fff" weight={700} align="left">The features you highlight tell customers what you think matters. Make them count.</T>
+          </div>
+          <T s={7} color="rgba(255,255,255,0.4)">Save this. Share it with your team.</T>
+          <T s={7.5} color="#dc2626" weight={700}>yourbrand.com →</T>
         </div>
       );
     }
@@ -5201,11 +5701,25 @@ function TemplateSlide({ id, slide, txt, muted, accent, photoMeta }: {
           </div>
         </div>
       );
+      // slide 2 — Cart Card
       return (
-        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-          <T s={12} color="#1e293b" weight={900} align="center" spacing="-0.02em">Shop the look</T>
-          <T s={7} color="#94a3b8" align="center">Free shipping · Easy returns</T>
-          <Btn label="Shop Now →" bg={accent} />
+        <div style={{ position:'absolute', inset:0, zIndex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:0, padding:12 }}>
+          <div style={{ background:'#fff', borderRadius:10, padding:'10px 12px', width:'90%', boxShadow:'0 6px 24px rgba(0,0,0,0.1)', display:'flex', flexDirection:'column', gap:6 }}>
+            <div style={{ height:44, background:`${accent}14`, borderRadius:6, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <T s={7} color={accent} weight={700}>🖼️ The Collection</T>
+            </div>
+            <T s={8.5} color="#111" weight={700} align="left">Gallery Bundle Pack</T>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <Stars color="#f59e0b" />
+              <div style={{ display:'flex', gap:6, alignItems:'baseline' }}>
+                <div style={{ textDecoration:'line-through' }}><T s={6} color="#94a3b8">$89</T></div>
+                <T s={13} color={accent} weight={900}>$49</T>
+              </div>
+            </div>
+            <div style={{ background:accent, borderRadius:6, padding:'6px 0', textAlign:'center' }}>
+              <T s={8} color="#fff" weight={800} align="center">Shop Collection →</T>
+            </div>
+          </div>
         </div>
       );
     }
