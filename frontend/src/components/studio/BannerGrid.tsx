@@ -529,26 +529,45 @@ function renderContent(
 
 function BannerUnit({
   archetypeId, cat, dw, label, sizeKey, headline, cta, imageUrl, theme,
+  active, dimmed, onClick,
 }: {
   archetypeId: AID; cat: Cat; dw: number; label: string; sizeKey: string;
   headline: string; cta: string; imageUrl?: string; theme: Theme;
+  active?: boolean; dimmed?: boolean; onClick?: () => void;
 }) {
   const meta  = SIZES.find(s => s.key === sizeKey);
   const ratio = meta?.ratio ?? 1;
   const dh    = Math.round(dw * ratio);
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap: 6, alignItems:'flex-start' }}>
-      <div style={{ fontSize: 10, color:'var(--muted)', fontWeight: 500, letterSpacing:'0.01em' }}>
-        {label} <span style={{ color:'var(--border2)' }}>·</span> {sizeKey}
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start',
+        cursor: onClick ? 'pointer' : 'default',
+        opacity: dimmed ? 0.35 : 1,
+        transition: 'opacity 0.2s, transform 0.2s',
+        transform: active ? 'scale(1.02)' : 'scale(1)',
+      }}
+    >
+      <div style={{
+        fontSize: 10, fontWeight: 600, letterSpacing: '0.01em',
+        color: active ? 'var(--accent)' : 'var(--muted)',
+        transition: 'color 0.15s',
+      }}>
+        {label}
+        <span style={{ color: active ? 'var(--accent)' : 'var(--border2)', margin: '0 4px' }}>·</span>
+        {sizeKey}
       </div>
       <div style={{
         width: dw, height: dh,
         borderRadius: 6,
         overflow: 'hidden',
-        border: '1px solid var(--border)',
+        border: active ? '2px solid var(--accent)' : '1px solid var(--border)',
+        boxShadow: active ? '0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)' : 'none',
         position: 'relative',
         flexShrink: 0,
+        transition: 'border 0.15s, box-shadow 0.15s',
       }}>
         {imageUrl ? (
           <img src={imageUrl} alt={label} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
@@ -569,83 +588,132 @@ interface Props {
 }
 
 export function BannerGrid({ banners, headline, cta }: Props) {
-  const [arcIdx, setArcIdx] = useState(0);
+  const [arcIdx,     setArcIdx]     = useState(0);
+  const [activeSize, setActiveSize] = useState<string | null>(null);
 
   const arc     = ARCHETYPES[arcIdx];
   const hasImgs = banners.some(b => b.imageUrl && b.imageUrl.length > 0);
 
-  // If API returned real images → show them at correct aspect ratio
+  const toggleSize = (key: string) =>
+    setActiveSize(prev => (prev === key ? null : key));
+
+  // Shared pill style factory
+  const pill = (active: boolean): React.CSSProperties => ({
+    display: 'inline-flex', alignItems: 'center', gap: 5,
+    padding: '4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+    cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+    background: active ? 'var(--accent)'  : 'var(--surface-2)',
+    border:    `1px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
+    color:      active ? '#fff'           : 'var(--sub)',
+  });
+
+  // ── Image mode ─────────────────────────────────────────────────────────────
   if (hasImgs) {
     const display = banners.length > 0 ? banners : SIZES.map(s => ({ size: s.key, imageUrl:'', headline }));
     return (
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap: 16, width:'100%', maxWidth: 520 }}>
-        {display.map((b, i) => {
-          const meta = SIZES.find(s => s.key === b.size);
-          return (
-            <BannerUnit
-              key={i}
-              archetypeId={arc.id}
-              cat={meta?.cat ?? 'square'}
-              dw={meta?.dw ?? 148}
-              label={meta?.label ?? b.size}
-              sizeKey={b.size}
-              headline={b.headline || headline}
-              cta={cta}
-              imageUrl={b.imageUrl || undefined}
-              theme={arc.t}
-            />
-          );
-        })}
+      <div style={{ display:'flex', flexDirection:'column', gap: 14, width:'100%', maxWidth: 520 }}>
+        {/* Size filter pills */}
+        <div style={{ display:'flex', gap: 6, flexWrap:'wrap' }}>
+          <button onClick={() => setActiveSize(null)} style={pill(activeSize === null)}>All</button>
+          {display.map((b, i) => {
+            const meta = SIZES.find(s => s.key === b.size);
+            return (
+              <button key={i} onClick={() => toggleSize(b.size)} style={pill(activeSize === b.size)}>
+                {meta?.label ?? b.size}
+              </button>
+            );
+          })}
+        </div>
+        {/* Grid */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap: 16 }}>
+          {display.map((b, i) => {
+            const meta    = SIZES.find(s => s.key === b.size);
+            const isActive = activeSize === b.size;
+            const isDimmed = activeSize !== null && !isActive;
+            return (
+              <div key={i} style={{ gridColumn: meta?.span ? '1 / -1' : undefined }}>
+                <BannerUnit
+                  archetypeId={arc.id}
+                  cat={meta?.cat ?? 'square'}
+                  dw={meta?.dw ?? 148}
+                  label={meta?.label ?? b.size}
+                  sizeKey={b.size}
+                  headline={b.headline || headline}
+                  cta={cta}
+                  imageUrl={b.imageUrl || undefined}
+                  theme={arc.t}
+                  active={isActive}
+                  dimmed={isDimmed}
+                  onClick={() => toggleSize(b.size)}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
 
-  // Gallery / placeholder mode — archetype picker + all 6 sizes
+  // ── Gallery / placeholder mode ─────────────────────────────────────────────
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap: 16, width:'100%', maxWidth: 520 }}>
+    <div style={{ display:'flex', flexDirection:'column', gap: 14, width:'100%', maxWidth: 520 }}>
 
       {/* Archetype selector */}
       <div style={{ display:'flex', gap: 6, flexWrap:'wrap' }}>
         {ARCHETYPES.map((a, i) => (
-          <button
-            key={a.id}
-            onClick={() => setArcIdx(i)}
-            style={{
-              display:'inline-flex', alignItems:'center', gap: 5,
-              padding:'4px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-              cursor:'pointer', fontFamily:'inherit', transition:'all 0.15s',
-              background: i === arcIdx ? 'var(--accent)'    : 'var(--surface-2)',
-              border:     `1px solid ${i === arcIdx ? 'var(--accent)' : 'var(--border)'}`,
-              color:      i === arcIdx ? '#fff'              : 'var(--sub)',
-            }}
-          >
+          <button key={a.id} onClick={() => setArcIdx(i)} style={pill(i === arcIdx)}>
             <span>{a.icon}</span>{a.label}
           </button>
         ))}
       </div>
 
-      {/* Size grid */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 14, alignItems:'start' }}>
+      {/* Size filter pills */}
+      <div style={{ display:'flex', gap: 6, flexWrap:'wrap' }}>
+        <button onClick={() => setActiveSize(null)} style={pill(activeSize === null)}>All sizes</button>
         {SIZES.map(s => (
-          <div key={s.key} style={{ gridColumn: s.span ? '1 / -1' : undefined }}>
-            <BannerUnit
-              archetypeId={arc.id}
-              cat={s.cat}
-              dw={s.dw}
-              label={s.label}
-              sizeKey={s.key}
-              headline={headline || 'Your headline goes here for maximum impact'}
-              cta={cta || 'Learn More'}
-              theme={arc.t}
-            />
-          </div>
+          <button key={s.key} onClick={() => toggleSize(s.key)} style={pill(activeSize === s.key)}>
+            {s.label}
+          </button>
         ))}
+      </div>
+
+      {/* Size grid — all visible, active one highlighted, others dimmed */}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap: 14, alignItems:'start' }}>
+        {SIZES.map(s => {
+          const isActive = activeSize === s.key;
+          const isDimmed = activeSize !== null && !isActive;
+          return (
+            <div key={s.key} style={{ gridColumn: s.span ? '1 / -1' : undefined }}>
+              <BannerUnit
+                archetypeId={arc.id}
+                cat={s.cat}
+                dw={s.dw}
+                label={s.label}
+                sizeKey={s.key}
+                headline={headline || 'Your headline goes here for maximum impact'}
+                cta={cta || 'Learn More'}
+                theme={arc.t}
+                active={isActive}
+                dimmed={isDimmed}
+                onClick={() => toggleSize(s.key)}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Legend */}
       <div style={{ fontSize: 10, color:'var(--muted)', display:'flex', gap: 6, alignItems:'center' }}>
         <span style={{ width: 8, height: 8, borderRadius:'50%', background:'var(--accent)', display:'inline-block', flexShrink:0 }} />
-        {arc.label} archetype · 6 IAB standard sizes
+        {arc.label} · {activeSize ? (SIZES.find(s => s.key === activeSize)?.label ?? activeSize) : '6 IAB sizes'}
+        {activeSize && (
+          <button
+            onClick={() => setActiveSize(null)}
+            style={{ marginLeft: 4, background:'none', border:'none', cursor:'pointer', fontSize:10, color:'var(--muted)', padding: 0 }}
+          >
+            clear ×
+          </button>
+        )}
       </div>
     </div>
   );
